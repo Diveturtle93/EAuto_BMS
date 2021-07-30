@@ -82,6 +82,8 @@ void Error_Handler(void);
 #define SPI_MOSI_GPIO_Port GPIOF
 #define RCC_OSC_IN_Pin GPIO_PIN_0
 #define RCC_OSC_IN_GPIO_Port GPIOH
+#define RCC_OSC_OUT_Pin GPIO_PIN_1
+#define RCC_OSC_OUT_GPIO_Port GPIOH
 #define CRASH_Pin GPIO_PIN_0
 #define CRASH_GPIO_Port GPIOA
 #define IMD_OK_OUT_Pin GPIO_PIN_1

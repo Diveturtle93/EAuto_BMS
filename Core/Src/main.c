@@ -101,6 +101,38 @@ int main(void)
   MX_CAN3_Init();
   /* USER CODE BEGIN 2 */
 
+	/* Schreibe Resetquelle auf die Konsole */
+#ifdef DEBUG
+	printResetSource(readResetSource());
+
+	/* Teste serielle Schnittstelle*/
+	#define TEST_STRING_UART	"\nUART2 Transmitting in polling mode, Hello Diveturtle93!\n"
+	uartTransmit(TEST_STRING_UART, sizeof(TEST_STRING_UART));
+
+	/* Sammel Systeminformationen */
+	collectSystemInfo();
+#endif
+
+	// Leds Testen// Leds Testen
+    HAL_GPIO_WritePin(BLUE_LED_GPIO_Port, BLUE_LED_Pin, GPIO_PIN_SET);
+#define TEST_BLUE_LED	"\nUART2 Transmitting Blue LED\n"
+uartTransmit(TEST_BLUE_LED, sizeof(TEST_BLUE_LED));
+    HAL_Delay(1000);
+    HAL_GPIO_WritePin(BLUE_LED_GPIO_Port, BLUE_LED_Pin, GPIO_PIN_RESET);
+    HAL_Delay(500);
+    HAL_GPIO_WritePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin, GPIO_PIN_SET);
+#define TEST_GREEN_LED	"\nUART2 Transmitting Green Led\n"
+uartTransmit(TEST_GREEN_LED, sizeof(TEST_GREEN_LED));
+    HAL_Delay(1000);
+    HAL_GPIO_WritePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin, GPIO_PIN_RESET);
+    HAL_Delay(500);
+    HAL_GPIO_WritePin(RED_LED_GPIO_Port, RED_LED_Pin, GPIO_PIN_SET);
+#define TEST_RED_LED	"\nUART2 Transmitting Red Led\n"
+uartTransmit(TEST_RED_LED, sizeof(TEST_RED_LED));
+    HAL_Delay(1000);
+    HAL_GPIO_WritePin(RED_LED_GPIO_Port, RED_LED_Pin, GPIO_PIN_RESET);
+    HAL_Delay(500);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
