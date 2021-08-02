@@ -50,7 +50,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-uint8_t data[36] = {0};
+uint8_t data[36] = {0}, temp;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -80,7 +80,7 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-
+  uint16_t temperatur[3] = {0};
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -140,15 +140,25 @@ uartTransmit(TEST_RED_LED, sizeof(TEST_RED_LED));
 #define TEST_LTC6811	"Starte Batteriemanagement-System\n"
 uartTransmit(TEST_LTC6811, sizeof(TEST_LTC6811));
 
-	/*if ((temp = ltc6811_check()) != 0)									// LTC6804 Selftest durchführen
+	if ((temp = ltc6811_check()) != 0)									// LTC6804 Selftest durchführen
 	{
 #define LTC6811_FAILED	"Selbsttest LTC6811 fehlerhaft\n"
 uartTransmit(LTC6811_FAILED, sizeof(LTC6811_FAILED));					// Ausgabe bei Fehlerhaftem Selbsttest
 	    HAL_GPIO_WritePin(RED_LED_GPIO_Port, RED_LED_Pin, GPIO_PIN_SET);// Ausgabe auf LEDs
 
+	    uartTransmitNumber(temp, 10);
+
 		//return 0;														// Programm abbrechen
-	}*/
+	}
 	ltc6811_read(RDCFG, &data[0]);
+
+	// Alle Register zurücksetzen
+	ltc6811(CLRCELL);
+	ltc6811(CLRSTAT);
+	ltc6811(CLRAUX);
+
+	ltc6811(ADAX | MD262 | GPIOALL);
+	ltc6811_read(RDAUXA, &data[0]);
 
   /* USER CODE END 2 */
 

@@ -69,9 +69,9 @@ void wakeup_ltc6811(void)
 	for(uint8_t i=0; i<LTC6811_DEVICES; i++)
 	{
 		ISOCS_ENABLE();
-		HAL_Delay(2);														//isoSPI braucht Zeit bis ready
+//		HAL_Delay(2);														//isoSPI braucht Zeit bis ready
+		HAL_SPI_Transmit(&hspi4, 0xFF, 1, 100);
 		ISOCS_DISABLE();
-		HAL_Delay(2);
 	}
 }
 //----------------------------------------------------------------------
@@ -249,7 +249,7 @@ void init_crc(void)
 }
 //----------------------------------------------------------------------*/
 
-/*
+
 // LTC6811 Status auslesen und auswerten
 //----------------------------------------------------------------------
 uint8_t ltc6811_check(void)
@@ -258,6 +258,7 @@ uint8_t ltc6811_check(void)
 	uint16_t temp = 0;
 
 	// Verzögerungszeit zum wecken des LTC6811
+	wakeup_ltc6811();
 	wakeup_ltc6811();
 
 	// Commands für Status senden  Test 1
@@ -316,6 +317,7 @@ uint8_t ltc6811_check(void)
 			result |= 2;
 	}
 
+	wakeup_ltc6811();
 	ltc6811(DIAGN);
 	wakeup_ltc6811();
 	ltc6811_read(RDSTATB, &tmp_data[0]);
@@ -325,7 +327,7 @@ uint8_t ltc6811_check(void)
 		result |= 4;
 	}
 
-	/ * // Command für OpenWire PUP = 1
+	/* // Command für OpenWire PUP = 1
 	ltc6811(ADOW | MD73 | PUP);
 
 	// Register auslesen OpenWire
@@ -341,8 +343,8 @@ uint8_t ltc6811_check(void)
 	ltc6811_read(RDCVA, &tmp_data[24]);
 	ltc6811_read(RDCVB, &tmp_data[30]);
 	ltc6811_read(RDCVC, &tmp_data[36]);
-	ltc6811_read(RDCVD, &tmp_data[42]);* /
+	ltc6811_read(RDCVD, &tmp_data[42]);*/
 
 	return result;										// return result
 }
-//----------------------------------------------------------------------*/
+//----------------------------------------------------------------------
