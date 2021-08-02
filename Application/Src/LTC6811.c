@@ -21,7 +21,6 @@
 // Einfügen der eigenen Include Dateien
 //----------------------------------------------------------------------
 #include "ltc6811.h"
-#include "SPI_resource.h"
 //----------------------------------------------------------------------
 
 
@@ -63,15 +62,15 @@ const uint16_t pec15Table[256] = {
 };
 //----------------------------------------------------------------------
 
-// Wakeup LTC6811
+// Wakeup LTC6811 idle
 //----------------------------------------------------------------------
 void wakeup_ltc6811(void)
 {
 	for(uint8_t i=0; i<LTC6811_DEVICES; i++)
 	{
-		CS_ENABLE();
+		ISOCS_ENABLE();
 		HAL_Delay(2);														//isoSPI braucht Zeit bis ready
-		CS_DISABLE();
+		ISOCS_DISABLE();
 		HAL_Delay(2);
 	}
 }
@@ -86,28 +85,32 @@ void ltc6811(uint16_t command)
 	uint8_t cmd[4];
 	pec = peccommand(command);
 	
+	// Command in cmd abspeichern
 	cmd[0] = ((command>>8) & 0x07);
 	cmd[1] = (command & 0xFF);
 	cmd[2] = ((pec>>8) & 0xFF);
 	cmd[3] = (pec & 0xFE);
 
-	// Command übertragen
-	CS_ENABLE();
-	HAL_SPI_Transmit(&hspi1, cmd, 4, HAL_MAX_DELAY);
+	// ISOCS einschalten
+	ISOCS_ENABLE();
 
-	// Wenn Command = STCOMM ist dann müssen noch 72 Takte übertragen werden
+	// Command uebertragen
+	HAL_SPI_Transmit(&hspi4, cmd, 4, 100);
+
+	// Wenn Command = STCOMM ist dann muessen noch 72 Takte uebertragen werden
 	if (command == STCOMM)
 	{
 		// 72 = 9 * 8 Bit Daten
 		for (uint8_t i = 0; i < 9; i++)
 		{
-			// Dummy-Byte �bertragen
-			HAL_SPI_Transmit(&hspi1, (uint8_t*)0xFF, 1, HAL_MAX_DELAY);
+			// Dummy-Byte uebertragen
+			HAL_SPI_Transmit(&hspi4, (uint8_t*) 0xFF, 1, 100);
 		}
 	}
 	
-	CS_DISABLE();
-	// Ende der Übertragung
+	// ISOCS ausschalten
+	ISOCS_DISABLE();
+	// Ende der Uebertragung
 }
 //----------------------------------------------------------------------
 
@@ -116,19 +119,26 @@ void ltc6811(uint16_t command)
 //----------------------------------------------------------------------
 void ltc6811_write(uint16_t command, uint8_t* data)
 {
-	// PEC berechnen, für Data Funktion nur bei einem Device gegeben
+	// PEC berechnen, fuer Data Funktion nur bei einem Device gegeben
 	uint16_t pec_c, pec_d;
+	uint8_t cmd[4];
 	pec_c = peccommand(command);
 	pec_d = peclookup(6, data);
 	
-	// Command übertragen
-	CS_ENABLE();
-	
-	// Command fuer zu beschreibendes Register senden
-	spi_transmit((command>>8) & 0x07);
-	spi_transmit(command & 0xFF);
-	spi_transmit((pec_c>>8) & 0xFF);
-	spi_transmit(pec_c & 0xFE);
+	// Command in cmd abspeichern
+	cmd[0] = ((command>>8) & 0x07);
+	cmd[1] = (command & 0xFF);
+	cmd[2] = ((pec>>8) & 0xFF);
+	cmd[3] = (pec & 0xFE);
+
+	// ISOCS einschalten
+	ISOCS_ENABLE();
+
+	// Command uebertragen
+	HAL_SPI_Transmit(&hspi4, cmd[0], 1, 100);
+	HAL_SPI_Transmit(&hspi4, cmd[1], 1, 100);
+	HAL_SPI_Transmit(&hspi4, cmd[2], 1, 100);
+	HAL_SPI_Transmit(&hspi4, cmd[3], 1, 100);
 	
 	// Data senden
 	for (uint8_t i = 0; i < 6; i++)
@@ -138,10 +148,11 @@ void ltc6811_write(uint16_t command, uint8_t* data)
 	spi_transmit((pec_d>>8) & 0xFF);
 	spi_transmit(pec_d & 0xFE);
 	
-	CS_DISABLE();
-	// Ende der Übertragung
+	// ISOCS ausschalten
+	ISOCS_DISABLE();
+	// Ende der Uebertragung
 }
-//----------------------------------------------------------------------
+//----------------------------------------------------------------------*/
 
 // Broadcast Read Command
 //----------------------------------------------------------------------
@@ -149,29 +160,33 @@ void ltc6811_read(uint16_t command, uint8_t* data)
 {
 	// PEC berechnen, Anhand Command
 	uint16_t pec;
+	uint8_t cmd[4];
 	pec = peccommand(command);
 	
-	// Command übertragen
-	CS_ENABLE();
-	
-	// Command fuer zu lesendes Register senden
-	spi_transmit((command>>8) & 0x07);
-	spi_transmit(command & 0xFF);
-	spi_transmit((pec>>8) & 0xFF);
-	spi_transmit(pec & 0xFE);
+	// Command in cmd abspeichern
+	cmd[0] = ((command>>8) & 0x07);
+	cmd[1] = (command & 0xFF);
+	cmd[2] = ((pec>>8) & 0xFF);
+	cmd[3] = (pec & 0xFE);
+
+	// ISOCS einschalten
+	ISOCS_ENABLE();
+
+	// Command uebertragen
+	HAL_SPI_Transmit(&hspi4, cmd, 4, 100);
 	
 	// Data empfangen
-	for (uint8_t i = 0; i < (8 * LTC6811_DEVICES); i++)
+	for (uint8_t i = 0; i < LTC6811_DEVICES; i++)
 	{
 		// Dummy Byte senden
-		data[i] = spi_transmit(0xFF);
+		HAL_SPI_Receive(&hspi4, &data[i*8], 8, 100);
 	}
 	
-	CS_DISABLE();
-	// Ende der Übertragung
+	// ISOCS ausschalten
+	ISOCS_DISABLE();
+	// Ende der Uebertragung
 }
 //----------------------------------------------------------------------
- */
 
 // Pec Command bauen
 //----------------------------------------------------------------------

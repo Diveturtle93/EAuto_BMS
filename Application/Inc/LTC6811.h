@@ -128,6 +128,12 @@
 #define STCOMM				0b11100100011			// Start Communication I2C / SPI
 //----------------------------------------------------------------------
 
+// Definiere Chip-Select Leitung
+//----------------------------------------------------------------------
+#define ISOCS_ENABLE() (HAL_GPIO_WritePin(ISOSPI_CS_GPIO_Port, ISOSPI_CS_Pin, GPIO_PIN_RESET))		// Chip-Select enable
+#define ISOCS_DISABLE() (HAL_GPIO_WritePin(ISOSPI_CS_GPIO_Port, ISOSPI_CS_Pin, GPIO_PIN_SET))		// Chip-Select disable
+//----------------------------------------------------------------------
+
 // Funktionen definieren
 //----------------------------------------------------------------------
 uint8_t ltc6811_check(void);

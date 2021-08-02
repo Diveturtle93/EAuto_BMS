@@ -30,6 +30,7 @@
 /* USER CODE BEGIN Includes */
 #include "BasicUart.h"
 #include "SystemInfo.h"
+#include "LTC6811.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -49,7 +50,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+uint8_t data[36] = {0};
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -133,6 +134,22 @@ uartTransmit(TEST_RED_LED, sizeof(TEST_RED_LED));
     HAL_GPIO_WritePin(RED_LED_GPIO_Port, RED_LED_Pin, GPIO_PIN_RESET);
     HAL_Delay(500);
 
+    HAL_GPIO_WritePin(ISOSPI_EN_GPIO_Port, ISOSPI_EN_Pin, GPIO_PIN_SET);
+
+    uartTransmit("\n", 1);
+#define TEST_LTC6811	"Starte Batteriemanagement-System\n"
+uartTransmit(TEST_LTC6811, sizeof(TEST_LTC6811));
+
+	/*if ((temp = ltc6811_check()) != 0)									// LTC6804 Selftest durchführen
+	{
+#define LTC6811_FAILED	"Selbsttest LTC6811 fehlerhaft\n"
+uartTransmit(LTC6811_FAILED, sizeof(LTC6811_FAILED));					// Ausgabe bei Fehlerhaftem Selbsttest
+	    HAL_GPIO_WritePin(RED_LED_GPIO_Port, RED_LED_Pin, GPIO_PIN_SET);// Ausgabe auf LEDs
+
+		//return 0;														// Programm abbrechen
+	}*/
+	ltc6811_read(RDCFG, &data[0]);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -142,6 +159,13 @@ uartTransmit(TEST_RED_LED, sizeof(TEST_RED_LED));
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+	    HAL_Delay(500);
+		ltc6811(ADCVC | MD2714 | CELLALL);
+		ltc6811_read(RDCVA, &data[0]);
+		ltc6811_read(RDCVB, &data[6]);
+		ltc6811_read(RDCVC, &data[12]);
+		ltc6811_read(RDCVD, &data[18]);
+		ltc6811_read(RDCFG, &data[26]);
   }
   /* USER CODE END 3 */
 }
