@@ -84,7 +84,7 @@ union komfort_out_tag {
 //----------------------------------------------------------------------
 #define SYSTEM_OUTPUT				0b00000000								// 8 Bit, 8 Systemausgaenge
 #define HIGH_OUTPUT					0b00000000								// 8 Bit, 7 Hochstromfaehige Ausgaenge
-#define LED_OUTPUT					0b11100000								// 8 Bit, 6 Leuchtdioden
+#define LED_OUTPUT					0b01000000								// 8 Bit, 6 Leuchtdioden
 #define KOMFORT_OUTPUT				0b00000000								// 8 Bit, 1 Komfortausgaenge
 //----------------------------------------------------------------------
 
@@ -93,6 +93,7 @@ union komfort_out_tag {
 void init_outputs(void);													// Initialisiere Ausgaenge
 void writeall_outputs(void);												// Schreibe alle Ausgaenge
 void writeled_outputs(void);												// Schreibe alle LED-Ausgaenge
+void testPCB_Leds(void);													// Teste PCB LEDs fuer je 1s
 //----------------------------------------------------------------------
 
 #endif /* INC_OUTPUTS_H_ */

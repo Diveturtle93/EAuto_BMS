@@ -70,7 +70,7 @@ void wakeup_ltc6811(void)
 	{
 		ISOCS_ENABLE();
 //		HAL_Delay(2);														//isoSPI braucht Zeit bis ready
-		HAL_SPI_Transmit(&hspi4, 0xFF, 1, 100);
+		HAL_SPI_Transmit(&hspi4, (uint8_t*)0xFF, 1, 100);
 		ISOCS_DISABLE();
 	}
 }
@@ -86,9 +86,9 @@ void ltc6811(uint16_t command)
 	pec = peccommand(command);
 	
 	// Command in cmd abspeichern
-	cmd[0] = ((command>>8) & 0x07);
+	cmd[0] = ((command >> 8) & 0x07);
 	cmd[1] = (command & 0xFF);
-	cmd[2] = ((pec>>8) & 0xFF);
+	cmd[2] = ((pec >> 8) & 0xFF);
 	cmd[3] = (pec & 0xFE);
 
 	// ISOCS einschalten
@@ -114,7 +114,7 @@ void ltc6811(uint16_t command)
 }
 //----------------------------------------------------------------------
 
-/*
+
 // Broadcast Write Command
 //----------------------------------------------------------------------
 void ltc6811_write(uint16_t command, uint8_t* data)
@@ -126,33 +126,30 @@ void ltc6811_write(uint16_t command, uint8_t* data)
 	pec_d = peclookup(6, data);
 	
 	// Command in cmd abspeichern
-	cmd[0] = ((command>>8) & 0x07);
+	cmd[0] = ((command  >> 8) & 0x07);
 	cmd[1] = (command & 0xFF);
-	cmd[2] = ((pec>>8) & 0xFF);
-	cmd[3] = (pec & 0xFE);
+	cmd[2] = ((pec_c >> 8) & 0xFF);
+	cmd[3] = (pec_c & 0xFE);
 
 	// ISOCS einschalten
 	ISOCS_ENABLE();
 
 	// Command uebertragen
-	HAL_SPI_Transmit(&hspi4, cmd[0], 1, 100);
-	HAL_SPI_Transmit(&hspi4, cmd[1], 1, 100);
-	HAL_SPI_Transmit(&hspi4, cmd[2], 1, 100);
-	HAL_SPI_Transmit(&hspi4, cmd[3], 1, 100);
+	HAL_SPI_Transmit(&hspi4, cmd, 4, 100);
 	
 	// Data senden
 	for (uint8_t i = 0; i < 6; i++)
 	{
-		spi_transmit(data[i]);
+		HAL_SPI_Transmit(&hspi4, (uint8_t*) &data[i], 1, 100);
 	}
-	spi_transmit((pec_d>>8) & 0xFF);
-	spi_transmit(pec_d & 0xFE);
+	HAL_SPI_Transmit(&hspi4, (uint8_t*) ((pec_d >> 8) & 0xFF), 1, 100);
+	HAL_SPI_Transmit(&hspi4, (uint8_t*) (pec_d & 0xFE), 1, 100);
 	
 	// ISOCS ausschalten
 	ISOCS_DISABLE();
 	// Ende der Uebertragung
 }
-//----------------------------------------------------------------------*/
+//----------------------------------------------------------------------
 
 // Broadcast Read Command
 //----------------------------------------------------------------------
@@ -164,9 +161,9 @@ void ltc6811_read(uint16_t command, uint8_t* data)
 	pec = peccommand(command);
 	
 	// Command in cmd abspeichern
-	cmd[0] = ((command>>8) & 0x07);
+	cmd[0] = ((command >> 8) & 0x07);
 	cmd[1] = (command & 0xFF);
-	cmd[2] = ((pec>>8) & 0xFF);
+	cmd[2] = ((pec >> 8) & 0xFF);
 	cmd[3] = (pec & 0xFE);
 
 	// ISOCS einschalten
@@ -259,7 +256,6 @@ uint8_t ltc6811_check(void)
 
 	// Verzögerungszeit zum wecken des LTC6811
 	wakeup_ltc6811();
-	wakeup_ltc6811();
 
 	// Commands für Status senden  Test 1
 	ltc6811(CVST | MD73 | ST1);
@@ -270,14 +266,17 @@ uint8_t ltc6811_check(void)
 	HAL_Delay(300);
 
 	// Register auslesen Test 1
+	// Spannungsregister
 	ltc6811_read(RDCVA, &tmp_data[0]);
 	ltc6811_read(RDCVB, &tmp_data[6]);
 	ltc6811_read(RDCVC, &tmp_data[12]);
 	ltc6811_read(RDCVD, &tmp_data[18]);
 
+	// GPIO-Register
 	ltc6811_read(RDAUXA, &tmp_data[24]);
 	ltc6811_read(RDAUXB, &tmp_data[30]);
 
+	// Statusregister
 	ltc6811_read(RDSTATA, &tmp_data[36]);
 	ltc6811_read(RDSTATB, &tmp_data[42]);
 
@@ -298,14 +297,17 @@ uint8_t ltc6811_check(void)
 	HAL_Delay(300);
 
 	// Register auslesen Test 2
+	// Spannungsregister
 	ltc6811_read(RDCVA, &tmp_data[0]);
 	ltc6811_read(RDCVB, &tmp_data[6]);
 	ltc6811_read(RDCVC, &tmp_data[12]);
 	ltc6811_read(RDCVD, &tmp_data[18]);
 
+	// GPIO-Register
 	ltc6811_read(RDAUXA, &tmp_data[24]);
 	ltc6811_read(RDAUXB, &tmp_data[30]);
 
+	// Statusregister
 	ltc6811_read(RDSTATA, &tmp_data[36]);
 	ltc6811_read(RDSTATB, &tmp_data[42]);
 

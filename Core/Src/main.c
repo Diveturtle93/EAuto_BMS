@@ -31,6 +31,9 @@
 #include "BasicUart.h"
 #include "SystemInfo.h"
 #include "LTC6811.h"
+#include "error.h"
+#include "inputs.h"
+#include "outputs.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -114,37 +117,25 @@ int main(void)
 	collectSystemInfo();
 #endif
 
-	// Leds Testen// Leds Testen
-    HAL_GPIO_WritePin(BLUE_LED_GPIO_Port, BLUE_LED_Pin, GPIO_PIN_SET);
-#define TEST_BLUE_LED	"\nUART2 Transmitting Blue LED\n"
-uartTransmit(TEST_BLUE_LED, sizeof(TEST_BLUE_LED));
-    HAL_Delay(1000);
-    HAL_GPIO_WritePin(BLUE_LED_GPIO_Port, BLUE_LED_Pin, GPIO_PIN_RESET);
-    HAL_Delay(500);
-    HAL_GPIO_WritePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin, GPIO_PIN_SET);
-#define TEST_GREEN_LED	"\nUART2 Transmitting Green Led\n"
-uartTransmit(TEST_GREEN_LED, sizeof(TEST_GREEN_LED));
-    HAL_Delay(1000);
-    HAL_GPIO_WritePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin, GPIO_PIN_RESET);
-    HAL_Delay(500);
-    HAL_GPIO_WritePin(RED_LED_GPIO_Port, RED_LED_Pin, GPIO_PIN_SET);
-#define TEST_RED_LED	"\nUART2 Transmitting Red Led\n"
-uartTransmit(TEST_RED_LED, sizeof(TEST_RED_LED));
-    HAL_Delay(1000);
-    HAL_GPIO_WritePin(RED_LED_GPIO_Port, RED_LED_Pin, GPIO_PIN_RESET);
-    HAL_Delay(500);
+	// Leds Testen
+	testPCB_Leds();
 
+  	// Lese alle Eingaenge
+  	readall_inputs();
+
+  	// IsoSPI einschalten, Isolierte Spannungsversorgung IsoSPI und HV-Precharge Messung einschalten
     HAL_GPIO_WritePin(ISOSPI_EN_GPIO_Port, ISOSPI_EN_Pin, GPIO_PIN_SET);
 
     uartTransmit("\n", 1);
 #define TEST_LTC6811	"Starte Batteriemanagement-System\n"
 uartTransmit(TEST_LTC6811, sizeof(TEST_LTC6811));
 
-	if ((temp = ltc6811_check()) != 0)									// LTC6804 Selftest durchführen
+	if ((temp = ltc6811_check()) != 0)									// LTC6804 Selftest durchfuehren
 	{
 #define LTC6811_FAILED	"Selbsttest LTC6811 fehlerhaft\n"
 uartTransmit(LTC6811_FAILED, sizeof(LTC6811_FAILED));					// Ausgabe bei Fehlerhaftem Selbsttest
-	    HAL_GPIO_WritePin(RED_LED_GPIO_Port, RED_LED_Pin, GPIO_PIN_SET);// Ausgabe auf LEDs
+		leuchten_out.RedLed = 1;										// Variable setzen
+	    HAL_GPIO_WritePin(RED_LED_GPIO_Port, RED_LED_Pin, leuchten_out.RedLed);// Ausgabe auf LEDs
 
 	    uartTransmitNumber(temp, 10);
 
@@ -247,10 +238,26 @@ void SystemClock_Config(void)
   */
 void Error_Handler(void)
 {
-  /* USER CODE BEGIN Error_Handler_Debug */
-  /* User can add his own implementation to report the HAL error return state */
+	/* USER CODE BEGIN Error_Handler_Debug */
+	/* User can add his own implementation to report the HAL error return state */
+	__disable_irq();														// Interrupts deaktivieren
 
-  /* USER CODE END Error_Handler_Debug */
+	// Schalte Fehler LED ein
+	leuchten_out.RedLed = 1;												// Setze Variable
+	HAL_GPIO_WritePin(RED_LED_GPIO_Port, RED_LED_Pin, leuchten_out.RedLed);	// Fehler LED einschalten
+
+	// Schalte Ok LED aus
+	leuchten_out.GreenLed = 0;												// Zuruechsetzen Variable
+	HAL_GPIO_WritePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin, leuchten_out.GreenLed);// Fehler LED ausschalten
+
+	// Sende Nachricht auf Uart-Interface
+#ifdef DEBUG
+#define STRING_ERROR_HANDLER			"Error Handler wird ausgefuehrt!!!"
+	uartTransmit(STRING_ERROR_HANDLER, sizeof(STRING_ERROR_HANDLER));
+#endif
+	// Beginne Endlosschleife nachdem Fehler aufgetreten ist
+	while (1);
+	/* USER CODE END Error_Handler_Debug */
 }
 
 #ifdef  USE_FULL_ASSERT

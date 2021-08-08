@@ -8,11 +8,6 @@
 // Projekt	:	Batteriemanagement-System
 //----------------------------------------------------------------------
 
-// Einfuegen der standard Include-Dateien
-//----------------------------------------------------------------------
-
-//----------------------------------------------------------------------
-
 // Einfuegen der STM Include-Dateien
 //----------------------------------------------------------------------
 #include "main.h"
@@ -42,5 +37,31 @@ void hal_error(uint8_t status)
 		uartTransmit("HAL TIMEOUT\n", 12);
 	}
 #endif
+}
+//----------------------------------------------------------------------
+
+// Diagnose Funktion falls ein Fehler auftritt
+//----------------------------------------------------------------------
+void software_error(uint8_t errorcode)
+{
+	__disable_irq();														// Interrupts deaktivieren
+
+	// Schalte Fehler LED ein
+	leuchten_out.RedLed = 1;												// Setze Variable
+	HAL_GPIO_WritePin(RED_LED_GPIO_Port, RED_LED_Pin, leuchten_out.RedLed);	// Fehler LED einschalten
+
+	// Schalte Ok LED aus
+	leuchten_out.GreenLed = 0;												// Zuruechsetzen Variable
+	HAL_GPIO_WritePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin, leuchten_out.GreenLed);// Fehler LED ausschalten
+
+#ifdef DEBUG																// Serielle Kommunukation nur waehrend Debugging
+#define SOFTERRORMESSAGE			"\nSoftware Error Handler ausgeloest\n"	// Ausgabe das Fehler aufgetreten ist
+	uartTransmit(SOFTERRORMESSAGE,sizeof(SOFTERRORMESSAGE));
+
+#define ERRORCODE					"Error Code:\t"							// Ausgabe des Fehlers anhand von Fehlercode
+	uartTransmit(ERRORCODE,sizeof(ERRORCODE));
+	uartTransmitNumber(errorcode, 10);										// Fehlercode ausgeben
+#endif
+	while (1);																// Endlosschleife
 }
 //----------------------------------------------------------------------
