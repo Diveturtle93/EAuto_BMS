@@ -23,6 +23,7 @@
 //----------------------------------------------------------------------
 void hal_error(uint8_t status);
 void software_error(uint8_t errorcode);
+void ITM_SendString(char *ptr);
 //----------------------------------------------------------------------
 
 #endif /* INC_ERROR_H_ */

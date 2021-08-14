@@ -40,7 +40,7 @@ void hal_error(uint8_t status)
 }
 //----------------------------------------------------------------------
 
-// Diagnose Funktion falls ein Fehler auftritt
+// Diagnose Funktion falls ein Software Fehler auftritt
 //----------------------------------------------------------------------
 void software_error(uint8_t errorcode)
 {
@@ -65,3 +65,16 @@ void software_error(uint8_t errorcode)
 	while (1);																// Endlosschleife
 }
 //----------------------------------------------------------------------
+
+// Debug Nachricht ueber SWO senden
+// Nachricht SWO ITM Data Console
+// http://stefanfrings.de/stm32/cube_ide.html
+// Core Clock := Maximalfrequenz
+void ITM_SendString(char *ptr)
+{
+	while(*ptr)																// Starte Pointerschleife
+	{
+		ITM_SendChar(*ptr);													// Sende ITM Zeichen
+		ptr++;																// Pointer hochzaehlen
+	}
+}
