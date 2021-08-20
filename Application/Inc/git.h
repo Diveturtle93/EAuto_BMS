@@ -1,11 +1,46 @@
-#ifndef _GIT_H_ /* Definiere Klasse _GIT_H_ */
-#define _GIT_H_ /* GIT_H */
+//----------------------------------------------------------------------
+// Titel	:	Git.h
+//----------------------------------------------------------------------
+// Sprache	:	C
+// Datum	:	18.08.2021
+// Version	:	1.0
+// Autor	:	Diveturtle93
+// Projekt	:	STM32F767ZI
+//----------------------------------------------------------------------
 
-#define GIT_COMMIT "04542fc"
-#define GIT_BRANCH "Development"
-#define GIT_HASH "04542fc5c539f44cb296d133d7185afbf80cfeda"
-#define GIT_TAG ""
+// Dateiheader definieren
+//----------------------------------------------------------------------
+#ifndef _GIT_H_
+#define _GIT_H_
+//----------------------------------------------------------------------
 
-#define BUILD_DATE __DATE__
-#define BUILD_TIME __TIME__
-#endif /* GIT_H */
+// Git Commit-Infos definieren
+//----------------------------------------------------------------------
+#define GIT_COMMIT					"898f2d6"
+#define GIT_BRANCH					"main"
+#define GIT_HASH					"898f2d68f76a2031a6bd322e327312dd1511a718"
+//----------------------------------------------------------------------
+
+// Git Tags-Infos definieren
+//----------------------------------------------------------------------
+#define GIT_LAST_TAG				""
+#define GIT_TAG_COMMIT				""
+#define GIT_TAG_DIRTY				""
+#define GIT_TAG_DIRTY_NUMBER		"0"
+//----------------------------------------------------------------------
+
+// Git Zaehler definieren
+//----------------------------------------------------------------------
+#define GIT_OVERALL_COMMIT_COUNT	"10"
+#define GIT_BRANCH_COMMIT_COUNT		"10"
+#define GIT_ACTIVE_BRANCHES			"3"
+#define GIT_TAG_COUNT				"0"
+//----------------------------------------------------------------------
+
+// Build Zeit definieren
+//----------------------------------------------------------------------
+#define BUILD_DATE					"2021-08-20"
+#define BUILD_TIME					"07:20:16"
+//----------------------------------------------------------------------
+#endif /* _GIT_H_ */
+//----------------------------------------------------------------------

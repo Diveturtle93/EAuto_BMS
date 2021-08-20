@@ -18,9 +18,9 @@
 
 // Einfuegen der eigenen Include-Dateien
 //----------------------------------------------------------------------
+#include "git.h"
 #include "SystemInfo.h"
 #include "BasicUart.h"
-#include "git.h"
 //----------------------------------------------------------------------
 
 // Einfuegen der STM Include-Dateien
