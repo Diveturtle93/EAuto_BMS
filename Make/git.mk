@@ -29,13 +29,13 @@
 	@echo "#define GIT_LAST_TAG				\"$(shell git tag)\"" >> $@
 	@echo "#define GIT_TAG_COMMIT				\"$(shell git rev-list --tags --abbrev-commit)\"" >> $@
 	@echo "#define GIT_TAG_DIRTY				\"$(shell git describe)\"" >> $@
-	@echo "#define GIT_TAG_DIRTY_NUMBER		\"$(shell git rev-list  `git rev-list --tags --no-walk --max-count=1`..HEAD --count)\"" >> $@
 	@echo "//----------------------------------------------------------------------" >> $@
 	@echo "" >> $@
 	@echo "// Git Zaehler definieren" >> $@
 	@echo "//----------------------------------------------------------------------" >> $@
+	@echo "#define GIT_TAG_DIRTY_COUNT			\"$(shell git rev-list  `git rev-list --tags --no-walk --max-count=1`..HEAD --count)\"" >> $@
 	@echo "#define GIT_OVERALL_COMMIT_COUNT	\"$(shell git rev-list --all --count)\"" >> $@
-	@echo "#define GIT_BRANCH_COMMIT_COUNT		\"$(shell git rev-list --branches --count)\"" >> $@
+	@echo "#define GIT_BRANCH_COMMIT_COUNT		\"$(shell git rev-list --count `git branch --show-current`)\"" >> $@
 	@echo "#define GIT_ACTIVE_BRANCHES			\"$(shell git branch | wc -l)\"" >> $@
 	@echo "#define GIT_TAG_COUNT				\"$(shell git rev-list --tags --count)\"" >> $@
 	@echo "//----------------------------------------------------------------------" >> $@
