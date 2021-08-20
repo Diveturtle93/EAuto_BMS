@@ -69,8 +69,7 @@ void wakeup_ltc6811(void)
 	for(uint8_t i=0; i<LTC6811_DEVICES; i++)
 	{
 		ISOCS_ENABLE();
-//		HAL_Delay(2);														//isoSPI braucht Zeit bis ready
-		HAL_SPI_Transmit(&hspi4, (uint8_t*)0xFF, 1, 100);
+		HAL_Delay(2);														//isoSPI braucht Zeit bis ready
 		ISOCS_DISABLE();
 	}
 }
@@ -85,6 +84,9 @@ void ltc6811(uint16_t command)
 	uint8_t cmd[4];
 	pec = peccommand(command);
 	
+	// Verzoegerungszeit zum wecken des LTC6811
+	wakeup_ltc6811();
+
 	// Command in cmd abspeichern
 	cmd[0] = ((command >> 8) & 0x07);
 	cmd[1] = (command & 0xFF);
@@ -125,6 +127,9 @@ void ltc6811_write(uint16_t command, uint8_t* data)
 	pec_c = peccommand(command);
 	pec_d = peclookup(6, data);
 	
+	// Verzoegerungszeit zum wecken des LTC6811
+	wakeup_ltc6811();
+
 	// Command in cmd abspeichern
 	cmd[0] = ((command  >> 8) & 0x07);
 	cmd[1] = (command & 0xFF);
@@ -160,6 +165,9 @@ void ltc6811_read(uint16_t command, uint8_t* data)
 	uint8_t cmd[4];
 	pec = peccommand(command);
 	
+	// Verzoegerungszeit zum wecken des LTC6811
+	wakeup_ltc6811();
+
 	// Command in cmd abspeichern
 	cmd[0] = ((command >> 8) & 0x07);
 	cmd[1] = (command & 0xFF);
@@ -251,10 +259,10 @@ void init_crc(void)
 //----------------------------------------------------------------------
 uint8_t ltc6811_check(void)
 {
-	uint8_t tmp_data[50] = {0}, result = 0;
+	uint8_t tmp_data[64] = {0}, result = 0;
 	uint16_t temp = 0;
 
-	// Verzögerungszeit zum wecken des LTC6811
+	// Verzoegerungszeit zum wecken des LTC6811
 	wakeup_ltc6811();
 
 	// Commands für Status senden  Test 1
@@ -265,23 +273,26 @@ uint8_t ltc6811_check(void)
 	ltc6811(STATST | MD73 | ST1);
 	HAL_Delay(300);
 
+	// Verzoegerungszeit zum wecken des LTC6811
+	wakeup_ltc6811();
+
 	// Register auslesen Test 1
 	// Spannungsregister
 	ltc6811_read(RDCVA, &tmp_data[0]);
-	ltc6811_read(RDCVB, &tmp_data[6]);
-	ltc6811_read(RDCVC, &tmp_data[12]);
-	ltc6811_read(RDCVD, &tmp_data[18]);
+	ltc6811_read(RDCVB, &tmp_data[8]);
+	ltc6811_read(RDCVC, &tmp_data[16]);
+	ltc6811_read(RDCVD, &tmp_data[24]);
 
 	// GPIO-Register
-	ltc6811_read(RDAUXA, &tmp_data[24]);
-	ltc6811_read(RDAUXB, &tmp_data[30]);
+	ltc6811_read(RDAUXA, &tmp_data[32]);
+	ltc6811_read(RDAUXB, &tmp_data[40]);
 
 	// Statusregister
-	ltc6811_read(RDSTATA, &tmp_data[36]);
-	ltc6811_read(RDSTATB, &tmp_data[42]);
+	ltc6811_read(RDSTATA, &tmp_data[48]);
+	ltc6811_read(RDSTATB, &tmp_data[56]);
 
-	// Daten prüfen Test 1
-	for (uint8_t i=0; i<22; i++)
+	// Daten pruefen Test 1
+	for (uint8_t i=0; i<12; i++)
 	{
 		temp = ((tmp_data[i*2+1]<<8)|tmp_data[i*2]);
 		if (temp != 0x9555)
@@ -299,26 +310,25 @@ uint8_t ltc6811_check(void)
 	// Register auslesen Test 2
 	// Spannungsregister
 	ltc6811_read(RDCVA, &tmp_data[0]);
-	ltc6811_read(RDCVB, &tmp_data[6]);
-	ltc6811_read(RDCVC, &tmp_data[12]);
-	ltc6811_read(RDCVD, &tmp_data[18]);
+	ltc6811_read(RDCVB, &tmp_data[8]);
+	ltc6811_read(RDCVC, &tmp_data[16]);
+	ltc6811_read(RDCVD, &tmp_data[24]);
 
 	// GPIO-Register
-	ltc6811_read(RDAUXA, &tmp_data[24]);
-	ltc6811_read(RDAUXB, &tmp_data[30]);
+	ltc6811_read(RDAUXA, &tmp_data[32]);
+	ltc6811_read(RDAUXB, &tmp_data[40]);
 
 	// Statusregister
-	ltc6811_read(RDSTATA, &tmp_data[36]);
-	ltc6811_read(RDSTATB, &tmp_data[42]);
+	ltc6811_read(RDSTATA, &tmp_data[48]);
+	ltc6811_read(RDSTATB, &tmp_data[56]);
 
-	// Daten prüfen Test 2
-	for (uint8_t i=0; i<22; i++)
+	// Daten pruefen Test 2
+	for (uint8_t i=0; i<12; i++)
 	{
 		temp = ((tmp_data[i*2+1]<<8)|tmp_data[i*2]);
 		if (temp != 0x6AAA)
 			result |= 2;
 	}
-
 	wakeup_ltc6811();
 	ltc6811(DIAGN);
 	wakeup_ltc6811();

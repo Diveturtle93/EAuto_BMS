@@ -17,6 +17,7 @@
 //----------------------------------------------------------------------
 #include "error.h"
 #include "BasicUart.h"
+#include "outputs.h"
 //----------------------------------------------------------------------
 
 // Hal Error auswerten und ausgeben
@@ -68,8 +69,9 @@ void software_error(uint8_t errorcode)
 
 // Debug Nachricht ueber SWO senden
 // Nachricht SWO ITM Data Console
-// http://stefanfrings.de/stm32/cube_ide.html
 // Core Clock := Maximalfrequenz
+// Im String #GRN# oder #RED# oder #ORG# erscheint die Nachricht in einer Farbe
+//----------------------------------------------------------------------
 void ITM_SendString(char *ptr)
 {
 	while(*ptr)																// Starte Pointerschleife
@@ -78,3 +80,4 @@ void ITM_SendString(char *ptr)
 		ptr++;																// Pointer hochzaehlen
 	}
 }
+//----------------------------------------------------------------------

@@ -54,6 +54,7 @@
 
 /* USER CODE BEGIN PV */
 uint8_t data[36] = {0}, temp;
+uint32_t tmp;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -83,7 +84,7 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-  uint16_t temperatur[3] = {0};
+  uint16_t spannungen[12] = {0};
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -128,19 +129,26 @@ int main(void)
 
     uartTransmit("\n", 1);
 #define TEST_LTC6811	"Starte Batteriemanagement-System\n"
-uartTransmit(TEST_LTC6811, sizeof(TEST_LTC6811));
+    uartTransmit(TEST_LTC6811, sizeof(TEST_LTC6811));
 
 	if ((temp = ltc6811_check()) != 0)									// LTC6804 Selftest durchfuehren
 	{
 #define LTC6811_FAILED	"Selbsttest LTC6811 fehlerhaft\n"
-uartTransmit(LTC6811_FAILED, sizeof(LTC6811_FAILED));					// Ausgabe bei Fehlerhaftem Selbsttest
+		uartTransmit(LTC6811_FAILED, sizeof(LTC6811_FAILED));			// Ausgabe bei Fehlerhaftem Selbsttest
 		leuchten_out.RedLed = 1;										// Variable setzen
 	    HAL_GPIO_WritePin(RED_LED_GPIO_Port, RED_LED_Pin, leuchten_out.RedLed);// Ausgabe auf LEDs
 
 	    uartTransmitNumber(temp, 10);
+		uartTransmit("\n", 1);
 
 		//return 0;														// Programm abbrechen
 	}
+	else
+	{
+#define LTC6811_PASSED	"Selbsttest LTC6811 erfolgreich\n"
+		uartTransmit(LTC6811_PASSED, sizeof(LTC6811_PASSED));			// Ausgabe bei Erfolgreichem Selbsttest
+	}
+
 	ltc6811_read(RDCFG, &data[0]);
 
 	// Alle Register zurücksetzen
@@ -160,13 +168,35 @@ uartTransmit(LTC6811_FAILED, sizeof(LTC6811_FAILED));					// Ausgabe bei Fehlerh
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	    HAL_Delay(500);
-		ltc6811(ADCVC | MD2714 | CELLALL);
+		ltc6811(ADCVC | MD73 | CELLALL);
+		HAL_Delay(300);
+
 		ltc6811_read(RDCVA, &data[0]);
 		ltc6811_read(RDCVB, &data[6]);
 		ltc6811_read(RDCVC, &data[12]);
 		ltc6811_read(RDCVD, &data[18]);
 		ltc6811_read(RDCFG, &data[26]);
+
+		for (uint8_t i = 0; i < 12; i++)
+		{
+			spannungen[i] = ((data[i*2+1]<<8) | data[i*2]);
+		}
+
+		for (uint8_t i = 0; i < 12; i++)
+		{
+			uartTransmitNumber(spannungen[i], 10);
+			uartTransmit(";", 1);
+		}
+
+		tmp = 0;
+		for (uint8_t i = 0; i < 12; i++)
+		{
+			tmp += spannungen[i];
+		}
+		tmp /= 12;
+		uartTransmitNumber(tmp, 10);
+
+		uartTransmit("\n", 1);
   }
   /* USER CODE END 3 */
 }
@@ -238,7 +268,7 @@ void SystemClock_Config(void)
   */
 void Error_Handler(void)
 {
-	/* USER CODE BEGIN Error_Handler_Debug */
+  /* USER CODE BEGIN Error_Handler_Debug */
 	/* User can add his own implementation to report the HAL error return state */
 	__disable_irq();														// Interrupts deaktivieren
 
@@ -257,7 +287,7 @@ void Error_Handler(void)
 #endif
 	// Beginne Endlosschleife nachdem Fehler aufgetreten ist
 	while (1);
-	/* USER CODE END Error_Handler_Debug */
+  /* USER CODE END Error_Handler_Debug */
 }
 
 #ifdef  USE_FULL_ASSERT
