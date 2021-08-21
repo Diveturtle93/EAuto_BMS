@@ -16,7 +16,14 @@
 
 // Festlegen der Fehlercodes
 //----------------------------------------------------------------------
-#define ERROR_NONE						0
+#define ERROR_NONE								0
+#define ERROR_LTC6811_THERMAL					1
+#define ERROR_LTC6811_TEST1						2
+#define ERROR_LTC6811_TEST2						3
+#define ERROR_LTC6811_DIAGN						4
+#define ERROR_LTC6811_OPENWIRE					5
+#define ERROR_LTC6811_OVERVOLT					6
+#define ERROR_LTC6811_UNDERVOLT					7
 //----------------------------------------------------------------------
 
 // Funktionen definieren

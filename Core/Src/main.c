@@ -151,7 +151,7 @@ int main(void)
 
 	ltc6811_read(RDCFG, &data[0]);
 
-	// Alle Register zurücksetzen
+	// Alle Register zuruecksetzen
 	ltc6811(CLRCELL);
 	ltc6811(CLRSTAT);
 	ltc6811(CLRAUX);

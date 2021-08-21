@@ -10,9 +10,6 @@
 
 // Einfuegen der standard Include-Dateien
 //----------------------------------------------------------------------
-#include "inttypes.h"
-#include "stdlib.h"
-#include "string.h"
 #include "stdbool.h"
 //----------------------------------------------------------------------
 

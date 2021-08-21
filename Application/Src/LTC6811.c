@@ -8,17 +8,17 @@
 // Projekt	:	Batteriemanagement-System
 //----------------------------------------------------------------------
 
-// Einfügen der standard Include-Dateien
+// Einfuegen der standard Include-Dateien
 //----------------------------------------------------------------------
 
 //----------------------------------------------------------------------
 
-// Einfügen der STM Include-Dateien
+// Einfuegen der STM Include-Dateien
 //----------------------------------------------------------------------
 #include "spi.h"
 //----------------------------------------------------------------------
 
-// Einfügen der eigenen Include Dateien
+// Einfuegen der eigenen Include Dateien
 //----------------------------------------------------------------------
 #include "ltc6811.h"
 //----------------------------------------------------------------------
@@ -66,11 +66,15 @@ const uint16_t pec15Table[256] = {
 //----------------------------------------------------------------------
 void wakeup_ltc6811(void)
 {
-	for(uint8_t i=0; i<LTC6811_DEVICES; i++)
+	for(uint8_t i=0; i<LTC6811_DEVICES; i++)								// Wiederholen fuer Anzahl Slaves
 	{
-		ISOCS_ENABLE();
-		HAL_Delay(2);														//isoSPI braucht Zeit bis ready
-		ISOCS_DISABLE();
+		// ISOCS einschalten
+		ISOCS_ENABLE();														// Chip-Select einschalten
+
+		HAL_Delay(2);														// isoSPI braucht Zeit bis ready
+
+		// ISOCS ausschalten
+		ISOCS_DISABLE();													// Chip-Select ausschalten
 	}
 }
 //----------------------------------------------------------------------
@@ -254,92 +258,42 @@ void init_crc(void)
 }
 //----------------------------------------------------------------------*/
 
-
 // LTC6811 Status auslesen und auswerten
 //----------------------------------------------------------------------
 uint8_t ltc6811_check(void)
 {
+	// Variablen definieren
 	uint8_t tmp_data[64] = {0}, result = 0;
-	uint16_t temp = 0;
 
 	// Verzoegerungszeit zum wecken des LTC6811
 	wakeup_ltc6811();
 
-	// Commands für Status senden  Test 1
-	ltc6811(CVST | MD73 | ST1);
-	HAL_Delay(300);
-	ltc6811(AXST | MD73 | ST1);
-	HAL_Delay(300);
-	ltc6811(STATST | MD73 | ST1);
-	HAL_Delay(300);
+	// Alle Register zuruecksetzen
+	ltc6811(CLRCELL);														// Register Zellspannung auf default setzen
+	ltc6811(CLRAUX);														// Register GPIO-Spannung auf default setzen
+	ltc6811(CLRSTAT);														// Register Interne Messungen auf default setzen
 
-	// Verzoegerungszeit zum wecken des LTC6811
-	wakeup_ltc6811();
-
-	// Register auslesen Test 1
-	// Spannungsregister
-	ltc6811_read(RDCVA, &tmp_data[0]);
-	ltc6811_read(RDCVB, &tmp_data[8]);
-	ltc6811_read(RDCVC, &tmp_data[16]);
-	ltc6811_read(RDCVD, &tmp_data[24]);
-
-	// GPIO-Register
-	ltc6811_read(RDAUXA, &tmp_data[32]);
-	ltc6811_read(RDAUXB, &tmp_data[40]);
-
-	// Statusregister
-	ltc6811_read(RDSTATA, &tmp_data[48]);
-	ltc6811_read(RDSTATB, &tmp_data[56]);
-
-	// Daten pruefen Test 1
-	for (uint8_t i=0; i<12; i++)
-	{
-		temp = ((tmp_data[i*2+1]<<8)|tmp_data[i*2]);
-		if (temp != 0x9555)
-			result = 1;
-	}
-
-	// Commands für Status senden Test 2
-	ltc6811(CVST | MD73 | ST2);
-	HAL_Delay(300);
-	ltc6811(AXST | MD73 | ST2);
-	HAL_Delay(300);
-	ltc6811(STATST | MD73 | ST2);
-	HAL_Delay(300);
-
-	// Register auslesen Test 2
-	// Spannungsregister
-	ltc6811_read(RDCVA, &tmp_data[0]);
-	ltc6811_read(RDCVB, &tmp_data[8]);
-	ltc6811_read(RDCVC, &tmp_data[16]);
-	ltc6811_read(RDCVD, &tmp_data[24]);
-
-	// GPIO-Register
-	ltc6811_read(RDAUXA, &tmp_data[32]);
-	ltc6811_read(RDAUXB, &tmp_data[40]);
-
-	// Statusregister
-	ltc6811_read(RDSTATA, &tmp_data[48]);
-	ltc6811_read(RDSTATB, &tmp_data[56]);
-
-	// Daten pruefen Test 2
-	for (uint8_t i=0; i<12; i++)
-	{
-		temp = ((tmp_data[i*2+1]<<8)|tmp_data[i*2]);
-		if (temp != 0x6AAA)
-			result |= 2;
-	}
-	wakeup_ltc6811();
-	ltc6811(DIAGN);
-	wakeup_ltc6811();
+	// Lese Register Status B aus
 	ltc6811_read(RDSTATB, &tmp_data[0]);
 
-	if (tmp_data[5] & (1<<1))
+	if (tmp_data[5] & !(1<<0))
 	{
-		result |= 4;
+		result |= (1<<0);													// Thermal Shutdown nicht Ok
 	}
 
-	/* // Command für OpenWire PUP = 1
+	// Selbsttest 1
+	if (ltc6811_test1() == 1)
+		result |= (1<<1);													// Selbsttest 1 nicht bestanden
+
+	// Selbsttest 2
+	if (ltc6811_test2() == 1)
+		result |= (1<<2);													// Selbsttest 2 nicht bestanden
+
+	// Selbsttest 1
+	if (ltc6811_diagn() == 1)
+		result |= (1<<3);													// Multiplexertest nicht bestanden
+
+	/* // Command fuer OpenWire PUP = 1
 	ltc6811(ADOW | MD73 | PUP);
 
 	// Register auslesen OpenWire
@@ -358,5 +312,156 @@ uint8_t ltc6811_check(void)
 	ltc6811_read(RDCVD, &tmp_data[42]);*/
 
 	return result;										// return result
+}
+//----------------------------------------------------------------------
+
+// Selbsttest 1 Digitale Filter (Datasheet ltc6811 Page 28)
+//----------------------------------------------------------------------
+uint8_t ltc6811_test1(void)
+{
+	// Variablen definieren
+	uint8_t tmp_data[64] = {0};
+	uint16_t tmp = 0;
+
+	// Commands für Status senden  Test 1
+	ltc6811(CVST | MD73 | ST1);												// Digitalfilter Check Zellspannungen
+	HAL_Delay(300);
+	ltc6811(AXST | MD73 | ST1);												// Digitalfilter Check GPIO-Spannungen
+	HAL_Delay(300);
+	ltc6811(STATST | MD73 | ST1);											// Digitalfilter Check Interne Messungen
+	HAL_Delay(300);
+
+	// Register auslesen Test 1
+	// Spannungsregister
+	ltc6811_read(RDCVA, &tmp_data[0]);										// Lese Register CVA zurueck
+	ltc6811_read(RDCVB, &tmp_data[8]);										// Lese Register CVB zurueck
+	ltc6811_read(RDCVC, &tmp_data[16]);										// Lese Register CVC zurueck
+	ltc6811_read(RDCVD, &tmp_data[24]);										// Lese Register CVD zurueck
+
+	// GPIO-Register
+	ltc6811_read(RDAUXA, &tmp_data[32]);									// Lese Register AUXA zurueck
+	ltc6811_read(RDAUXB, &tmp_data[40]);									// Lese Register AUXB zurueck
+	// Statusregister
+	ltc6811_read(RDSTATA, &tmp_data[48]);									// Lese Register STATA zurueck
+	ltc6811_read(RDSTATB, &tmp_data[56]);									// Lese Register STATB zurueck
+
+	// Daten pruefen Test 1
+	for (uint8_t i=0; i<12; i++)
+	{
+		switch (i)
+		{
+			case 0:
+			case 1:
+			case 2:
+				tmp = ((tmp_data[i*2+1]<<8)|tmp_data[i*2]);					// Register CVA umwandeln
+				break;
+			case 3:
+			case 4:
+			case 5:
+				tmp = ((tmp_data[i*2+3]<<8)|tmp_data[i*2+2]);				// Register CVB umwandeln
+				break;
+			case 6:
+			case 7:
+			case 8:
+				tmp = ((tmp_data[(i+2)*2+1]<<8)|tmp_data[(i+2)*2]);			// Register CVC umwandeln
+				break;
+			case 9:
+			case 10:
+			case 11:
+				tmp = ((tmp_data[(i+2)*2+3]<<8)|tmp_data[(i+2)*2+2]);		// Register CVD umwandeln
+				break;
+			default:
+				break;
+		}
+		if (tmp != 0x9555)
+			return 1;														// Selbsttest 1 nicht OK
+	}
+
+	return 0;																// Selbsttest 1 OK
+}
+//----------------------------------------------------------------------
+
+// Selbsttest 2 Digitale Filter (Datasheet ltc6811 Page 28)
+//----------------------------------------------------------------------
+uint8_t ltc6811_test2(void)
+{
+	// Variablen definieren
+	uint8_t tmp_data[64] = {0};
+	uint16_t tmp = 0;
+
+	// Commands für Status senden Test 2
+	ltc6811(CVST | MD73 | ST1);												// Digitalfilter Check Zellspannungen
+	HAL_Delay(300);
+	ltc6811(AXST | MD73 | ST1);												// Digitalfilter Check GPIO-Spannungen
+	HAL_Delay(300);
+	ltc6811(STATST | MD73 | ST1);											// Digitalfilter Check Interne Messungen
+	HAL_Delay(300);
+
+	// Register auslesen Test 2
+	// Spannungsregister
+	ltc6811_read(RDCVA, &tmp_data[0]);										// Lese Register CVA zurueck
+	ltc6811_read(RDCVB, &tmp_data[8]);										// Lese Register CVB zurueck
+	ltc6811_read(RDCVC, &tmp_data[16]);										// Lese Register CVC zurueck
+	ltc6811_read(RDCVD, &tmp_data[24]);										// Lese Register CVD zurueck
+
+	// GPIO-Register
+	ltc6811_read(RDAUXA, &tmp_data[32]);									// Lese Register AUXA zurueck
+	ltc6811_read(RDAUXB, &tmp_data[40]);									// Lese Register AUXB zurueck
+	// Statusregister
+	ltc6811_read(RDSTATA, &tmp_data[48]);									// Lese Register STATA zurueck
+	ltc6811_read(RDSTATB, &tmp_data[56]);									// Lese Register STATB zurueck
+
+	// Daten pruefen Test 2
+	for (uint8_t i=0; i<12; i++)
+	{
+		switch (i)
+		{
+			case 0:
+			case 1:
+			case 2:
+				tmp = ((tmp_data[i*2+1]<<8)|tmp_data[i*2]);					// Register CVA umwandeln
+				break;
+			case 3:
+			case 4:
+			case 5:
+				tmp = ((tmp_data[i*2+3]<<8)|tmp_data[i*2+2]);				// Register CVB umwandeln
+				break;
+			case 6:
+			case 7:
+			case 8:
+				tmp = ((tmp_data[(i+2)*2+1]<<8)|tmp_data[(i+2)*2]);			// Register CVC umwandeln
+				break;
+			case 9:
+			case 10:
+			case 11:
+				tmp = ((tmp_data[(i+2)*2+3]<<8)|tmp_data[(i+2)*2+2]);		// Register CVD umwandeln
+				break;
+			default:
+				break;
+		}
+		if (tmp != 0x6AAA)
+			return 1;														// Selbsttest 2 nicht OK
+	}
+
+	return 0;																// Selbsttest 2 OK
+}
+//----------------------------------------------------------------------
+
+// Selbstdiagnose Multiplexer (Datasheet ltc6811 Page 27)
+//----------------------------------------------------------------------
+uint8_t ltc6811_diagn(void)
+{
+	// Variablen definieren
+	uint8_t tmp_data[8] = {0};
+
+	wakeup_ltc6811();
+	ltc6811(DIAGN);															// Multiplexer Check
+	wakeup_ltc6811();
+	ltc6811_read(RDSTATB, &tmp_data[0]);									// Lese Status B Register fuer Multiplexer Check
+
+	if (tmp_data[5] & (1<<1))
+		return 1;															// Multiplexertest nicht OK
+	else
+		return 0;															// Multiplexertest OK
 }
 //----------------------------------------------------------------------
