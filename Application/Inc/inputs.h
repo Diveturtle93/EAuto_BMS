@@ -40,6 +40,9 @@ union sdc_in_tag {
 		uint8_t MotorSDC : 1;					// 2
 		uint8_t BTB_SDC : 1;					// 3
 		uint8_t PrechargeIn : 1;				// 4
+		uint8_t  : 1;							// 5
+		uint8_t  : 1;							// 6
+		uint8_t  : 1;							// 7
 	};
 
 	uint8_t sdcinput;							// 1 Byte

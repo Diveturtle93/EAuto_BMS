@@ -211,9 +211,10 @@ void collectGitcounts(void)
 //----------------------------------------------------------------------
 void collectSystemInfo(void)
 {
-	#define STRING_HARDWARE_TITEL "\n\t --Hardware--\n"
-	#define STRING_MIDDLEWARE_TITEL "\n\t --Middleware--\n"
-	#define STRING_SOFTWARE_TITEL "\n\t --Software--\n"
+	#define STRING_HARDWARE_TITEL			"\n\t --Hardware--\n"
+	#define STRING_MIDDLEWARE_TITEL			"\n\t --Middleware--\n"
+	#define STRING_SOFTWARE_TITEL			"\n\t --Software--\n"
+	#define STRING_GIT_COUNTS				"\n\t --Git counts--\n"
 
 	uartTransmit(STRING_HARDWARE_TITEL, sizeof(STRING_HARDWARE_TITEL));
 	collectHardwareInfo();													// Sammelt Hardware Informationen und gibt diese ueber Uart aus

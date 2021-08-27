@@ -30,6 +30,8 @@
 /* USER CODE BEGIN Includes */
 #include "BasicUart.h"
 #include "SystemInfo.h"
+#include "inputs.h"
+#include "outputs.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -100,6 +102,40 @@ int main(void)
   MX_SPI1_Init();
   MX_CAN3_Init();
   /* USER CODE BEGIN 2 */
+
+	/* Schreibe Resetquelle auf die Konsole */
+#ifdef DEBUG
+	printResetSource(readResetSource());
+
+	/* Teste serielle Schnittstelle*/
+	#define TEST_STRING_UART		"\nUART2 Transmitting in polling mode, Hello Diveturtle93!\n"
+	uartTransmit(TEST_STRING_UART, sizeof(TEST_STRING_UART));
+
+	// Sammel Systeminformationen
+	collectSystemInfo();
+#endif
+
+	// Leds Testen
+	testPCB_Leds();
+
+	// Lese alle Eingaenge
+	readall_inputs();
+
+	if (!(sdc_in.sdcinput && 0b00001110))
+	{
+		#define SDC_STRING_ERROR			"\nSDC ist nicht geschlossen"
+		uartTransmit(SDC_STRING_ERROR, sizeof(SDC_STRING_ERROR));
+	}
+	else
+	{
+		system_out.AmsOK = 1;
+		HAL_GPIO_WritePin(AMS_OK_GPIO_Port, AMS_OK_Pin, system_out.AmsOK);
+		leuchten_out.GreenLed = 1;
+		HAL_GPIO_WritePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin, leuchten_out.GreenLed);
+
+		#define SDC_STRING_OK				"\nSDC ist geschlossen"
+		uartTransmit(SDC_STRING_OK, sizeof(SDC_STRING_OK));
+	}
 
   /* USER CODE END 2 */
 

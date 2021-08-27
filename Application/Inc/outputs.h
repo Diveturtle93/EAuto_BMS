@@ -93,6 +93,7 @@ union komfort_out_tag {
 void init_outputs(void);													// Initialisiere Ausgaenge
 void writeall_outputs(void);												// Schreibe alle Ausgaenge
 void writeled_outputs(void);												// Schreibe alle LED-Ausgaenge
+void testPCB_Leds(void);													// Teste PCB LEDs fuer je 1s
 //----------------------------------------------------------------------
 
 #endif /* INC_OUTPUTS_H_ */
