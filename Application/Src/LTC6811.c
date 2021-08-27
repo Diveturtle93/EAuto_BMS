@@ -8,17 +8,17 @@
 // Projekt	:	Batteriemanagement-System
 //----------------------------------------------------------------------
 
-// Einfügen der standard Include-Dateien
+// Einfuegen der standard Include-Dateien
 //----------------------------------------------------------------------
 
 //----------------------------------------------------------------------
 
-// Einfügen der STM Include-Dateien
+// Einfuegen der STM Include-Dateien
 //----------------------------------------------------------------------
 #include "spi.h"
 //----------------------------------------------------------------------
 
-// Einfügen der eigenen Include Dateien
+// Einfuegen der eigenen Include Dateien
 //----------------------------------------------------------------------
 #include "ltc6811.h"
 #include "SPI_resource.h"
@@ -69,9 +69,9 @@ void wakeup_ltc6811(void)
 {
 	for(uint8_t i=0; i<LTC6811_DEVICES; i++)
 	{
-		CS_ENABLE();
+		LTC6811_CS_ENABLE();
 		HAL_Delay(2);														//isoSPI braucht Zeit bis ready
-		CS_DISABLE();
+		LTC6811_CS_DISABLE();
 		HAL_Delay(2);
 	}
 }
@@ -92,7 +92,7 @@ void ltc6811(uint16_t command)
 	cmd[3] = (pec & 0xFE);
 
 	// Command übertragen
-	CS_ENABLE();
+	LTC6811_CS_ENABLE();
 	HAL_SPI_Transmit(&hspi1, cmd, 4, HAL_MAX_DELAY);
 
 	// Wenn Command = STCOMM ist dann müssen noch 72 Takte übertragen werden
@@ -106,7 +106,7 @@ void ltc6811(uint16_t command)
 		}
 	}
 	
-	CS_DISABLE();
+	LTC6811_CS_DISABLE();
 	// Ende der Übertragung
 }
 //----------------------------------------------------------------------
@@ -122,7 +122,7 @@ void ltc6811_write(uint16_t command, uint8_t* data)
 	pec_d = peclookup(6, data);
 	
 	// Command übertragen
-	CS_ENABLE();
+	LTC6811_CS_ENABLE();
 	
 	// Command fuer zu beschreibendes Register senden
 	spi_transmit((command>>8) & 0x07);
@@ -138,7 +138,7 @@ void ltc6811_write(uint16_t command, uint8_t* data)
 	spi_transmit((pec_d>>8) & 0xFF);
 	spi_transmit(pec_d & 0xFE);
 	
-	CS_DISABLE();
+	LTC6811_CS_DISABLE();
 	// Ende der Übertragung
 }
 //----------------------------------------------------------------------
@@ -152,7 +152,7 @@ void ltc6811_read(uint16_t command, uint8_t* data)
 	pec = peccommand(command);
 	
 	// Command übertragen
-	CS_ENABLE();
+	LTC6811_CS_ENABLE();
 	
 	// Command fuer zu lesendes Register senden
 	spi_transmit((command>>8) & 0x07);
@@ -167,7 +167,7 @@ void ltc6811_read(uint16_t command, uint8_t* data)
 		data[i] = spi_transmit(0xFF);
 	}
 	
-	CS_DISABLE();
+	LTC6811_CS_DISABLE();
 	// Ende der Übertragung
 }
 //----------------------------------------------------------------------

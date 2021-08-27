@@ -5,6 +5,7 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
+../Application/Src/AD8403.c \
 ../Application/Src/BasicUart.c \
 ../Application/Src/LTC1380.c \
 ../Application/Src/LTC6811.c \
@@ -15,6 +16,7 @@ C_SRCS += \
 ../Application/Src/outputs.c 
 
 OBJS += \
+./Application/Src/AD8403.o \
 ./Application/Src/BasicUart.o \
 ./Application/Src/LTC1380.o \
 ./Application/Src/LTC6811.o \
@@ -25,6 +27,7 @@ OBJS += \
 ./Application/Src/outputs.o 
 
 C_DEPS += \
+./Application/Src/AD8403.d \
 ./Application/Src/BasicUart.d \
 ./Application/Src/LTC1380.d \
 ./Application/Src/LTC6811.d \
