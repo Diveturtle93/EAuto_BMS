@@ -25,6 +25,7 @@
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
+#include <math.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -32,6 +33,7 @@
 #include "SystemInfo.h"
 #include "inputs.h"
 #include "outputs.h"
+#include "..\..\Application\Src\my_math.c"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -51,6 +53,8 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+static volatile uint16_t rising = 0;
+static volatile uint16_t falling = 0;
 volatile uint8_t millisekunden_flag_1 = 0;
 /* USER CODE END PV */
 
@@ -82,7 +86,7 @@ int main(void)
 
   /* USER CODE BEGIN Init */
 	// Definiere Variablen fuer Main-Funktion
-	uint16_t count = 0;
+	uint16_t dutyCycle, timerPeriod, frequency, count = 0;
 
   /* USER CODE END Init */
 
@@ -124,7 +128,11 @@ int main(void)
   	// Lese alle Eingaenge
   	readall_inputs();
 
+	timerPeriod = (HAL_RCC_GetPCLK2Freq() / htim1.Init.Prescaler);
   	// Start timer
+	if (HAL_TIM_Base_Start_IT(&htim1) != HAL_OK);
+	if (HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_1) != HAL_OK);
+	if (HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_2) != HAL_OK);
   	HAL_TIM_Base_Start(&htim6);
 
   /* USER CODE END 2 */
@@ -146,7 +154,20 @@ int main(void)
 		// Task wird alle 50 Millisekunden ausgefuehrt
 		if ((count % 50) == 0)
 		{
+			if (rising != 0 && falling != 0)
+			{
+				int diff = getDifference(rising, falling);
+				dutyCycle = round((float)(diff * 100) / (float)rising);	// (width / period ) * 100
+				frequency = timerPeriod / rising;						// timer restarts after rising edge so time between two rising edge is whatever is measured
+			}
+			else
+			{
+				dutyCycle = 0;
+				frequency = 0;
+			}
 
+			uartTransmitNumber(dutyCycle, 10);
+			uartTransmitNumber(frequency, 10);
 		}
   }
   /* USER CODE END 3 */
@@ -217,6 +238,19 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	if (htim == &htim6)
 	{
 		millisekunden_flag_1 = 1;
+	}
+
+	// Timer IMD
+	if (htim == &htim1)
+	{
+		if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_1)
+		{
+			rising = calculateMovingAverage(rising, HAL_TIM_ReadCapturedValue(&htim1, TIM_CHANNEL_1), 64);
+		}
+		else if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_2)
+		{
+			falling = calculateMovingAverage(falling, HAL_TIM_ReadCapturedValue(&htim1, TIM_CHANNEL_2), 64);
+		}
 	}
 }
 /* USER CODE END 4 */
