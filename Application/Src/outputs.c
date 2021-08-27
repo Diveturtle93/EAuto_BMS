@@ -83,17 +83,37 @@ void writeled_outputs(void)
 void testPCB_Leds(void)
 {
 	// Leds Testen
-    HAL_GPIO_WritePin(BLUE_LED_GPIO_Port, BLUE_LED_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(BLUE_LED_GPIO_Port, BLUE_LED_Pin, GPIO_PIN_SET);								// Blaue LED Platine setzen
     HAL_Delay(1000);
-    HAL_GPIO_WritePin(BLUE_LED_GPIO_Port, BLUE_LED_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(BLUE_LED_GPIO_Port, BLUE_LED_Pin, GPIO_PIN_RESET);							// Blaue LED Platine zuruecksetzen
     HAL_Delay(500);
-    HAL_GPIO_WritePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin, GPIO_PIN_SET);							// Gruene LED Platine setzen
     HAL_Delay(1000);
-    HAL_GPIO_WritePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin, GPIO_PIN_RESET);							// Gruene LED Platine zuruecksetzen
     HAL_Delay(500);
-    HAL_GPIO_WritePin(RED_LED_GPIO_Port, RED_LED_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(RED_LED_GPIO_Port, RED_LED_Pin, GPIO_PIN_SET);								// Rote LED Platine setzen
     HAL_Delay(1000);
-    HAL_GPIO_WritePin(RED_LED_GPIO_Port, RED_LED_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(RED_LED_GPIO_Port, RED_LED_Pin, GPIO_PIN_RESET);								// Rote LED Platine zuruecksetzen
     HAL_Delay(500);
+}
+//----------------------------------------------------------------------
+
+// Teste alle externen LEDs
+//----------------------------------------------------------------------
+void testLeds(void)
+{
+	// Leds Testen
+	HAL_GPIO_WritePin(AKKU_LED_GPIO_Port, AKKU_LED_Pin, GPIO_PIN_SET);								// Akku LED Kombiinstrument setzen
+	HAL_Delay(1000);
+	HAL_GPIO_WritePin(AKKU_LED_GPIO_Port, AKKU_LED_Pin, GPIO_PIN_RESET);							// Akku LED Kombiinstrument zuruecksetzen
+	HAL_Delay(500);
+	HAL_GPIO_WritePin(INLET_RED_GPIO_Port, INLET_RED_Pin, GPIO_PIN_SET);							// Red Inlet LED setzen
+	HAL_Delay(1000);
+	HAL_GPIO_WritePin(INLET_RED_GPIO_Port, INLET_RED_Pin, GPIO_PIN_RESET);							// Red Inlet LED zuruecksetzen
+	HAL_Delay(500);
+	HAL_GPIO_WritePin(INLET_GREEN_GPIO_Port, INLET_GREEN_Pin, GPIO_PIN_SET);						// Green Inlet LED setzen
+	HAL_Delay(1000);
+	HAL_GPIO_WritePin(INLET_GREEN_GPIO_Port, INLET_GREEN_Pin, GPIO_PIN_RESET);						// Green Inlet LED zuruecksetzen
+	HAL_Delay(500);
 }
 //----------------------------------------------------------------------

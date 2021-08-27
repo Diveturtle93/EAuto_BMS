@@ -117,22 +117,62 @@ int main(void)
 
 	// Leds Testen
 	testPCB_Leds();
+	testLeds();
 
 	// Lese alle Eingaenge
 	readall_inputs();
 
-	if (!(sdc_in.sdcinput && 0b00001110))
+	if (!(sdc_in.sdcinput && 0b00001111))										// SDC OK; Motor, BTB, IMD und HVIL OK
 	{
 		#define SDC_STRING_ERROR			"\nSDC ist nicht geschlossen"
 		uartTransmit(SDC_STRING_ERROR, sizeof(SDC_STRING_ERROR));
+
+		// LEDs setzen bei SDC Fehler
+		leuchten_out.GreenLed = 0;
+		leuchten_out.RedLed = 1;
+		leuchten_out.AkkuLed = 0;
+		HAL_GPIO_WritePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin, leuchten_out.GreenLed);
+		HAL_GPIO_WritePin(RED_LED_GPIO_Port, RED_LED_Pin, leuchten_out.RedLed);
+		HAL_GPIO_WritePin(AKKU_LED_GPIO_Port, AKKU_LED_Pin, leuchten_out.AkkuLed);
+
+		// Ausgabe welcher Fehler vorhanden
+		// Motorsteuergeraet Fehler
+		if(!(sdc_in.MotorSDC == 1))
+		{
+			#define SDC_STRING_MOTOR		"\nSDC Motor hat einen Fehler und ist offen"
+			uartTransmit(SDC_STRING_MOTOR, sizeof(SDC_STRING_MOTOR));
+		}
+
+		// BamoCar Fehler
+		if (!(sdc_in.BTB_SDC == 1))
+		{
+			#define SDC_STRING_BTB			"\nSDC BTB hat einen Fehler und ist offen"
+			uartTransmit(SDC_STRING_BTB, sizeof(SDC_STRING_BTB));
+		}
+
+		// HVIL Fehler
+		if (!(sdc_in.HVIL == 1))
+		{
+			#define SDC_STRING_HVIL			"\nSDC HVIL ist nicht geschlossen"
+			uartTransmit(SDC_STRING_HVIL, sizeof(SDC_STRING_HVIL));
+		}
+
+		// IMD Fehler
+		if (!(sdc_in.IMD_OK_IN == 1))
+		{
+			#define SDC_STRING_IMD			"\nSDC IMD hat einen Fehler"
+			uartTransmit(SDC_STRING_IMD, sizeof(SDC_STRING_IMD));
+		}
 	}
 	else
 	{
+		// Keine Fehler, LEDs fuer OK setzen
 		system_out.AmsOK = 1;
 		HAL_GPIO_WritePin(AMS_OK_GPIO_Port, AMS_OK_Pin, system_out.AmsOK);
 		leuchten_out.GreenLed = 1;
 		HAL_GPIO_WritePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin, leuchten_out.GreenLed);
 
+		// Ausgabe SDC geschlossen
 		#define SDC_STRING_OK				"\nSDC ist geschlossen"
 		uartTransmit(SDC_STRING_OK, sizeof(SDC_STRING_OK));
 	}

@@ -75,7 +75,9 @@ union komfort_in_tag {
 
 // Funktionen definieren
 //----------------------------------------------------------------------
-void readall_inputs(void);
+void readall_inputs(void);													// Lese alle Eingaenge
+void read_sdc(void);														// Lese alle Pins vom SDC
+//void read_
 //----------------------------------------------------------------------
 
 #endif /* INC_INPUTS_H_ */
