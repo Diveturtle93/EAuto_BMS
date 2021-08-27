@@ -23,7 +23,6 @@
 #include "ltc6811.h"
 //----------------------------------------------------------------------
 
-
 // Pec Lookuptabelle definieren
 //----------------------------------------------------------------------
 const uint16_t pec15Table[256] = {
@@ -84,8 +83,8 @@ void wakeup_ltc6811(void)
 void ltc6811(uint16_t command)
 {
 	// PEC berechnen, Anhand Command
-	uint16_t pec;
-	uint8_t cmd[4];
+	uint16_t pec;															// pec = Zwischenspeicher 16-Bit Command
+	uint8_t cmd[4];															// Zwischenspeicher Command + Pec CRC
 	pec = peccommand(command);
 	
 	// Verzoegerungszeit zum wecken des LTC6811
@@ -126,8 +125,8 @@ void ltc6811(uint16_t command)
 void ltc6811_write(uint16_t command, uint8_t* data)
 {
 	// PEC berechnen, fuer Data Funktion nur bei einem Device gegeben
-	uint16_t pec_c, pec_d;
-	uint8_t cmd[4];
+	uint16_t pec_c, pec_d;													// pec_c = Zwischenspeicher 16-Bit Command, pec_d = Zwischenspeicher 16-Bit Data
+	uint8_t cmd[4];															// Zwischenspeicher Command + Pec CRC
 	pec_c = peccommand(command);
 	pec_d = peclookup(6, data);
 	
@@ -149,8 +148,11 @@ void ltc6811_write(uint16_t command, uint8_t* data)
 	// Data senden
 	for (uint8_t i = 0; i < 6; i++)
 	{
+		// Sende Daten
 		HAL_SPI_Transmit(&hspi4, (uint8_t*) &data[i], 1, 100);
 	}
+
+	// Sende Pec fuer Daten
 	HAL_SPI_Transmit(&hspi4, (uint8_t*) ((pec_d >> 8) & 0xFF), 1, 100);
 	HAL_SPI_Transmit(&hspi4, (uint8_t*) (pec_d & 0xFE), 1, 100);
 	
@@ -162,11 +164,11 @@ void ltc6811_write(uint16_t command, uint8_t* data)
 
 // Broadcast Read Command
 //----------------------------------------------------------------------
-void ltc6811_read(uint16_t command, uint8_t* data)
+uint8_t ltc6811_read(uint16_t command, uint8_t* data)
 {
 	// PEC berechnen, Anhand Command
-	uint16_t pec;
-	uint8_t cmd[4];
+	uint16_t pec;															// pec = Zwischenspeicher 16-Bit Command
+	uint8_t cmd[4];															// Zwischenspeicher Command + Pec CRC
 	pec = peccommand(command);
 	
 	// Verzoegerungszeit zum wecken des LTC6811
@@ -194,6 +196,8 @@ void ltc6811_read(uint16_t command, uint8_t* data)
 	// ISOCS ausschalten
 	ISOCS_DISABLE();
 	// Ende der Uebertragung
+
+	return 0;
 }
 //----------------------------------------------------------------------
 
@@ -201,11 +205,14 @@ void ltc6811_read(uint16_t command, uint8_t* data)
 //----------------------------------------------------------------------
 uint16_t peccommand(uint16_t command)
 {
+	// Variable definieren
 	uint8_t pec[2];															// pec = Zwischenspeicher 16-Bit Command in 2x 8-Bit Bytes
 	
+	// 16 Bit Command in 8 Bit Array uebertragen
 	pec[1] = (command & 0xFF);												// pec[1] = lower Command Byte
 	pec[0] = ((command >> 8) & 0x07);										// pec[0] = upper Command Byte
 	
+	// Pec zurueckgeben
 	return peclookup(2, pec);
 }
 //----------------------------------------------------------------------
@@ -214,6 +221,7 @@ uint16_t peccommand(uint16_t command)
 //----------------------------------------------------------------------
 uint16_t peclookup(uint8_t len,	uint8_t *data)								// len = Anzahl Byte, data = Daten fuer die Pec ausgewaehlt wird
 {
+	// Variable definieren
 	uint16_t remainder, addr;												// remainder = Zwischenspeicher Pec, addr = Zwischenspeicher Addresse
 	remainder = 16;															// Initialisiere reminder mit 16 (0b0000000000010000)
 	
@@ -225,6 +233,7 @@ uint16_t peclookup(uint8_t len,	uint8_t *data)								// len = Anzahl Byte, data
 		remainder = (remainder << 8) ^ pec15Table[addr];					// Pec berechnen
 	}
 	
+	// Pec zurueckgeben
 	return (remainder << 1);												// Der Pec hat eine 0 als LSB, remainder muss um 1 nach links geshiftet werden
 }
 //----------------------------------------------------------------------
@@ -263,7 +272,7 @@ void init_crc(void)
 uint8_t ltc6811_check(void)
 {
 	// Variablen definieren
-	uint8_t tmp_data[64] = {0}, result = 0;
+	uint8_t tmp_data[64] = {0}, error = 0;									// Speicher Registerwerte, Fehlerspeicher
 
 	// Verzoegerungszeit zum wecken des LTC6811
 	wakeup_ltc6811();
@@ -276,60 +285,50 @@ uint8_t ltc6811_check(void)
 	// Lese Register Status B aus
 	ltc6811_read(RDSTATB, &tmp_data[0]);
 
+	// Thermal Shutdown pruefen
 	if (tmp_data[5] & !(1<<0))
 	{
-		result |= (1<<0);													// Thermal Shutdown nicht Ok
+		error |= (1<<0);													// Thermal Shutdown nicht Ok
 	}
 
-	// Selbsttest 1
-	if (ltc6811_test1() == 1)
-		result |= (1<<1);													// Selbsttest 1 nicht bestanden
+	// Selbsttest 1 Digitale Filter
+	if (ltc6811_test(ST1 | MD73) == 1)
+	{
+		error |= (1<<1);													// Selbsttest 1 nicht bestanden
+	}
 
-	// Selbsttest 2
-	if (ltc6811_test2() == 1)
-		result |= (1<<2);													// Selbsttest 2 nicht bestanden
+	// Selbsttest 2 Digitale Filter
+	if (ltc6811_test(ST2 | MD73) == 1)
+	{
+		error |= (1<<2);													// Selbsttest 2 nicht bestanden
+	}
 
-	// Selbsttest 1
+	// Selbsttest Multiplexer
 	if (ltc6811_diagn() == 1)
-		result |= (1<<3);													// Multiplexertest nicht bestanden
+	{
+		error |= (1<<3);													// Multiplexertest nicht bestanden
+	}
 
-	/* // Command fuer OpenWire PUP = 1
-	ltc6811(ADOW | MD73 | PUP);
-
-	// Register auslesen OpenWire
-	ltc6811_read(RDCVA, &tmp_data[0]);
-	ltc6811_read(RDCVB, &tmp_data[6]);
-	ltc6811_read(RDCVC, &tmp_data[12]);
-	ltc6811_read(RDCVD, &tmp_data[18]);
-
-	// Command für OpenWire PUP = 0
-	ltc6811(ADOW | MD73);
-
-	// Register auslesen OpenWire
-	ltc6811_read(RDCVA, &tmp_data[24]);
-	ltc6811_read(RDCVB, &tmp_data[30]);
-	ltc6811_read(RDCVC, &tmp_data[36]);
-	ltc6811_read(RDCVD, &tmp_data[42]);*/
-
-	return result;										// return result
+	// Fehlercode zurueckgeben
+	return error;															// Fehler 0 = alles Ok, Fehler > 0 = Selbsttest fehlerhaft
 }
 //----------------------------------------------------------------------
 
-// Selbsttest 1 Digitale Filter (Datasheet ltc6811 Page 28)
+// Selbsttest Digitale Filter (Datasheet ltc6811 Page 28)
 //----------------------------------------------------------------------
-uint8_t ltc6811_test1(void)
+uint8_t ltc6811_test(uint16_t command)
 {
 	// Variablen definieren
-	uint8_t tmp_data[64] = {0};
-	uint16_t tmp = 0;
+	uint8_t tmp_data[64] = {0};												// Speicher Registerwerte
+	uint16_t tmp = 0, test_pattern = 0;										// Zwischenspeicher, Kontrollvariable Selbsttest
 
-	// Commands für Status senden  Test 1
-	ltc6811(CVST | MD73 | ST1);												// Digitalfilter Check Zellspannungen
-	HAL_Delay(300);
-	ltc6811(AXST | MD73 | ST1);												// Digitalfilter Check GPIO-Spannungen
-	HAL_Delay(300);
-	ltc6811(STATST | MD73 | ST1);											// Digitalfilter Check Interne Messungen
-	HAL_Delay(300);
+	// Commands fuer Status senden  Test 1
+	ltc6811(CVST | command);												// Digitalfilter Check Zellspannungen
+	HAL_Delay(300);															// 300ms zwischen den Selbsttests warten
+	ltc6811(AUXST | command);												// Digitalfilter Check GPIO-Spannungen
+	HAL_Delay(300);															// 300ms zwischen den Selbsttests warten
+	ltc6811(STATST | command);												// Digitalfilter Check Interne Messungen
+	HAL_Delay(300);															// 300ms zwischen den Selbsttests warten
 
 	// Register auslesen Test 1
 	// Spannungsregister
@@ -341,109 +340,137 @@ uint8_t ltc6811_test1(void)
 	// GPIO-Register
 	ltc6811_read(RDAUXA, &tmp_data[32]);									// Lese Register AUXA zurueck
 	ltc6811_read(RDAUXB, &tmp_data[40]);									// Lese Register AUXB zurueck
+
 	// Statusregister
 	ltc6811_read(RDSTATA, &tmp_data[48]);									// Lese Register STATA zurueck
 	ltc6811_read(RDSTATB, &tmp_data[56]);									// Lese Register STATB zurueck
 
-	// Daten pruefen Test 1
-	for (uint8_t i=0; i<12; i++)
+	// Lookup fuer Selbstest digitaler Filter
+	// Kontrollvariable heraussuchen
+	if (command && MD2714)													// Wenn Sampling Frequenz = MD2714
 	{
+		// Wenn ADCOPT gesetzt
+//		if (ADCOPT == 1)
+//		{
+			// Wenn Selbsttest 1 gewaehlt
+			if (command == ST1)
+			{
+				test_pattern = 0x9553;										// Registerwert bei 14kHz
+			}
+			// Wenn Selbsttest 2 gewaehlt
+			else if (command == ST2)
+			{
+				test_pattern = 0x6AAC;										// Registerwert bei 14kHz
+			}
+			// Bei fehlerhaften Einstellungen
+			else
+			{
+				test_pattern = 0;											// Registerwert = 0 damit Fehler ausloest
+			}
+//		}
+//		else																// Wenn ADCOPT nicht gesetzt
+//		{
+			// Wenn Selbsttest 1 gewaehlt
+			if (command == ST1)
+			{
+				test_pattern = 0x9565;										// Registerwert bei 27kHz
+			}
+			// Wenn Selbsttest 2 gewaehlt
+			else if (command == ST2)
+			{
+				test_pattern = 0x6A9A;										// Registerwert bei 27kHz
+			}
+			// Bei fehlerhaften Einstellungen
+			else
+			{
+				test_pattern = 0;											// Registerwert = 0 damit Fehler ausloest
+			}
+//		}
+	}
+	else
+	{
+		// Wenn Selbsttest 1 gewaehlt
+		if (command == ST1)
+		{
+			test_pattern = 0x9555;											// Registerwert bei allen anderen Sampling Frequenzen
+		}
+		// Wenn Selbsttest 2 gewaehlt
+		else if (command == ST2)
+		{
+			test_pattern = 0x6AAA;											// Registerwert bei allen anderen Sampling Frequenzen
+		}
+		// Bei fehlerhaften Einstellungen
+		else
+		{
+			test_pattern = 0;												// Registerwert = 0 damit Fehler ausloest
+		}
+	}
+
+	// Daten pruefen Test 1
+	for (uint8_t i=0; i<22; i++)
+	{
+		// Auswaehlen welches Register im Array steht
 		switch (i)
 		{
+			// Register CVA
 			case 0:
 			case 1:
 			case 2:
 				tmp = ((tmp_data[i*2+1]<<8)|tmp_data[i*2]);					// Register CVA umwandeln
 				break;
+			// Register CVB
 			case 3:
 			case 4:
 			case 5:
 				tmp = ((tmp_data[i*2+3]<<8)|tmp_data[i*2+2]);				// Register CVB umwandeln
 				break;
+			// Register CVC
 			case 6:
 			case 7:
 			case 8:
 				tmp = ((tmp_data[(i+2)*2+1]<<8)|tmp_data[(i+2)*2]);			// Register CVC umwandeln
 				break;
+			// Register CVD
 			case 9:
 			case 10:
 			case 11:
 				tmp = ((tmp_data[(i+2)*2+3]<<8)|tmp_data[(i+2)*2+2]);		// Register CVD umwandeln
 				break;
+			// Register AUXA
+			case 12:
+			case 13:
+			case 14:
+				tmp = ((tmp_data[(i+4)*2+1]<<8)|tmp_data[(i+4)*2+1]);		// Register AUXA umwandeln
+				break;
+			// Register AUXB
+			case 15:
+			case 16:
+			case 17:
+				tmp = ((tmp_data[(i+4)*2+3]<<8)|tmp_data[(i+4)*2+2]);		// Register AUXB umwandeln
+				break;
+			// Register STATA
+			case 18:
+			case 29:
+			case 20:
+				tmp = ((tmp_data[(i+6)*2+3]<<8)|tmp_data[(i+6)*2+2]);		// Register STATA umwandeln
+				break;
+			// Register STATB
+			case 21:
+				tmp = ((tmp_data[(i+6)*2+3]<<8)|tmp_data[(i+6)*2+2]);		// Register STATB umwandeln
+				break;
+			// Kein Register
 			default:
 				break;
 		}
-		if (tmp != 0x9555)
+
+		// Vergleiche Registerwert mit Vorgabewert aus Datenblatt
+		if (tmp != test_pattern)
+		{
 			return 1;														// Selbsttest 1 nicht OK
+		}
 	}
 
 	return 0;																// Selbsttest 1 OK
-}
-//----------------------------------------------------------------------
-
-// Selbsttest 2 Digitale Filter (Datasheet ltc6811 Page 28)
-//----------------------------------------------------------------------
-uint8_t ltc6811_test2(void)
-{
-	// Variablen definieren
-	uint8_t tmp_data[64] = {0};
-	uint16_t tmp = 0;
-
-	// Commands für Status senden Test 2
-	ltc6811(CVST | MD73 | ST1);												// Digitalfilter Check Zellspannungen
-	HAL_Delay(300);
-	ltc6811(AXST | MD73 | ST1);												// Digitalfilter Check GPIO-Spannungen
-	HAL_Delay(300);
-	ltc6811(STATST | MD73 | ST1);											// Digitalfilter Check Interne Messungen
-	HAL_Delay(300);
-
-	// Register auslesen Test 2
-	// Spannungsregister
-	ltc6811_read(RDCVA, &tmp_data[0]);										// Lese Register CVA zurueck
-	ltc6811_read(RDCVB, &tmp_data[8]);										// Lese Register CVB zurueck
-	ltc6811_read(RDCVC, &tmp_data[16]);										// Lese Register CVC zurueck
-	ltc6811_read(RDCVD, &tmp_data[24]);										// Lese Register CVD zurueck
-
-	// GPIO-Register
-	ltc6811_read(RDAUXA, &tmp_data[32]);									// Lese Register AUXA zurueck
-	ltc6811_read(RDAUXB, &tmp_data[40]);									// Lese Register AUXB zurueck
-	// Statusregister
-	ltc6811_read(RDSTATA, &tmp_data[48]);									// Lese Register STATA zurueck
-	ltc6811_read(RDSTATB, &tmp_data[56]);									// Lese Register STATB zurueck
-
-	// Daten pruefen Test 2
-	for (uint8_t i=0; i<12; i++)
-	{
-		switch (i)
-		{
-			case 0:
-			case 1:
-			case 2:
-				tmp = ((tmp_data[i*2+1]<<8)|tmp_data[i*2]);					// Register CVA umwandeln
-				break;
-			case 3:
-			case 4:
-			case 5:
-				tmp = ((tmp_data[i*2+3]<<8)|tmp_data[i*2+2]);				// Register CVB umwandeln
-				break;
-			case 6:
-			case 7:
-			case 8:
-				tmp = ((tmp_data[(i+2)*2+1]<<8)|tmp_data[(i+2)*2]);			// Register CVC umwandeln
-				break;
-			case 9:
-			case 10:
-			case 11:
-				tmp = ((tmp_data[(i+2)*2+3]<<8)|tmp_data[(i+2)*2+2]);		// Register CVD umwandeln
-				break;
-			default:
-				break;
-		}
-		if (tmp != 0x6AAA)
-			return 1;														// Selbsttest 2 nicht OK
-	}
-
-	return 0;																// Selbsttest 2 OK
 }
 //----------------------------------------------------------------------
 
@@ -452,16 +479,132 @@ uint8_t ltc6811_test2(void)
 uint8_t ltc6811_diagn(void)
 {
 	// Variablen definieren
-	uint8_t tmp_data[8] = {0};
+	uint8_t tmp_data[8] = {0};												// Speicher Registerwerte
 
+	// Verzoegerungszeit zum wecken des LTC6811
 	wakeup_ltc6811();
+
+	// Command senden
 	ltc6811(DIAGN);															// Multiplexer Check
+
+	// Verzoegerungszeit zum wecken des LTC6811
 	wakeup_ltc6811();
+
+	// Lese Register
 	ltc6811_read(RDSTATB, &tmp_data[0]);									// Lese Status B Register fuer Multiplexer Check
 
+	// Multiplexer pruefen
 	if (tmp_data[5] & (1<<1))
 		return 1;															// Multiplexertest nicht OK
 	else
 		return 0;															// Multiplexertest OK
 }
 //----------------------------------------------------------------------
+
+// LTC6811 Openwire check
+void LTC6811_openwire(void)
+{
+	// Arrays definieren
+	uint8_t tmp_data[64] = {0};												// Speicher Registerwerte
+	uint16_t cell[1] = {0}, openwire[12] = {0};								// Speicher Zelle, Openwire vergleic Threshold
+
+	// Pullup Current
+	// Verzoegerungszeit zum wecken des LTC6811
+	wakeup_ltc6811();
+
+	// Commands fuer Openwire Test, Durchgang 1
+	ltc6811(ADOW | MD262 | PUP);											// Pullup Current
+	HAL_Delay(300);
+
+	// Verzoegerungszeit zum wecken des LTC6811
+	wakeup_ltc6811();
+
+	// Commands fuer Openwire Test, Durchgang 2
+	ltc6811(ADOW | MD262 | PUP);											// Pullup Current
+	HAL_Delay(300);
+
+	// Register auslesen OpenWire
+	ltc6811_read(RDCVA, &tmp_data[0]);
+	ltc6811_read(RDCVB, &tmp_data[8]);
+	ltc6811_read(RDCVC, &tmp_data[16]);
+	ltc6811_read(RDCVD, &tmp_data[24]);
+
+	// Pulldown Current
+	// Verzoegerungszeit zum wecken des LTC6811
+	wakeup_ltc6811();
+
+	// Commands fuer Openwire Test, Durchgang 1
+	ltc6811(ADOW | MD262);													// Pulldown Current
+	HAL_Delay(300);
+
+	// Verzoegerungszeit zum wecken des LTC6811
+	wakeup_ltc6811();
+
+	// Commands fuer Openwire Test, Durchgang 2
+	ltc6811(ADOW | MD262);													// Pulldown Current
+	HAL_Delay(300);
+
+	// Register auslesen OpenWire
+	ltc6811_read(RDCVA, &tmp_data[32]);
+	ltc6811_read(RDCVB, &tmp_data[40]);
+	ltc6811_read(RDCVC, &tmp_data[48]);
+	ltc6811_read(RDCVD, &tmp_data[56]);
+
+	// Schleife zum umformatieren der Daten
+	for (uint8_t i = 1; i < 12; i++)
+	{
+		// Auswahl welche Leitung
+		switch (i)
+		{
+			// Leitungen Zelle 1/2 bis 3/4
+			case 0:
+			case 1:
+			case 2:
+				openwire[i] = (((tmp_data[i*2+33]<<8) + tmp_data[i*2+32]) - ((tmp_data[i*2]<<8) + tmp_data[i*2]));
+				break;
+			// Leitungen Zelle 4/5 bis 6/7
+			case 3:
+			case 4:
+			case 5:
+				openwire[i] = (((tmp_data[i*2+35]<<8) + tmp_data[i*2+34]) - ((tmp_data[i*2+2]<<8) + tmp_data[i*2+2]));
+				break;
+			// Leitungen Zelle 7/8 bis 9/10
+			case 6:
+			case 7:
+			case 8:
+				openwire[i] = (((tmp_data[i*2+37]<<8) + tmp_data[i*2+36]) - ((tmp_data[i*2]<<8) + tmp_data[i*2]));
+				break;
+			// Leitungen Zelle 10/11 und 11/12
+			case 9:
+			case 10:
+			case 11:
+				openwire[i] = (((tmp_data[i*2+39]<<8) + tmp_data[i*2+38]) - ((tmp_data[i*2]<<8) + tmp_data[i*2]));
+				break;
+			default:
+			break;
+		}
+	}
+
+	// Schleife zum Pruefen der Daten
+	for (uint8_t i = 1; i < 12; i++)
+	{
+		// Vergleiche Messdaten mit Threshold
+		if (openwire[i] > OPENWIRE_THRESHOLD)
+		{
+			cell[0] |= (1<<i);												// Wenn Threshold ueberschritten, Offene Leitung
+		}
+	}
+
+	// Offene Leitung erste Zelle messen
+	if (openwire[0] == 0)
+	{
+		cell[0] |= (1<<0);													// Unterste Leitung Offen
+	}
+
+	// Offene Leitung letzte Zelle messen
+
+	if (openwire[11] == 0)
+	{
+		cell[0] |= (1<<11);													// Oberste Leitung offen
+	}
+}

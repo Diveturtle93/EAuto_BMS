@@ -32,10 +32,10 @@
 //----------------------------------------------------------------------
 void collectHardwareInfo(void)
 {
-	#define STRING_STM_DEVICE_ID			"\nSTM32 Device ID:\t"
-	#define STRING_STM_REVISION				"\nSTM32 Revision ID:\t"
-	#define STRING_STM_FREQ					"\nSTM32 CPU-Freq:\t\t"
-	#define STRING_STM_UUID					"\nSTM32 UUID:\t\t"
+	#define STRING_STM_DEVICE_ID			"\nSTM32 Device ID:\t\t\t"
+	#define STRING_STM_REVISION				"\nSTM32 Revision ID:\t\t\t"
+	#define STRING_STM_FREQ					"\nSTM32 CPU-Freq:\t\t\t\t"
+	#define STRING_STM_UUID					"\nSTM32 UUID:\t\t\t\t"
 
 	uartTransmit(STRING_STM_DEVICE_ID, sizeof(STRING_STM_DEVICE_ID));
 	uartTransmitNumber(HAL_GetDEVID(), 10);									// Mikrocontroller Typ
@@ -87,10 +87,10 @@ void collectHardwareInfo(void)
 //----------------------------------------------------------------------
 void collectMiddlewareInfo(void)
 {
-	#define STRING_CMSIS_VERSION			"\nCMSIS Version:\t\t"
-	#define STRING_HAL_VERSION				"\nHAL Version:\t\t"
-	#define STRING_RTOS_CMSIS_VERSION		"\nRTOS CMSIS Version:\t"
-	#define STRING_RTOS_VERSION				"\nRTOS Version:\t\t"
+	#define STRING_CMSIS_VERSION			"\nCMSIS Version:\t\t\t\t"
+	#define STRING_HAL_VERSION				"\nHAL Version:\t\t\t\t"
+	#define STRING_RTOS_CMSIS_VERSION		"\nRTOS CMSIS Version:\t\t\t"
+	#define STRING_RTOS_VERSION				"\nRTOS Version:\t\t\t\t"
 
 	uartTransmit(STRING_CMSIS_VERSION, sizeof(STRING_CMSIS_VERSION));
 	uartTransmitNumber(__CM7_CMSIS_VERSION_MAIN, 10);						// CMSIS Version anzeigen
@@ -136,14 +136,14 @@ void collectMiddlewareInfo(void)
 //----------------------------------------------------------------------
 void collectSoftwareInfo(void)
 {
-	#define STRING_GIT_COMMIT				"\nGit Commit:\t\t"
-	#define STRING_GIT_BRANCH				"\nGit Branch:\t\t"
-	#define STRING_GIT_HASH					"\nGit Hash:\t\t"
-	#define STRING_GIT_LAST_TAG				"\nGit letzter Tags:\t\t"
-	#define STRING_GIT_TAG_COMMIT			"\nGit Tags commit:\t\t"
-	#define STRING_GIT_TAG_DIRTY			"\nGit Dirty commit:\t\t"
-	#define STRING_BUILD_DATE				"\nBuild Date:\t\t"
-	#define STRING_BUILD_TIME				"\nBuild Time:\t\t"
+	#define STRING_GIT_COMMIT				"\nGit Commit:\t\t\t\t"
+	#define STRING_GIT_BRANCH				"\nGit Branch:\t\t\t\t"
+	#define STRING_GIT_HASH					"\nGit Hash:\t\t\t\t"
+	#define STRING_GIT_LAST_TAG				"\nGit letzter Tags:\t\t\t"
+	#define STRING_GIT_TAG_COMMIT			"\nGit Tags commit:\t\t\t"
+	#define STRING_GIT_TAG_DIRTY			"\nGit Dirty commit:\t\t\t"
+	#define STRING_BUILD_DATE				"\nBuild Date:\t\t\t\t"
+	#define STRING_BUILD_TIME				"\nBuild Time:\t\t\t\t"
 
 	uartTransmit(STRING_GIT_COMMIT, sizeof(STRING_GIT_COMMIT));
 	uartTransmit(GIT_COMMIT, sizeof(GIT_COMMIT));							// Git Commit anzeigen
@@ -181,11 +181,11 @@ void collectSoftwareInfo(void)
 //----------------------------------------------------------------------
 void collectGitcounts(void)
 {
-	#define STRING_GIT_TAG_DIRTY_COUNT		"\nGit Dirty count:\t\t"
-	#define STRING_GIT_OVERALL_COMMIT_COUNT	"\nGit Overall count:\t\t"
+	#define STRING_GIT_TAG_DIRTY_COUNT		"\nGit Dirty count:\t\t\t"
+	#define STRING_GIT_OVERALL_COMMIT_COUNT	"\nGit Overall count:\t\t\t"
 	#define STRING_GIT_BRANCH_COMMIT_COUNT	"\nGit Branch commit count:\t\t"
-	#define STRING_GIT_ACTIVE_BRANCHES		"\nGit active Branches:\t\t"
-	#define STRING_GIT_TAG_COUNT			"\nGit Tags count:\t\t"
+	#define STRING_GIT_ACTIVE_BRANCHES		"\nGit active Branches:\t\t\t\t"
+	#define STRING_GIT_TAG_COUNT			"\nGit Tags count:\t\t\t\t"
 
 	uartTransmit(STRING_GIT_TAG_DIRTY_COUNT, sizeof(STRING_GIT_TAG_DIRTY_COUNT));
 	uartTransmit(GIT_TAG_DIRTY_COUNT, sizeof(GIT_TAG_DIRTY_COUNT));			// Git zaehle Dirty commits nach letztem Tags und Anzahl anzeigen
@@ -208,9 +208,10 @@ void collectGitcounts(void)
 //----------------------------------------------------------------------
 void collectSystemInfo(void)
 {
-	#define STRING_HARDWARE_TITEL "\n\t --Hardware--\n"
-	#define STRING_MIDDLEWARE_TITEL "\n\t --Middleware--\n"
-	#define STRING_SOFTWARE_TITEL "\n\t --Software--\n"
+	#define STRING_HARDWARE_TITEL			"\n\t --Hardware--\n"
+	#define STRING_MIDDLEWARE_TITEL			"\n\t --Middleware--\n"
+	#define STRING_SOFTWARE_TITEL			"\n\t --Software--\n"
+	#define STRING_GIT_COUNTS				"\n\t --Git counts--\n"
 
 	uartTransmit(STRING_HARDWARE_TITEL, sizeof(STRING_HARDWARE_TITEL));
 	collectHardwareInfo();													// Sammelt Hardware Informationen und gibt diese ueber Uart aus
