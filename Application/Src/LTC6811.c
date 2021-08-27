@@ -350,8 +350,8 @@ uint8_t ltc6811_test(uint16_t command)
 	if (command && MD2714)													// Wenn Sampling Frequenz = MD2714
 	{
 		// Wenn ADCOPT gesetzt
-//		if (ADCOPT == 1)
-//		{
+/*		if (ADCOPT == 1)
+		{
 			// Wenn Selbsttest 1 gewaehlt
 			if (command == ST1)
 			{
@@ -367,9 +367,9 @@ uint8_t ltc6811_test(uint16_t command)
 			{
 				test_pattern = 0;											// Registerwert = 0 damit Fehler ausloest
 			}
-//		}
-//		else																// Wenn ADCOPT nicht gesetzt
-//		{
+		}
+		else																// Wenn ADCOPT nicht gesetzt
+		{*/
 			// Wenn Selbsttest 1 gewaehlt
 			if (command == ST1)
 			{
@@ -495,9 +495,13 @@ uint8_t ltc6811_diagn(void)
 
 	// Multiplexer pruefen
 	if (tmp_data[5] & (1<<1))
+	{
 		return 1;															// Multiplexertest nicht OK
+	}
 	else
+	{
 		return 0;															// Multiplexertest OK
+	}
 }
 //----------------------------------------------------------------------
 
@@ -607,4 +611,49 @@ void LTC6811_openwire(void)
 	{
 		cell[0] |= (1<<11);													// Oberste Leitung offen
 	}
+}
+
+// LTC6811 Polling Daten
+uint16_t LTC6811_Poll(void)
+{
+	// PEC berechnen, Anhand Command
+	uint16_t pec;															// pec = Zwischenspeicher 16-Bit Command
+	uint8_t cmd[4];															// Zwischenspeicher Command + Pec CRC
+	pec = peccommand(command);
+
+	// Verzoegerungszeit zum wecken des LTC6811
+	wakeup_ltc6811();
+
+	// Command in cmd abspeichern
+	cmd[0] = ((command >> 8) & 0x07);
+	cmd[1] = (command & 0xFF);
+	cmd[2] = ((pec >> 8) & 0xFF);
+	cmd[3] = (pec & 0xFE);
+
+	// ISOCS einschalten
+	ISOCS_ENABLE();
+
+	// Command uebertragen
+	HAL_SPI_Transmit(&hspi4, cmd, 4, 100);
+
+	// Warten das alle LTC6811 fertig mit der Conversation sind
+	while ((counter<20000)&&(finished == 0))
+	{
+		current_time = HAL_SPI_Receive(&hspi4, (uint8_t*) 0xFF, 1, 100);
+
+		if (current_time>0)
+		{
+			finished = 1;
+		}
+		else
+		{
+			counter = counter ++;
+		}
+	}
+
+	// ISOCS ausschalten
+	ISOCS_DISABLE();
+	// Ende der Uebertragung
+
+	return(counter);
 }
