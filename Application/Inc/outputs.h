@@ -54,7 +54,7 @@ union leuchten_out_tag {
 	struct {
 		uint8_t InletRed : 1;					// 0
 		uint8_t InletGreen : 1;					// 1
-		uint8_t AkkuLed : 1;					// 2
+		uint8_t AkkuErrorLed : 1;				// 2
 		uint8_t  : 1;							// 3
 		uint8_t  : 1;							// 4
 		uint8_t RedLed : 1;						// 5
@@ -93,6 +93,7 @@ union komfort_out_tag {
 void init_outputs(void);													// Initialisiere Ausgaenge
 void writeall_outputs(void);												// Schreibe alle Ausgaenge
 void writeled_outputs(void);												// Schreibe alle LED-Ausgaenge
+void testPCB_Leds(void);													// Teste PCB LEDs fuer je 1s
 //----------------------------------------------------------------------
 
 #endif /* INC_OUTPUTS_H_ */

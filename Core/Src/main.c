@@ -30,6 +30,8 @@
 /* USER CODE BEGIN Includes */
 #include "BasicUart.h"
 #include "SystemInfo.h"
+#include "inputs.h"
+#include "outputs.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -49,7 +51,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+volatile uint8_t millisekunden_flag_1 = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -79,6 +81,8 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
+	// Definiere Variablen fuer Main-Funktion
+	uint16_t count = 0;
 
   /* USER CODE END Init */
 
@@ -99,6 +103,7 @@ int main(void)
   MX_TIM4_Init();
   MX_SPI1_Init();
   MX_CAN3_Init();
+  MX_TIM6_Init();
   /* USER CODE BEGIN 2 */
 
 	/* Schreibe Resetquelle auf die Konsole */
@@ -106,32 +111,21 @@ int main(void)
 	printResetSource(readResetSource());
 
 	/* Teste serielle Schnittstelle*/
-	#define TEST_STRING_UART	"\nUART2 Transmitting in polling mode, Hello Diveturtle93!\n"
+	#define TEST_STRING_UART		"\nUART2 Transmitting in polling mode, Hello Diveturtle93!\n"
 	uartTransmit(TEST_STRING_UART, sizeof(TEST_STRING_UART));
 
-	/* Sammel Systeminformationen */
-	collectSystemInfo();
+  	// Sammel Systeminformationen
+  	collectSystemInfo();
 #endif
 
-	// Leds Testen// Leds Testen
-    HAL_GPIO_WritePin(BLUE_LED_GPIO_Port, BLUE_LED_Pin, GPIO_PIN_SET);
-#define TEST_BLUE_LED	"\nUART2 Transmitting Blue LED\n"
-uartTransmit(TEST_BLUE_LED, sizeof(TEST_BLUE_LED));
-    HAL_Delay(1000);
-    HAL_GPIO_WritePin(BLUE_LED_GPIO_Port, BLUE_LED_Pin, GPIO_PIN_RESET);
-    HAL_Delay(500);
-    HAL_GPIO_WritePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin, GPIO_PIN_SET);
-#define TEST_GREEN_LED	"\nUART2 Transmitting Green Led\n"
-uartTransmit(TEST_GREEN_LED, sizeof(TEST_GREEN_LED));
-    HAL_Delay(1000);
-    HAL_GPIO_WritePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin, GPIO_PIN_RESET);
-    HAL_Delay(500);
-    HAL_GPIO_WritePin(RED_LED_GPIO_Port, RED_LED_Pin, GPIO_PIN_SET);
-#define TEST_RED_LED	"\nUART2 Transmitting Red Led\n"
-uartTransmit(TEST_RED_LED, sizeof(TEST_RED_LED));
-    HAL_Delay(1000);
-    HAL_GPIO_WritePin(RED_LED_GPIO_Port, RED_LED_Pin, GPIO_PIN_RESET);
-    HAL_Delay(500);
+	// Leds Testen
+  	testPCB_Leds();
+
+  	// Lese alle Eingaenge
+  	readall_inputs();
+
+  	// Start timer
+  	HAL_TIM_Base_Start(&htim6);
 
   /* USER CODE END 2 */
 
@@ -142,6 +136,18 @@ uartTransmit(TEST_RED_LED, sizeof(TEST_RED_LED));
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+		// Task wird jede Millisekunde ausgefuehrt
+		if (millisekunden_flag_1 == 1)
+		{
+			count++;													// Zaehler count hochzaehlen
+			millisekunden_flag_1 = 0;									// Setze Millisekunden-Flag zurueck
+		}
+
+		// Task wird alle 50 Millisekunden ausgefuehrt
+		if ((count % 50) == 0)
+		{
+
+		}
   }
   /* USER CODE END 3 */
 }
@@ -204,7 +210,15 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+// Timer-Interrupt: Timer ist uebergelaufen
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+	// Kontrolliere welcher Timer den Ueberlauf ausgeloest hat
+	if (htim == &htim6)
+	{
+		millisekunden_flag_1 = 1;
+	}
+}
 /* USER CODE END 4 */
 
 /**
