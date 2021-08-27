@@ -309,6 +309,12 @@ uint8_t ltc6811_check(void)
 		error |= (1<<3);													// Multiplexertest nicht bestanden
 	}
 
+	// Open Wire Check durchfuehren
+	if (ltc6811_openwire() == 1)
+	{
+		error |= (1<<4);													// Open-Wire Test nicht bestanden
+	}
+
 	// Fehlercode zurueckgeben
 	return error;															// Fehler 0 = alles Ok, Fehler > 0 = Selbsttest fehlerhaft
 }
@@ -498,15 +504,14 @@ uint8_t ltc6811_diagn(void)
 	{
 		return 1;															// Multiplexertest nicht OK
 	}
-	else
-	{
-		return 0;															// Multiplexertest OK
-	}
+
+	return 0;																// Multiplexertest OK
 }
 //----------------------------------------------------------------------
 
 // LTC6811 Openwire check
-void LTC6811_openwire(void)
+//----------------------------------------------------------------------
+uint8_t ltc6811_openwire(void)
 {
 	// Arrays definieren
 	uint8_t tmp_data[64] = {0};												// Speicher Registerwerte
@@ -606,27 +611,37 @@ void LTC6811_openwire(void)
 	}
 
 	// Offene Leitung letzte Zelle messen
-
 	if (openwire[11] == 0)
 	{
 		cell[0] |= (1<<11);													// Oberste Leitung offen
 	}
+
+	// Wenn offene Leitung vorhanden
+	if (cell[0] != 0)
+	{
+		return 1;															// Open Wire nicht OK
+	}
+
+	return 0;																// Open Wire OK
 }
+//----------------------------------------------------------------------
 
 // LTC6811 Polling Daten
-uint16_t LTC6811_Poll(void)
+//----------------------------------------------------------------------
+uint16_t ltc6811_poll(void)
 {
 	// PEC berechnen, Anhand Command
-	uint16_t pec;															// pec = Zwischenspeicher 16-Bit Command
+	uint16_t counter = 0, pec;												// Counter fuer Timeout, pec = Zwischenspeicher 16-Bit Command
+	uint8_t finished = 0, current_time = 0;									// Finish fuer Uebertragung abgeschlossen, Zeit aus HAL_SPI_Receive
 	uint8_t cmd[4];															// Zwischenspeicher Command + Pec CRC
-	pec = peccommand(command);
+	pec = peccommand(PLADC);
 
 	// Verzoegerungszeit zum wecken des LTC6811
 	wakeup_ltc6811();
 
 	// Command in cmd abspeichern
-	cmd[0] = ((command >> 8) & 0x07);
-	cmd[1] = (command & 0xFF);
+	cmd[0] = ((PLADC >> 8) & 0x07);
+	cmd[1] = (PLADC & 0xFF);
 	cmd[2] = ((pec >> 8) & 0xFF);
 	cmd[3] = (pec & 0xFE);
 
@@ -647,7 +662,7 @@ uint16_t LTC6811_Poll(void)
 		}
 		else
 		{
-			counter = counter ++;
+			counter++;
 		}
 	}
 
@@ -657,3 +672,4 @@ uint16_t LTC6811_Poll(void)
 
 	return(counter);
 }
+//----------------------------------------------------------------------

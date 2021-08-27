@@ -172,8 +172,8 @@ uint16_t peclookup(uint8_t len,	uint8_t *data);								// CRC Berechnung Daten A
 uint8_t ltc6811_check(void);												// Diagnose LTC6811, fuehrt alle Tests durch
 uint8_t ltc6811_test(uint16_t command);										// Diagnose Selbsttest Test 1 und 2
 uint8_t ltc6811_diagn(void);												// Diagnose Multiplexer
-void LTC6811_openwire(void);												// Leitungscheck offene Leitung
-uint16_t LTC6811_Poll(void);												// Poll Data nach Conversion
+uint8_t ltc6811_openwire(void);												// Leitungscheck offene Leitung
+uint16_t ltc6811_poll(void);												// Poll Data nach Conversion
 //----------------------------------------------------------------------
 //void init_crc(void);														// Wird benoetigt um Pec-Tabelle zu berechnen
 //----------------------------------------------------------------------
