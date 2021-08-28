@@ -26,6 +26,7 @@
 // Funktionen definieren
 //----------------------------------------------------------------------
 void hal_error(uint8_t status);
+void software_error(uint8_t errorcode);
 //----------------------------------------------------------------------
 
 #endif /* INC_ERROR_H_ */
