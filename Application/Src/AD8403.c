@@ -90,3 +90,18 @@ void AllPotiOff(void)
 	AD8403_SHDN_ENABLE();													// Setze SHDN auf High
 }
 //----------------------------------------------------------------------
+
+// Schalte alle Potis auf halbe Stellung, Midscale
+//----------------------------------------------------------------------
+void AllPotiMidscale(void)
+{
+	// Schalte Wiper mittlere Stellung, halb A, halb B
+	AD8403_RS_DISABLE();													// Setze RS auf Low
+
+	// Verzoegerung um den Pin wieder auf High zu setzen
+	HAL_Delay(20);
+
+	// Setze AD8403 Shutdown Pin
+	AD8403_RS_ENABLE();														// Setze RS auf High
+}
+//----------------------------------------------------------------------

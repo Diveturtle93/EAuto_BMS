@@ -36,6 +36,7 @@ void setPoti(uint8_t addresse, uint8_t Data);								// Poti mit Daten fuellen
 void setAllPoti(uint8_t Data);												// Alle Potis mit gleichen Daten fuellen
 void PotiOff(uint8_t addresse);												// Poti ausschalten
 void AllPotiOff(void);														// Alle Potis ausschalten
+void AllPotiMidscale(void);													// Alle Potis auf halbe Stellung
 //----------------------------------------------------------------------
 
 #endif /* INC_AD8403_H_ */

@@ -137,6 +137,21 @@ int main(void)
 		uartTransmit(SDC_STRING_OK, sizeof(SDC_STRING_OK));
 	}
 
+
+	for (uint8_t i = 0; i < 255; i++)
+	{
+		setPoti(AD8403_MUX0, i);
+		HAL_Delay(100);
+		setPoti(AD8403_MUX1, i);
+		HAL_Delay(100);
+		setPoti(AD8403_MUX2, i);
+		HAL_Delay(100);
+		setPoti(AD8403_MUX3, i);
+		HAL_Delay(100);
+	}
+
+	AllPotiMidscale();
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
