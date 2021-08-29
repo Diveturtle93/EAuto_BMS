@@ -18,14 +18,12 @@
 //----------------------------------------------------------------------
 union system_input_tag {
 	struct {
-		uint8_t IMD_PWM : 1;					// 0
-		uint8_t KL15 : 1;						// 1
-		uint8_t  : 1;							// 2
-		uint8_t Button1 : 1;					// 3
-		uint8_t Button2 : 1;					// 4
-		uint8_t Crash : 1;						// 5
-		uint8_t Wakeup : 1;						// 6
-		uint8_t  : 1;							// 7
+		uint8_t IMD_PWM : 3;					// 0 - 2
+		uint8_t KL15 : 1;						// 3
+		uint8_t Button1 : 1;					// 4
+		uint8_t Button2 : 1;					// 5
+		uint8_t Crash : 1;						// 6
+		uint8_t Wakeup : 1;						// 7
 	};
 
 	uint8_t systeminput;						// 1 Byte
@@ -68,7 +66,7 @@ union komfort_in_tag {
 
 // Definiere Konstanten
 //----------------------------------------------------------------------
-#define SYSTEM_INPUT					0b00000000							// 8 Bit, 6 Systemeingaenge
+#define SYSTEM_INPUT					0b00000111							// 8 Bit, 6 Systemeingaenge
 #define KOMFORT_INPUT					0b00000000							// 8 Bit, 1 Komforteingaenge
 #define SDC_INPUT						0b00000000							// 8 Bit, 5 SDC-Eingaenge
 //----------------------------------------------------------------------

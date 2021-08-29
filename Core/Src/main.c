@@ -32,6 +32,7 @@
 #include "SystemInfo.h"
 #include "inputs.h"
 #include "outputs.h"
+#include "BatteriemanagementSystem.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -51,7 +52,8 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+CAN_RxHeaderTypeDef RxMessage;
+uint8_t RxData[8], can_change = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -82,6 +84,14 @@ int main(void)
 
   /* USER CODE BEGIN Init */
 
+	// Definiere Variablen fuer Main-Funktion
+	uint8_t TxData[8], OutData[4], InData[3], status;
+  	CAN_FilterTypeDef sFilterConfig;
+
+  	// Erstelle Can-Nachrichten
+  	CAN_TxHeaderTypeDef TxMessage = {0x123, 0, CAN_RTR_DATA, CAN_ID_STD, 8, DISABLE};
+  	CAN_TxHeaderTypeDef TxOutput = {BMS_CAN_DIGITAL_OUT, 0, CAN_RTR_DATA, CAN_ID_STD, 4, DISABLE};
+  	CAN_TxHeaderTypeDef TxInput = {BMS_CAN_DIGITAL_IN, 0, CAN_RTR_DATA, CAN_ID_STD, 3, DISABLE};
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -121,6 +131,43 @@ int main(void)
 
 	// Lese alle Eingaenge
 	readall_inputs();
+
+  	// Starte CAN Bus
+  	if((status = HAL_CAN_Start(&hcan3)) != HAL_OK)
+  	{
+  		/* Start Error */
+  		hal_error(status);
+  		Error_Handler();
+  	}
+  	uartTransmit("CAN START\n", 10);
+
+  	// Aktiviere Interrupts für CAN Bus
+  	if((status = HAL_CAN_ActivateNotification(&hcan3, CAN_IT_RX_FIFO0_MSG_PENDING)) != HAL_OK)
+  	{
+  		/* Notification Error */
+  		hal_error(status);
+  		Error_Handler();
+  	}
+  	uartTransmit("Send Message\n", 13);
+
+  	// Filter Bank initialisieren um Daten zu empfangen
+    sFilterConfig.FilterBank = 0;
+    sFilterConfig.FilterMode = CAN_FILTERMODE_IDMASK;
+    sFilterConfig.FilterScale = CAN_FILTERSCALE_32BIT;
+    sFilterConfig.FilterIdHigh = 0x0000;
+    sFilterConfig.FilterIdLow = 0x0000;
+    sFilterConfig.FilterMaskIdHigh = 0x0000;
+    sFilterConfig.FilterMaskIdLow = 0x0000;
+    sFilterConfig.FilterFIFOAssignment = 0;
+    sFilterConfig.FilterActivation = ENABLE;
+
+    // Filter Bank schreiben
+    if((status = HAL_CAN_ConfigFilter(&hcan3, &sFilterConfig)) != HAL_OK)
+    {
+    	/* Filter configuration Error */
+  		hal_error(status);
+  		Error_Handler();
+    }
 
 	if (!(sdc_in.sdcinput && 0b00001111))										// SDC OK; Motor, BTB, IMD und HVIL OK
 	{
@@ -186,6 +233,26 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+		// Daten fuer Ausgaenge zusammenfuehren
+		OutData[0] = system_out.systemoutput;
+		OutData[1] = highcurrent_out.high_out;
+		OutData[2] = leuchten_out.ledoutput;
+		OutData[3] = komfort_out.komfortoutput;
+
+		// Sende Nachricht digitale Ausgaenge
+		status = HAL_CAN_AddTxMessage(&hcan3, &TxOutput, OutData, (uint32_t *)CAN_TX_MAILBOX0);
+		hal_error(status);
+
+		// Daten fuer Eingaenge zusammenfuehren
+		InData[0] = system_in.systeminput;
+		InData[1] = sdc_in.sdcinput;
+		InData[2] = komfort_in.komfortinput;
+
+		// Sende Nachricht digitale Eingaenge
+		status = HAL_CAN_AddTxMessage(&hcan3, &TxInput, InData, (uint32_t *)CAN_TX_MAILBOX0);
+		hal_error(status);
+
+		HAL_Delay(500);
   }
   /* USER CODE END 3 */
 }
@@ -248,7 +315,13 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+// Interrupts
+// Can-Interrupt: Nachricht wartet
+void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
+{
+	HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &RxMessage, RxData);
+	can_change = 1;
+}
 /* USER CODE END 4 */
 
 /**
