@@ -56,7 +56,8 @@ BatteriemanagementSystem.bin \
 
 
 # All Target
-all: main-build
+all:
+	+@$(MAKE) --no-print-directory pre-build && $(MAKE) --no-print-directory main-build
 
 # Main-build Target
 main-build: BatteriemanagementSystem.elf secondary-outputs
@@ -87,6 +88,10 @@ clean:
 	-$(RM) $(SIZE_OUTPUT)$(OBJDUMP_LIST)$(EXECUTABLES)$(OBJS)$(S_DEPS)$(S_UPPER_DEPS)$(C_DEPS)$(OBJCOPY_BIN) BatteriemanagementSystem.elf
 	-@echo ' '
 
+pre-build:
+	$(MAKE) -f ../Make/git.mk
+	-@echo ' '
+
 secondary-outputs: $(SIZE_OUTPUT) $(OBJDUMP_LIST) $(OBJCOPY_BIN)
 
 fail-specified-linker-script-missing:
@@ -96,6 +101,6 @@ fail-specified-linker-script-missing:
 warn-no-linker-script-specified:
 	@echo 'Warning: No linker script specified. Check the linker settings in the build configuration.'
 
-.PHONY: all clean dependents fail-specified-linker-script-missing warn-no-linker-script-specified
+.PHONY: all clean dependents fail-specified-linker-script-missing warn-no-linker-script-specified main-build pre-build
 
 -include ../makefile.targets

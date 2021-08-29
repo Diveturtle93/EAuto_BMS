@@ -30,8 +30,6 @@ void readall_inputs(void)
 	// Systemeingaenge einlesen
 	system_in.IMD_PWM = HAL_GPIO_ReadPin(IMD_PWM_GPIO_Port, IMD_PWM_Pin);						// Eingang IMD PWM
 	system_in.KL15 = HAL_GPIO_ReadPin(KL15_GPIO_Port, KL15_Pin);								// Eingang Auto an
-	system_in.Button1 = HAL_GPIO_ReadPin(BUTTON1_GPIO_Port, BUTTON1_Pin);						// Zusatzeingang Taster 1
-	system_in.Button2 = HAL_GPIO_ReadPin(BUTTON2_GPIO_Port, BUTTON2_Pin);						// Zusatzeingang Taster 2
 	system_in.Crash = HAL_GPIO_ReadPin(CRASH_GPIO_Port, CRASH_Pin);								// Crash Eingang
 	system_in.Wakeup = HAL_GPIO_ReadPin(HW_WAKE_GPIO_Port, HW_WAKE_Pin);						// Eingang Hardware Wakeup
 
@@ -44,5 +42,7 @@ void readall_inputs(void)
 
 	// Komforteingaenge einlesen
 	komfort_in.OVC = HAL_GPIO_ReadPin(OVC_SENSE_GPIO_Port, OVC_SENSE_Pin);						// Eingang Overcurrent erkannt
+	komfort_in.Button1 = HAL_GPIO_ReadPin(BUTTON1_GPIO_Port, BUTTON1_Pin);						// Zusatzeingang Taster 1
+	komfort_in.Button2 = HAL_GPIO_ReadPin(BUTTON2_GPIO_Port, BUTTON2_Pin);						// Zusatzeingang Taster 2
 }
 //----------------------------------------------------------------------

@@ -12,6 +12,7 @@ C_SRCS += \
 ../Application/Src/error.c \
 ../Application/Src/inputs.c \
 ../Application/Src/millis.c \
+../Application/Src/my_math.c \
 ../Application/Src/outputs.c 
 
 OBJS += \
@@ -22,6 +23,7 @@ OBJS += \
 ./Application/Src/error.o \
 ./Application/Src/inputs.o \
 ./Application/Src/millis.o \
+./Application/Src/my_math.o \
 ./Application/Src/outputs.o 
 
 C_DEPS += \
@@ -32,6 +34,7 @@ C_DEPS += \
 ./Application/Src/error.d \
 ./Application/Src/inputs.d \
 ./Application/Src/millis.d \
+./Application/Src/my_math.d \
 ./Application/Src/outputs.d 
 
 

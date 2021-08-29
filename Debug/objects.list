@@ -5,6 +5,7 @@
 "./Application/Src/error.o"
 "./Application/Src/inputs.o"
 "./Application/Src/millis.o"
+"./Application/Src/my_math.o"
 "./Application/Src/outputs.o"
 "./Core/Src/adc.o"
 "./Core/Src/can.o"

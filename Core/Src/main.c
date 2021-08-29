@@ -33,6 +33,7 @@
 #include "SystemInfo.h"
 #include "inputs.h"
 #include "outputs.h"
+#include "imd.h"
 #include "..\..\Application\Src\my_math.c"
 /* USER CODE END Includes */
 
@@ -86,7 +87,7 @@ int main(void)
 
   /* USER CODE BEGIN Init */
 	// Definiere Variablen fuer Main-Funktion
-	uint16_t dutyCycle, timerPeriod, frequency, count = 0;
+	uint16_t dutyCycle, timerPeriod, frequency, count = 0, R_IMD;
 
   /* USER CODE END Init */
 
@@ -152,7 +153,7 @@ int main(void)
 		}
 
 		// Task wird alle 50 Millisekunden ausgefuehrt
-		if ((count % 50) == 0)
+		if ((count % 500) == 0)
 		{
 			if (rising != 0 && falling != 0)
 			{
@@ -168,6 +169,94 @@ int main(void)
 
 			uartTransmitNumber(dutyCycle, 10);
 			uartTransmitNumber(frequency, 10);
+
+			if (sdc_in.IMD_OK_IN == 1)
+			{
+				switch (frequency)
+				{
+					case 0:
+						system_in.IMD_PWM = HAL_GPIO_ReadPin(IMD_PWM_GPIO_Port, IMD_PWM_Pin);						// Eingang IMD PWM
+						if (system_in.IMD_PWM == 1)
+						{
+							system_in.IMD_PWM_STATUS = IMD_KURZSCHLUSS_KL15;
+						}
+						else
+						{
+							system_in.IMD_PWM_STATUS = IMD_KURZSCHLUSS_GND;
+						}
+						break;
+					case 10:
+						system_in.IMD_PWM_STATUS = IMD_NORMAL;
+						if (dutyCycle > 5 && dutyCycle < 95)								// IMD PWM
+						{
+							R_IMD = 90 * 1200 / (dutyCycle - 5) - 1200;
+							uartTransmitNumber(R_IMD, 10);
+						}
+						else																// IMD Invalid
+						{
+
+						}
+						break;
+					case 20:
+						system_in.IMD_PWM_STATUS = IMD_UNTERSPANNUNG;
+						if (dutyCycle > 5 && dutyCycle < 95)								// IMD PWM
+						{
+							R_IMD = 90 * 1200 / (dutyCycle - 5) - 1200;
+							uartTransmitNumber(R_IMD, 10);
+						}
+						else																// IMD Invalid
+						{
+
+						}
+						break;
+					case 30:
+						system_in.IMD_PWM_STATUS = IMD_SCHNELLSTART;
+						if (dutyCycle > 5 && dutyCycle < 11)								// IMD Gut
+						{
+
+						}
+						else if (dutyCycle > 89 && dutyCycle < 95)							// IMD Schlecht
+						{
+
+						}
+						else																// IMD Fehlerhaft
+						{
+
+						}
+						break;
+					case 40:
+						system_in.IMD_PWM_STATUS = IMD_GERAETEFEHLER;
+						if (dutyCycle > 47 && dutyCycle < 53)								// IMD PWM
+						{
+
+						}
+						else																// IMD Invalid
+						{
+
+						}
+						break;
+					case 50:
+						system_in.IMD_PWM_STATUS = IMD_ANSCHLUSSFEHLER_ERDE;
+						if (dutyCycle > 47 && dutyCycle < 53)								// IMD PWM
+						{
+
+						}
+						else																// IMD Invalid
+						{
+
+						}
+						break;
+					default:
+						system_in.IMD_PWM_STATUS = IMD_ERROR;
+						break;
+				}
+			}
+			else
+			{
+				system_in.IMD_PWM_STATUS = IMD_ERROR;
+			}
+
+			count = 0;
 		}
   }
   /* USER CODE END 3 */
