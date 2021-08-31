@@ -30,6 +30,8 @@
 /* USER CODE BEGIN Includes */
 #include "BasicUart.h"
 #include "SystemInfo.h"
+#include "outputs.h"
+#include "inputs.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -101,6 +103,9 @@ int main(void)
   MX_CAN3_Init();
   /* USER CODE BEGIN 2 */
 
+  // DCDC-Wandler Selbsterhaltung
+  power_on();
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -108,7 +113,14 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-
+	  HAL_Delay(500);
+	  HAL_GPIO_TogglePin(Green_LED_GPIO, GREEN_LED_PIN);
+	  readall_inputs();
+	  if ((system_in.KL15 == 0) && (HAL_GPIO_ReadPin(Green_LED_GPIO, GREEN_LED_PIN)))
+	  {
+		  system_out.Power_On == 0;
+		  HAL_GPIO_WritePin(POWER_ON_GPIO_Port, POWER_ON_Pin, system_out.Power_On);
+	  }
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */

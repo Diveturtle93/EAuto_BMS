@@ -71,9 +71,11 @@ void writeall_outputs(void)
 }
 //----------------------------------------------------------------------
 
-// Schreibe alle LED-Ausgaenge auf default Werte
+// Selbsterhalten einschalten / DCDC-Wandler einschalten
 //----------------------------------------------------------------------
-void writeled_outputs(void)
+void power_on(void)
 {
+	system_out.Power_On = 1;																		// Power On Variable setzen
+	HAL_GPIO_WritePin(POWER_ON_GPIO_Port, POWER_ON_Pin, system_out.Power_On);						// Selbsthaltung DCDC-Wandler Motorsteuergeraet
 }
 //----------------------------------------------------------------------
