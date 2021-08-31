@@ -194,7 +194,7 @@ int main(void)
 						}
 						else																// IMD Invalid
 						{
-
+							system_in.IMD_PWM_STATUS = IMD_ERROR;
 						}
 						break;
 					case 20:
@@ -206,7 +206,7 @@ int main(void)
 						}
 						else																// IMD Invalid
 						{
-
+							system_in.IMD_PWM_STATUS = IMD_ERROR;
 						}
 						break;
 					case 30:
@@ -221,7 +221,7 @@ int main(void)
 						}
 						else																// IMD Fehlerhaft
 						{
-
+							system_in.IMD_PWM_STATUS = IMD_ERROR;
 						}
 						break;
 					case 40:
@@ -232,7 +232,7 @@ int main(void)
 						}
 						else																// IMD Invalid
 						{
-
+							system_in.IMD_PWM_STATUS = IMD_ERROR;
 						}
 						break;
 					case 50:
@@ -243,7 +243,7 @@ int main(void)
 						}
 						else																// IMD Invalid
 						{
-
+							system_in.IMD_PWM_STATUS = IMD_ERROR;
 						}
 						break;
 					default:
@@ -253,7 +253,37 @@ int main(void)
 			}
 			else
 			{
-				system_in.IMD_PWM_STATUS = IMD_ERROR;
+				switch (frequency)
+				{
+
+					case 10:
+						system_in.IMD_PWM_STATUS = IMD_NORMAL;
+						if (dutyCycle > 5 && dutyCycle < 95)								// IMD PWM
+						{
+							R_IMD = 90 * 1200 / (dutyCycle - 5) - 1200;
+							uartTransmitNumber(R_IMD, 10);
+						}
+						else																// IMD Invalid
+						{
+							system_in.IMD_PWM_STATUS = IMD_ERROR;
+						}
+						break;
+					case 20:
+						system_in.IMD_PWM_STATUS = IMD_UNTERSPANNUNG;
+						if (dutyCycle > 5 && dutyCycle < 95)								// IMD PWM
+						{
+							R_IMD = 90 * 1200 / (dutyCycle - 5) - 1200;
+							uartTransmitNumber(R_IMD, 10);
+						}
+						else																// IMD Invalid
+						{
+							system_in.IMD_PWM_STATUS = IMD_ERROR;
+						}
+						break;
+					default:
+						system_in.IMD_PWM_STATUS = IMD_ERROR;
+						break;
+				}
 			}
 
 			count = 0;
