@@ -106,6 +106,7 @@ int main(void)
   // DCDC-Wandler Selbsterhaltung
   power_on();
 
+  HAL_GPIO_WritePin(RED_LED_GPIO_Port, RED_LED_Pin, GPIO_PIN_SET);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -114,11 +115,12 @@ int main(void)
   {
     /* USER CODE END WHILE */
 	  HAL_Delay(500);
-	  HAL_GPIO_TogglePin(Green_LED_GPIO, GREEN_LED_PIN);
+	  HAL_GPIO_TogglePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin);
+	  HAL_GPIO_TogglePin(RED_LED_GPIO_Port, RED_LED_Pin);
 	  readall_inputs();
-	  if ((system_in.KL15 == 0) && (HAL_GPIO_ReadPin(Green_LED_GPIO, GREEN_LED_PIN)))
+	  if ((system_in.KL15 == 0) && (HAL_GPIO_ReadPin(GREEN_LED_GPIO_Port, GREEN_LED_Pin)))
 	  {
-		  system_out.Power_On == 0;
+		  system_out.Power_On = 0;
 		  HAL_GPIO_WritePin(POWER_ON_GPIO_Port, POWER_ON_Pin, system_out.Power_On);
 	  }
     /* USER CODE BEGIN 3 */

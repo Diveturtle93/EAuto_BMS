@@ -27,11 +27,14 @@
 //----------------------------------------------------------------------
 void init_outputs(void)
 {
-	// Schreibe alle Variablen auf Null
+	// Schreibe alle Variablen auf Standart setzen
 	system_out.systemoutput = SYSTEM_OUTPUT;														// Alle System Ausgaenge auf null setzen
 	highcurrent_out.high_out = HIGH_OUTPUT;															// Alle Hochstrom Ausgaenge auf null setzen
 	leuchten_out.ledoutput = LED_OUTPUT;															// Alle Leuchten Ausgaenge auf null setzen
 	komfort_out.komfortoutput = KOMFORT_OUTPUT;														// Alle Komfort Ausgaenge auf null setzen
+
+	// Alle Ausgaenge setzen
+	writeall_outputs();																				// Auf default setzen
 }
 //----------------------------------------------------------------------
 

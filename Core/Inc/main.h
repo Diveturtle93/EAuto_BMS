@@ -47,7 +47,13 @@ extern "C" {
 
 /* Exported macro ------------------------------------------------------------*/
 /* USER CODE BEGIN EM */
-
+#if REVISION == 255
+#error "Revision ist nicht definiert"
+#elif REVISION == 1
+#warning "PCB Revision 1.0 definiert"
+#elif REVISION == 2
+#warning "PCB Revision 1.1 definiert"
+#endif
 /* USER CODE END EM */
 
 /* Exported functions prototypes ---------------------------------------------*/
