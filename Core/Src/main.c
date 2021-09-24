@@ -114,11 +114,11 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-	  HAL_Delay(500);
+	  HAL_Delay(5000);
 	  HAL_GPIO_TogglePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin);
 	  HAL_GPIO_TogglePin(RED_LED_GPIO_Port, RED_LED_Pin);
 	  readall_inputs();
-	  if ((system_in.KL15 == 0) && (HAL_GPIO_ReadPin(GREEN_LED_GPIO_Port, GREEN_LED_Pin)))
+	  if ((system_in.KL15 == 0) && (leuchten_out.GreenLed == 1))
 	  {
 		  system_out.Power_On = 0;
 		  HAL_GPIO_WritePin(POWER_ON_GPIO_Port, POWER_ON_Pin, system_out.Power_On);
