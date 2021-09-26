@@ -33,6 +33,7 @@
 #include "inputs.h"
 #include "outputs.h"
 #include "BatteriemanagementSystem.h"
+#include "error.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -169,6 +170,10 @@ int main(void)
   		Error_Handler();
     }
 
+    // Test CAN Nachricht beschreiben
+    for (uint8_t j = 0; j < 8; j++)
+    	TxData[j] = (j + 1);
+
 	if (!(sdc_in.sdcinput && 0b00001111))										// SDC OK; Motor, BTB, IMD und HVIL OK
 	{
 		#define SDC_STRING_ERROR			"\nSDC ist nicht geschlossen"
@@ -250,6 +255,10 @@ int main(void)
 
 		// Sende Nachricht digitale Eingaenge
 		status = HAL_CAN_AddTxMessage(&hcan3, &TxInput, InData, (uint32_t *)CAN_TX_MAILBOX0);
+		hal_error(status);
+
+		// Sende Nachricht digitale Eingaenge
+		status = HAL_CAN_AddTxMessage(&hcan3, &TxMessage, TxData, (uint32_t *)CAN_TX_MAILBOX0);
 		hal_error(status);
 
 		HAL_Delay(500);

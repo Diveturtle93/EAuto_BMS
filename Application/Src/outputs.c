@@ -117,3 +117,21 @@ void testLeds(void)
 	HAL_Delay(500);
 }
 //----------------------------------------------------------------------
+
+// Ladekontroll LED setzen
+//----------------------------------------------------------------------
+void setLadekontrolle(void)
+{
+	// Ladekontrolle im Cockpit setzen
+	HAL_GPIO_WritePin(AKKU_LED_GPIO_Port, AKKU_LED_Pin, GPIO_PIN_SET);								// Akku LED Kombiinstrument setzen
+}
+//----------------------------------------------------------------------
+
+// Ladekontroll LED zuruecksetzen
+//----------------------------------------------------------------------
+void resetLadekontrolle(void)
+{
+	// Ladekontrolle im Cockpit zuruecksetzen
+	HAL_GPIO_WritePin(AKKU_LED_GPIO_Port, AKKU_LED_Pin, GPIO_PIN_RESET);							// Akku LED Kombiinstrument zuruecksetzen
+}
+//----------------------------------------------------------------------
