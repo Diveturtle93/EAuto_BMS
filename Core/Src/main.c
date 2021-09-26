@@ -32,6 +32,7 @@
 #include "SystemInfo.h"
 #include "inputs.h"
 #include "outputs.h"
+#include "AD8403.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -137,20 +138,13 @@ int main(void)
 		uartTransmit(SDC_STRING_OK, sizeof(SDC_STRING_OK));
 	}
 
+	// Digitales Poti initialisieren
+	initAD8403();
 
-	for (uint8_t i = 0; i < 255; i++)
-	{
-		setPoti(AD8403_MUX0, i);
-		HAL_Delay(100);
-		setPoti(AD8403_MUX1, i);
-		HAL_Delay(100);
-		setPoti(AD8403_MUX2, i);
-		HAL_Delay(100);
-		setPoti(AD8403_MUX3, i);
-		HAL_Delay(100);
-	}
+	// Digitales Poti testen, Werte auf allen Potis langsam von 0 bis 255 zahlen
+	setAllPoti(255);
 
-	AllPotiMidscale();
+	HAL_GPIO_WritePin(BLUE_LED_GPIO_Port, BLUE_LED_Pin, 1);
 
   /* USER CODE END 2 */
 

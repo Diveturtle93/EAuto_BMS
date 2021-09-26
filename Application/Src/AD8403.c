@@ -34,6 +34,9 @@ void initAD8403(void)
 	// Verzoegerung fuer einen Reset des AD8403
 	HAL_Delay(20);
 
+	// Deaktiviere Chip Select
+	AD8403_CS_DISABLE();
+
 	// Setze AD8403 RS Pin
 	AD8403_RS_ENABLE();
 }
@@ -50,8 +53,14 @@ void setPoti(uint8_t addresse, uint8_t Data)
 	tmp[0] = addresse;
 	tmp[1] = Data;
 
+	// Aktiviere Chip Select
+	AD8403_CS_ENABLE();
+
 	// Command fuer AD8403 senden
 	HAL_SPI_Transmit(&hspi1, tmp, 2, HAL_MAX_DELAY);
+
+	// Deaktiviere Chip Select
+	AD8403_CS_DISABLE();
 }
 //----------------------------------------------------------------------
 
@@ -82,11 +91,14 @@ void AllPotiOff(void)
 {
 	// Schalte Wiper auf Terminal B, Open circuit Terminal A
 	AD8403_SHDN_DISABLE();													// Setze SHDN auf Low
+}
+//----------------------------------------------------------------------
 
-	// Verzoegerung um den Pin wieder auf High zu setzen
-	HAL_Delay(20);
-
-	// Setze AD8403 Shutdown Pin
+// Schalte alle Potis an
+//----------------------------------------------------------------------
+void AllPotiOn(void)
+{
+	// Schalte Wiper auf Wert im Register
 	AD8403_SHDN_ENABLE();													// Setze SHDN auf High
 }
 //----------------------------------------------------------------------

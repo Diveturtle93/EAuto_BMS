@@ -15,6 +15,17 @@
 // RS Pin					= High, Alle anderen Funktionen gegeben
 // CS, RS und Shutdown		= High, No Operation
 
+// Poti = 0					=> 347 Ohm
+// Poti = 35				=> 309 Ohm , 312
+// Poti = 56				=> 298 Ohm , 291
+// Poti = 98				=> 259 Ohm , 249
+// Poti = 128				=> 228 Ohm , 219
+// Poti = 156				=> 196 Ohm , 191
+// Poti = 197				=> 148 Ohm , 150
+// Poti = 213				=> 128 Ohm , 134
+// Poti = 237				=> 95 Ohm , 110
+// Poti = 255				=> 65 Ohm , 92
+
 // Dateiheader definieren
 //----------------------------------------------------------------------
 #ifndef INC_AD8403_H_
@@ -23,10 +34,10 @@
 
 // Addressen
 //----------------------------------------------------------------------
-#define AD8403_MUX0						0b10010000							// Poti 1
-#define AD8403_MUX1						0b10010010							// Poti 2
-#define AD8403_MUX2						0b10010100							// Poti 3
-#define AD8403_MUX3						0b10010110							// Poti 4
+#define AD8403_MUX0						0b00								// Poti 1
+#define AD8403_MUX1						0b01								// Poti 2
+#define AD8403_MUX2						0b10								// Poti 3
+#define AD8403_MUX3						0b11								// Poti 4
 //----------------------------------------------------------------------
 
 // Funktionen definieren
@@ -36,6 +47,7 @@ void setPoti(uint8_t addresse, uint8_t Data);								// Poti mit Daten fuellen
 void setAllPoti(uint8_t Data);												// Alle Potis mit gleichen Daten fuellen
 void PotiOff(uint8_t addresse);												// Poti ausschalten
 void AllPotiOff(void);														// Alle Potis ausschalten
+void AllPotiOn(void);														// Alle Potis einschalten
 void AllPotiMidscale(void);													// Alle Potis auf halbe Stellung
 //----------------------------------------------------------------------
 

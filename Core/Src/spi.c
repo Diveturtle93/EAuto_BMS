@@ -41,11 +41,11 @@ void MX_SPI1_Init(void)
   hspi1.Instance = SPI1;
   hspi1.Init.Mode = SPI_MODE_MASTER;
   hspi1.Init.Direction = SPI_DIRECTION_2LINES;
-  hspi1.Init.DataSize = SPI_DATASIZE_10BIT;
+  hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
   hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi1.Init.NSS = SPI_NSS_HARD_OUTPUT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_128;
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -112,7 +112,6 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* spiHandle)
     __HAL_RCC_GPIOG_CLK_ENABLE();
     /**SPI1 GPIO Configuration
     PD7     ------> SPI1_MOSI
-    PG9     ------> SPI1_MISO
     PG10     ------> SPI1_NSS
     PG11     ------> SPI1_SCK
     */
@@ -123,7 +122,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* spiHandle)
     GPIO_InitStruct.Alternate = GPIO_AF5_SPI1;
     HAL_GPIO_Init(POTI_MOSI_GPIO_Port, &GPIO_InitStruct);
 
-    GPIO_InitStruct.Pin = POTI_MISO_Pin|POTI_CS_Pin|POTI_SCK_Pin;
+    GPIO_InitStruct.Pin = POTI_CS_Pin|POTI_SCK_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
@@ -175,13 +174,12 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* spiHandle)
 
     /**SPI1 GPIO Configuration
     PD7     ------> SPI1_MOSI
-    PG9     ------> SPI1_MISO
     PG10     ------> SPI1_NSS
     PG11     ------> SPI1_SCK
     */
     HAL_GPIO_DeInit(POTI_MOSI_GPIO_Port, POTI_MOSI_Pin);
 
-    HAL_GPIO_DeInit(GPIOG, POTI_MISO_Pin|POTI_CS_Pin|POTI_SCK_Pin);
+    HAL_GPIO_DeInit(GPIOG, POTI_CS_Pin|POTI_SCK_Pin);
 
   /* USER CODE BEGIN SPI1_MspDeInit 1 */
 
