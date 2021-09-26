@@ -144,6 +144,18 @@ int main(void)
 	// Digitales Poti testen, Werte auf allen Potis langsam von 0 bis 255 zahlen
 	setAllPoti(255);
 
+	for (uint8_t i = 0; i < 255; i++)
+	{
+		setPoti(AD8403_MUX0, i);
+		HAL_Delay(100);
+		setPoti(AD8403_MUX1, i);
+		HAL_Delay(100);
+		setPoti(AD8403_MUX2, i);
+		HAL_Delay(100);
+		setPoti(AD8403_MUX3, i);
+		HAL_Delay(100);
+	}
+
 	HAL_GPIO_WritePin(BLUE_LED_GPIO_Port, BLUE_LED_Pin, 1);
 
   /* USER CODE END 2 */
