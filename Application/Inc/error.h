@@ -16,12 +16,17 @@
 
 // Festlegen von Einstellungen
 //----------------------------------------------------------------------
-
+#define SDC_BTB_ERROR					10
+#define SDC_MOTOR_ERROR					11
+#define SDC_HVIL_ERROR					12
+#define IMD_ERROR						13
+#define AMS_ERROR						14
 //----------------------------------------------------------------------
 
 // Funktionen definieren
 //----------------------------------------------------------------------
 void hal_error(uint8_t status);
+void software_error(uint8_t errorcode);
 //----------------------------------------------------------------------
 
 #endif /* INC_ERROR_H_ */

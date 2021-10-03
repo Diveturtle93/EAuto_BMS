@@ -2483,6 +2483,8 @@ uartTransmit(TEST_RED_LED, sizeof(TEST_RED_LED));
  80012f0:	f000 fd42 	bl	8001d78 <HAL_Delay>
   {
     /* USER CODE END WHILE */
+  {
+    /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
 		// Task wird jede Millisekunde ausgefuehrt
@@ -2833,18 +2835,29 @@ void MX_SPI4_Init(void)
  800150a:	4a1c      	ldr	r2, [pc, #112]	; (800157c <MX_SPI4_Init+0x78>)
  800150c:	601a      	str	r2, [r3, #0]
   hspi4.Init.Mode = SPI_MODE_MASTER;
+ 8001942:	4b1a      	ldr	r3, [pc, #104]	; (80019ac <MX_SPI4_Init+0x74>)
+ 8001944:	f44f 7282 	mov.w	r2, #260	; 0x104
+ 8001948:	605a      	str	r2, [r3, #4]
  800150e:	4b1a      	ldr	r3, [pc, #104]	; (8001578 <MX_SPI4_Init+0x74>)
  8001510:	f44f 7282 	mov.w	r2, #260	; 0x104
  8001514:	605a      	str	r2, [r3, #4]
   hspi4.Init.Direction = SPI_DIRECTION_2LINES;
+ 800194a:	4b18      	ldr	r3, [pc, #96]	; (80019ac <MX_SPI4_Init+0x74>)
+ 800194c:	2200      	movs	r2, #0
+ 800194e:	609a      	str	r2, [r3, #8]
  8001516:	4b18      	ldr	r3, [pc, #96]	; (8001578 <MX_SPI4_Init+0x74>)
  8001518:	2200      	movs	r2, #0
  800151a:	609a      	str	r2, [r3, #8]
   hspi4.Init.DataSize = SPI_DATASIZE_4BIT;
+ 8001950:	4b16      	ldr	r3, [pc, #88]	; (80019ac <MX_SPI4_Init+0x74>)
+ 8001952:	f44f 7240 	mov.w	r2, #768	; 0x300
+ 8001956:	60da      	str	r2, [r3, #12]
  800151c:	4b16      	ldr	r3, [pc, #88]	; (8001578 <MX_SPI4_Init+0x74>)
  800151e:	f44f 7240 	mov.w	r2, #768	; 0x300
  8001522:	60da      	str	r2, [r3, #12]
   hspi4.Init.CLKPolarity = SPI_POLARITY_LOW;
+ 8001958:	4b14      	ldr	r3, [pc, #80]	; (80019ac <MX_SPI4_Init+0x74>)
+ 800195a:	2200      	movs	r2, #0
  8001524:	4b14      	ldr	r3, [pc, #80]	; (8001578 <MX_SPI4_Init+0x74>)
  8001526:	2200      	movs	r2, #0
  8001528:	611a      	str	r2, [r3, #16]
@@ -4219,22 +4232,30 @@ Reset_Handler:
 
 /* Copy the data segment initializers from flash to SRAM */  
   movs  r1, #0
+ 8002020:	2100      	movs	r1, #0
  8001c70:	2100      	movs	r1, #0
   b  LoopCopyDataInit
+ 8002022:	e003      	b.n	800202c <LoopCopyDataInit>
  8001c72:	e003      	b.n	8001c7c <LoopCopyDataInit>
 
+08002024 <CopyDataInit>:
 08001c74 <CopyDataInit>:
 
 CopyDataInit:
   ldr  r3, =_sidata
+ 8002024:	4b0c      	ldr	r3, [pc, #48]	; (8002058 <LoopFillZerobss+0x18>)
  8001c74:	4b0c      	ldr	r3, [pc, #48]	; (8001ca8 <LoopFillZerobss+0x18>)
   ldr  r3, [r3, r1]
+ 8002026:	585b      	ldr	r3, [r3, r1]
  8001c76:	585b      	ldr	r3, [r3, r1]
   str  r3, [r0, r1]
+ 8002028:	5043      	str	r3, [r0, r1]
  8001c78:	5043      	str	r3, [r0, r1]
   adds  r1, r1, #4
+ 800202a:	3104      	adds	r1, #4
  8001c7a:	3104      	adds	r1, #4
 
+0800202c <LoopCopyDataInit>:
 08001c7c <LoopCopyDataInit>:
     
 LoopCopyDataInit:
@@ -6492,6 +6513,16 @@ void HAL_GPIO_Init(GPIO_TypeDef  *GPIOx, GPIO_InitTypeDef *GPIO_Init)
       {
         /* Enable SYSCFG Clock */
         __HAL_RCC_SYSCFG_CLK_ENABLE();
+ 800309a:	4b66      	ldr	r3, [pc, #408]	; (8003234 <HAL_GPIO_Init+0x324>)
+ 800309c:	6c5b      	ldr	r3, [r3, #68]	; 0x44
+ 800309e:	4a65      	ldr	r2, [pc, #404]	; (8003234 <HAL_GPIO_Init+0x324>)
+ 80030a0:	f443 4380 	orr.w	r3, r3, #16384	; 0x4000
+ 80030a4:	6453      	str	r3, [r2, #68]	; 0x44
+ 80030a6:	4b63      	ldr	r3, [pc, #396]	; (8003234 <HAL_GPIO_Init+0x324>)
+ 80030a8:	6c5b      	ldr	r3, [r3, #68]	; 0x44
+ 80030aa:	f403 4380 	and.w	r3, r3, #16384	; 0x4000
+ 80030ae:	60fb      	str	r3, [r7, #12]
+ 80030b0:	68fb      	ldr	r3, [r7, #12]
  8002906:	4b66      	ldr	r3, [pc, #408]	; (8002aa0 <HAL_GPIO_Init+0x324>)
  8002908:	6c5b      	ldr	r3, [r3, #68]	; 0x44
  800290a:	4a65      	ldr	r2, [pc, #404]	; (8002aa0 <HAL_GPIO_Init+0x324>)
@@ -6504,6 +6535,12 @@ void HAL_GPIO_Init(GPIO_TypeDef  *GPIOx, GPIO_InitTypeDef *GPIO_Init)
  800291c:	68fb      	ldr	r3, [r7, #12]
 
         temp = SYSCFG->EXTICR[position >> 2];
+ 80030b2:	4a61      	ldr	r2, [pc, #388]	; (8003238 <HAL_GPIO_Init+0x328>)
+ 80030b4:	69fb      	ldr	r3, [r7, #28]
+ 80030b6:	089b      	lsrs	r3, r3, #2
+ 80030b8:	3302      	adds	r3, #2
+ 80030ba:	f852 3023 	ldr.w	r3, [r2, r3, lsl #2]
+ 80030be:	61bb      	str	r3, [r7, #24]
  800291e:	4a61      	ldr	r2, [pc, #388]	; (8002aa4 <HAL_GPIO_Init+0x328>)
  8002920:	69fb      	ldr	r3, [r7, #28]
  8002922:	089b      	lsrs	r3, r3, #2
@@ -6511,6 +6548,15 @@ void HAL_GPIO_Init(GPIO_TypeDef  *GPIOx, GPIO_InitTypeDef *GPIO_Init)
  8002926:	f852 3023 	ldr.w	r3, [r2, r3, lsl #2]
  800292a:	61bb      	str	r3, [r7, #24]
         temp &= ~(((uint32_t)0x0F) << (4 * (position & 0x03)));
+ 80030c0:	69fb      	ldr	r3, [r7, #28]
+ 80030c2:	f003 0303 	and.w	r3, r3, #3
+ 80030c6:	009b      	lsls	r3, r3, #2
+ 80030c8:	220f      	movs	r2, #15
+ 80030ca:	fa02 f303 	lsl.w	r3, r2, r3
+ 80030ce:	43db      	mvns	r3, r3
+ 80030d0:	69ba      	ldr	r2, [r7, #24]
+ 80030d2:	4013      	ands	r3, r2
+ 80030d4:	61bb      	str	r3, [r7, #24]
  800292c:	69fb      	ldr	r3, [r7, #28]
  800292e:	f003 0303 	and.w	r3, r3, #3
  8002932:	009b      	lsls	r3, r3, #2
@@ -6521,6 +6567,17 @@ void HAL_GPIO_Init(GPIO_TypeDef  *GPIOx, GPIO_InitTypeDef *GPIO_Init)
  800293e:	4013      	ands	r3, r2
  8002940:	61bb      	str	r3, [r7, #24]
         temp |= ((uint32_t)(GPIO_GET_INDEX(GPIOx)) << (4 * (position & 0x03)));
+ 80030d6:	687b      	ldr	r3, [r7, #4]
+ 80030d8:	4a58      	ldr	r2, [pc, #352]	; (800323c <HAL_GPIO_Init+0x32c>)
+ 80030da:	4293      	cmp	r3, r2
+ 80030dc:	d037      	beq.n	800314e <HAL_GPIO_Init+0x23e>
+ 80030de:	687b      	ldr	r3, [r7, #4]
+ 80030e0:	4a57      	ldr	r2, [pc, #348]	; (8003240 <HAL_GPIO_Init+0x330>)
+ 80030e2:	4293      	cmp	r3, r2
+ 80030e4:	d031      	beq.n	800314a <HAL_GPIO_Init+0x23a>
+ 80030e6:	687b      	ldr	r3, [r7, #4]
+ 80030e8:	4a56      	ldr	r2, [pc, #344]	; (8003244 <HAL_GPIO_Init+0x334>)
+ 80030ea:	4293      	cmp	r3, r2
  8002942:	687b      	ldr	r3, [r7, #4]
  8002944:	4a58      	ldr	r2, [pc, #352]	; (8002aa8 <HAL_GPIO_Init+0x32c>)
  8002946:	4293      	cmp	r3, r2
@@ -6701,6 +6758,10 @@ void HAL_GPIO_Init(GPIO_TypeDef  *GPIOx, GPIO_InitTypeDef *GPIO_Init)
  8002a72:	d003      	beq.n	8002a7c <HAL_GPIO_Init+0x300>
         {
           temp |= iocurrent;
+ 8002a74:	69ba      	ldr	r2, [r7, #24]
+ 8002a76:	693b      	ldr	r3, [r7, #16]
+ 8002a78:	4313      	orrs	r3, r2
+ 8002a7a:	61bb      	str	r3, [r7, #24]
  8002a74:	69ba      	ldr	r2, [r7, #24]
  8002a76:	693b      	ldr	r3, [r7, #16]
  8002a78:	4313      	orrs	r3, r2
@@ -10659,6 +10720,14 @@ void HAL_TIM_IRQHandler(TIM_HandleTypeDef *htim)
  8004182:	2b02      	cmp	r3, #2
  8004184:	d122      	bne.n	80041cc <HAL_TIM_IRQHandler+0x5c>
   {
+    /* TI1 Configuration */
+    TIM_TI1_SetConfig(htim->Instance,
+ 8004860:	68fb      	ldr	r3, [r7, #12]
+ 8004862:	6818      	ldr	r0, [r3, #0]
+ 8004864:	68bb      	ldr	r3, [r7, #8]
+ 8004866:	6819      	ldr	r1, [r3, #0]
+ 8004868:	68bb      	ldr	r3, [r7, #8]
+ 800486a:	685a      	ldr	r2, [r3, #4]
     if (__HAL_TIM_GET_IT_SOURCE(htim, TIM_IT_CC1) != RESET)
  8004186:	687b      	ldr	r3, [r7, #4]
  8004188:	681b      	ldr	r3, [r3, #0]
@@ -11798,6 +11867,7 @@ __weak void HAL_TIM_TriggerCallback(TIM_HandleTypeDef *htim)
  80047ca:	4770      	bx	lr
 
 080047cc <TIM_Base_SetConfig>:
+080047cc <TIM_Base_SetConfig>:
   * @param  TIMx TIM peripheral
   * @param  Structure TIM Base configuration structure
   * @retval None
@@ -12764,6 +12834,9 @@ static void TIM_OC5_SetConfig(TIM_TypeDef *TIMx,
 
   /* Write to TIMx CCMR3 */
   TIMx->CCMR3 = tmpccmrx;
+ 8004cf4:	687b      	ldr	r3, [r7, #4]
+ 8004cf6:	68fa      	ldr	r2, [r7, #12]
+ 8004cf8:	655a      	str	r2, [r3, #84]	; 0x54
  8004cf4:	687b      	ldr	r3, [r7, #4]
  8004cf6:	68fa      	ldr	r2, [r7, #12]
  8004cf8:	655a      	str	r2, [r3, #84]	; 0x54
@@ -13862,6 +13935,10 @@ HAL_StatusTypeDef HAL_TIMEx_MasterConfigSynchronization(TIM_HandleTypeDef *htim,
 
     /* Update TIMx SMCR */
     htim->Instance->SMCR = tmpsmcr;
+ 8005316:	687b      	ldr	r3, [r7, #4]
+ 8005318:	681b      	ldr	r3, [r3, #0]
+ 800531a:	68ba      	ldr	r2, [r7, #8]
+ 800531c:	609a      	str	r2, [r3, #8]
  8005316:	687b      	ldr	r3, [r7, #4]
  8005318:	681b      	ldr	r3, [r3, #0]
  800531a:	68ba      	ldr	r2, [r7, #8]

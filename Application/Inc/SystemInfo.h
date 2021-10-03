@@ -53,6 +53,7 @@ void printResetSource(reset_reason reset_flags);						// Schreibt Systemreset au
 void collectHardwareInfo(void);											// Sammle Hardware Informationen
 void collectSoftwareInfo(void);											// Sammle Software Informationen
 void collectMiddlewareInfo(void);										// Sammle Middleware Informationen
+void collectGitcounts(void);											// Sammle Git Count Informationen
 //----------------------------------------------------------------------
 
 #endif /* INC_SYSTEMINFO_H_ */

@@ -72,14 +72,16 @@ union komfort_in_tag {
 
 // Definiere Konstanten
 //----------------------------------------------------------------------
-#define SYSTEM_INPUT					0b00000000							// 8 Bit, 6 Systemeingaenge
+#define SYSTEM_INPUT					0b00000111							// 8 Bit, 6 Systemeingaenge
 #define KOMFORT_INPUT					0b00000000							// 8 Bit, 1 Komforteingaenge
 #define SDC_INPUT						0b00000000							// 8 Bit, 5 SDC-Eingaenge
 //----------------------------------------------------------------------
 
 // Funktionen definieren
 //----------------------------------------------------------------------
-void readall_inputs(void);
+void readall_inputs(void);													// Lese alle Eingaenge
+void read_sdc(void);														// Lese alle Pins vom SDC
+//void read_
 //----------------------------------------------------------------------
 
 #endif /* INC_INPUTS_H_ */
