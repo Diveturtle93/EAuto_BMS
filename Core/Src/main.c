@@ -92,6 +92,7 @@ int main(void)
   /* USER CODE BEGIN Init */
 	// Definiere Variablen fuer Main-Funktion
 	uint16_t dutyCycle, timerPeriod, frequency, count = 0, R_IMD;
+	uint8_t start_flag = 0;
 
 	// Definiere Variablen fuer Main-Funktion
 	uint8_t TxData[8], OutData[4], InData[3], status;
@@ -261,10 +262,13 @@ int main(void)
 		{
 			count++;													// Zaehler count hochzaehlen
 			millisekunden_flag_1 = 0;									// Setze Millisekunden-Flag zurueck
+
+			// Setzen des Start Flags,  damit Tasks nur einmal pro ms aufgerufen werden kann
+			start_flag = 1;												// Setze Start Flag
 		}
 
 		// Task wird alle 500 Millisekunden ausgefuehrt
-		if ((count % 500) == 0)
+		if (((count % 500) == 0) && (start_flag == 1))
 		{
 			if (rising != 0 && falling != 0)
 			{
@@ -356,7 +360,7 @@ int main(void)
 						{
 							system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;
 						}
-						break;
+						break;																// IMD Error, kein anderes Ereignis zutrefend
 					default:
 						system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;
 						break;
@@ -390,7 +394,7 @@ int main(void)
 						{
 							system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;
 						}
-						break;
+						break;																// IMD Error, kein anderes Ereignis zutrefend
 					default:
 						system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;
 						break;
@@ -425,6 +429,9 @@ int main(void)
 			status = HAL_CAN_AddTxMessage(&hcan3, &TxMessage, TxData, (uint32_t *)CAN_TX_MAILBOX0);
 			hal_error(status);
 		}
+
+		// Zuruecksetzen des Start Flags, damit Tasks erst nach einer ms wieder aufgerufen werden kann
+		start_flag = 0;																		// Zuruechsetze Start Flag
   }
   /* USER CODE END 3 */
 }
