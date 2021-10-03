@@ -10,6 +10,7 @@ C_SRCS += \
 ../Application/Src/LTC6811.c \
 ../Application/Src/SystemInfo.c \
 ../Application/Src/error.c \
+../Application/Src/imd.c \
 ../Application/Src/inputs.c \
 ../Application/Src/millis.c \
 ../Application/Src/my_math.c \
@@ -21,6 +22,7 @@ OBJS += \
 ./Application/Src/LTC6811.o \
 ./Application/Src/SystemInfo.o \
 ./Application/Src/error.o \
+./Application/Src/imd.o \
 ./Application/Src/inputs.o \
 ./Application/Src/millis.o \
 ./Application/Src/my_math.o \
@@ -32,6 +34,7 @@ C_DEPS += \
 ./Application/Src/LTC6811.d \
 ./Application/Src/SystemInfo.d \
 ./Application/Src/error.d \
+./Application/Src/imd.d \
 ./Application/Src/inputs.d \
 ./Application/Src/millis.d \
 ./Application/Src/my_math.d \

@@ -23,7 +23,7 @@
 #define IMD_GERAETEFEHLER					4								// 4 = Geraetefehler, 40Hz
 #define IMD_ANSCHLUSSFEHLER_ERDE			5								// 5 = Anschlussfehler gegen Erde, 50Hz
 #define IMD_KURZSCHLUSS_KL15				6								// 6 = Kurzschluss gegen KL15, 0Hz
-#define IMD_ERROR							7								// 7 = IMD Error, Frequenz ausserhalb des gueltigen Bereiches
+#define IMD_FREQ_ERROR						7								// 7 = IMD Error, Frequenz ausserhalb des gueltigen Bereiches
 //----------------------------------------------------------------------
 
 // ... definieren

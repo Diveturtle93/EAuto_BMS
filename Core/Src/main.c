@@ -135,21 +135,12 @@ int main(void)
   	collectSystemInfo();
 #endif
 
-	// Leds Testen
-  	testPCB_Leds();
-
-  	// Lese alle Eingaenge
-  	readall_inputs();
-
 	timerPeriod = (HAL_RCC_GetPCLK2Freq() / htim1.Init.Prescaler);
   	// Start timer
 	if (HAL_TIM_Base_Start_IT(&htim1) != HAL_OK);
 	if (HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_1) != HAL_OK);
 	if (HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_2) != HAL_OK);
   	HAL_TIM_Base_Start(&htim6);
-	// Sammel Systeminformationen
-	collectSystemInfo();
-#endif
 
 	// Leds Testen
 	testPCB_Leds();
@@ -197,7 +188,9 @@ int main(void)
 
     // Test CAN Nachricht beschreiben
     for (uint8_t j = 0; j < 8; j++)
+    {
     	TxData[j] = (j + 1);
+    }
 
 	if (!(sdc_in.sdcinput && 0b00001111))										// SDC OK; Motor, BTB, IMD und HVIL OK
 	{
@@ -207,10 +200,10 @@ int main(void)
 		// LEDs setzen bei SDC Fehler
 		leuchten_out.GreenLed = 0;
 		leuchten_out.RedLed = 1;
-		leuchten_out.AkkuLed = 0;
+		leuchten_out.AkkuErrorLed = 0;
 		HAL_GPIO_WritePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin, leuchten_out.GreenLed);
 		HAL_GPIO_WritePin(RED_LED_GPIO_Port, RED_LED_Pin, leuchten_out.RedLed);
-		HAL_GPIO_WritePin(AKKU_LED_GPIO_Port, AKKU_LED_Pin, leuchten_out.AkkuLed);
+		HAL_GPIO_WritePin(AKKU_LED_GPIO_Port, AKKU_LED_Pin, leuchten_out.AkkuErrorLed);
 
 		// Ausgabe welcher Fehler vorhanden
 		// Motorsteuergeraet Fehler
@@ -312,7 +305,7 @@ int main(void)
 						}
 						else																// IMD Invalid
 						{
-							system_in.IMD_PWM_STATUS = IMD_ERROR;
+							system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;
 						}
 						break;
 					case 20:
@@ -324,7 +317,7 @@ int main(void)
 						}
 						else																// IMD Invalid
 						{
-							system_in.IMD_PWM_STATUS = IMD_ERROR;
+							system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;
 						}
 						break;
 					case 30:
@@ -339,7 +332,7 @@ int main(void)
 						}
 						else																// IMD Fehlerhaft
 						{
-							system_in.IMD_PWM_STATUS = IMD_ERROR;
+							system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;
 						}
 						break;
 					case 40:
@@ -350,7 +343,7 @@ int main(void)
 						}
 						else																// IMD Invalid
 						{
-							system_in.IMD_PWM_STATUS = IMD_ERROR;
+							system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;
 						}
 						break;
 					case 50:
@@ -361,11 +354,11 @@ int main(void)
 						}
 						else																// IMD Invalid
 						{
-							system_in.IMD_PWM_STATUS = IMD_ERROR;
+							system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;
 						}
 						break;
 					default:
-						system_in.IMD_PWM_STATUS = IMD_ERROR;
+						system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;
 						break;
 				}
 			}
@@ -383,7 +376,7 @@ int main(void)
 						}
 						else																// IMD Invalid
 						{
-							system_in.IMD_PWM_STATUS = IMD_ERROR;
+							system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;
 						}
 						break;
 					case 20:
@@ -395,11 +388,11 @@ int main(void)
 						}
 						else																// IMD Invalid
 						{
-							system_in.IMD_PWM_STATUS = IMD_ERROR;
+							system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;
 						}
 						break;
 					default:
-						system_in.IMD_PWM_STATUS = IMD_ERROR;
+						system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;
 						break;
 				}
 			}
