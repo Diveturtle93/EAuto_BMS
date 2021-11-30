@@ -125,7 +125,7 @@ int main(void)
   	readall_inputs();
 
   	// IsoSPI einschalten, Isolierte Spannungsversorgung IsoSPI und HV-Precharge Messung einschalten
-    HAL_GPIO_WritePin(ISOSPI_EN_GPIO_Port, ISOSPI_EN_Pin, GPIO_PIN_SET);
+  	ISOSPI_ENABLE();
 
     uartTransmit("\n", 1);
 #define TEST_LTC6811	"Starte Batteriemanagement-System\n"

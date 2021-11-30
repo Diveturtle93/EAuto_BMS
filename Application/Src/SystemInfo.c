@@ -62,7 +62,7 @@ void collectHardwareInfo(void)
 	uartTransmit(STRING_STM_FREQ, sizeof(STRING_STM_FREQ));
 	{
 		uint32_t frequency = HAL_RCC_GetSysClockFreq();						// Systemfrequenz ausgeben
-		frequency = frequency/1000000;
+		frequency = frequency / 1000000;
 
 		uartTransmitNumber(frequency, 10);
 	}

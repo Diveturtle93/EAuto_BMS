@@ -25,16 +25,16 @@
 void hal_error(uint8_t status)
 {
 #ifdef DEBUG
-	if (status == HAL_OK) {												// HAL OK
+	if (status == HAL_OK) {													// HAL OK
 		uartTransmit("HAL OK\n", 7);
 	}
-	else if (status == HAL_ERROR) {										// HAL Error
+	else if (status == HAL_ERROR) {											// HAL Error
 		uartTransmit("HAL ERROR\n", 10);
 	}
-	else if (status == HAL_BUSY) {										// HAL Beschaeftigt
+	else if (status == HAL_BUSY) {											// HAL Beschaeftigt
 		uartTransmit("HAL BUSY\n", 9);
 	}
-	else if (status == HAL_TIMEOUT) {									// HAL Timeout
+	else if (status == HAL_TIMEOUT) {										// HAL Timeout
 		uartTransmit("HAL TIMEOUT\n", 12);
 	}
 #endif
@@ -74,6 +74,7 @@ void software_error(uint8_t errorcode)
 //----------------------------------------------------------------------
 void ITM_SendString(char *ptr)
 {
+	// So lange *text != '\0', also ungleich dem "String-Endezeichen(Terminator)"
 	while(*ptr)																// Starte Pointerschleife
 	{
 		ITM_SendChar(*ptr);													// Sende ITM Zeichen

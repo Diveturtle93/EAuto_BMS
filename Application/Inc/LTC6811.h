@@ -19,6 +19,11 @@
 #include "inttypes.h"
 //----------------------------------------------------------------------
 
+// Define Debug Symbols
+//----------------------------------------------------------------------
+#define DEBUG_LTC6811
+//----------------------------------------------------------------------
+
 // Allgemeine Einstellungen
 //----------------------------------------------------------------------
 #define LTC6811_DEVICES				1										// Number of devices in daisy chain
@@ -159,6 +164,12 @@
 //----------------------------------------------------------------------
 #define ISOCS_ENABLE() (HAL_GPIO_WritePin(ISOSPI_CS_GPIO_Port, ISOSPI_CS_Pin, GPIO_PIN_RESET))		// Chip-Select enable
 #define ISOCS_DISABLE() (HAL_GPIO_WritePin(ISOSPI_CS_GPIO_Port, ISOSPI_CS_Pin, GPIO_PIN_SET))		// Chip-Select disable
+//----------------------------------------------------------------------
+
+// Definiere IsoSPI Enable Leitung
+//----------------------------------------------------------------------
+#define ISOSPI_ENABLE() (HAL_GPIO_WritePin(ISOSPI_EN_GPIO_Port, ISOSPI_EN_Pin, GPIO_PIN_SET))		// Iso SPI enable
+#define ISOSPI_DISABLE() (HAL_GPIO_WritePin(ISOSPI_EN_GPIO_Port, ISOSPI_EN_Pin, GPIO_PIN_RESET))	// Iso SPI disable
 //----------------------------------------------------------------------
 
 // Funktionen definieren

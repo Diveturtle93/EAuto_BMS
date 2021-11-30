@@ -21,6 +21,7 @@
 // Einfuegen der eigenen Include Dateien
 //----------------------------------------------------------------------
 #include "ltc6811.h"
+#include "BasicUart.h"
 //----------------------------------------------------------------------
 
 // Pec Lookuptabelle definieren
@@ -65,7 +66,12 @@ const uint16_t pec15Table[256] = {
 //----------------------------------------------------------------------
 void wakeup_ltc6811(void)
 {
-	for(uint8_t i=0; i<LTC6811_DEVICES; i++)								// Wiederholen fuer Anzahl Slaves
+	// Debug Nachricht
+#ifdef DEBUG_LTC6811
+	uartTransmitString("Chip wird geweckt.\n");
+#endif
+
+	for(uint8_t i = 0; i < LTC6811_DEVICES; i++)							// Wiederholen fuer Anzahl Slaves
 	{
 		// ISOCS einschalten
 		ISOCS_ENABLE();														// Chip-Select einschalten
@@ -82,6 +88,11 @@ void wakeup_ltc6811(void)
 //----------------------------------------------------------------------
 void ltc6811(uint16_t command)
 {
+	// Debug Nachricht
+#ifdef DEBUG_LTC6811
+	uartTransmitString("Aufruf von Transcreceive LTC6811.\n");
+#endif
+
 	// PEC berechnen, Anhand Command
 	uint16_t pec;															// pec = Zwischenspeicher 16-Bit Command
 	uint8_t cmd[4];															// Zwischenspeicher Command + Pec CRC
@@ -116,6 +127,20 @@ void ltc6811(uint16_t command)
 	// ISOCS ausschalten
 	ISOCS_DISABLE();
 	// Ende der Uebertragung
+
+	// Debug Nachricht
+#ifdef DEBUG_LTC6811
+	uartTransmitString("Command wurde gesendet.\n");
+	uartTransmitString("Folgendes wurde gesendet:");
+
+	// Sende Command auf UART
+	for (uint8_t i = 0; i < 4; i++)
+	{
+		uartTransmit(" ", 1);
+		uartTransmitNumber(cmd[i], 10);
+	}
+	uartTransmit("\n", 1);
+#endif
 }
 //----------------------------------------------------------------------
 
@@ -124,6 +149,11 @@ void ltc6811(uint16_t command)
 //----------------------------------------------------------------------
 void ltc6811_write(uint16_t command, uint8_t* data)
 {
+	// Debug Nachricht
+#ifdef DEBUG_LTC6811
+	uartTransmitString("Aufruf von Transceive LTC6811.\n"); // 31
+#endif
+
 	// PEC berechnen, fuer Data Funktion nur bei einem Device gegeben
 	uint16_t pec_c, pec_d;													// pec_c = Zwischenspeicher 16-Bit Command, pec_d = Zwischenspeicher 16-Bit Data
 	uint8_t cmd[4];															// Zwischenspeicher Command + Pec CRC
@@ -159,6 +189,31 @@ void ltc6811_write(uint16_t command, uint8_t* data)
 	// ISOCS ausschalten
 	ISOCS_DISABLE();
 	// Ende der Uebertragung
+
+	// Debug Nachricht
+#ifdef DEBUG_LTC6811
+	uartTransmitString("Command wurde gesendet.\n");
+	uartTransmitString("Folgendes wurde gesendet:");
+
+	// Sende Command auf UART
+	for (uint8_t i = 0; i < 4; i++)
+	{
+		uartTransmit(" ", 1);
+		uartTransmitNumber(cmd[i], 10);
+	}
+	uartTransmit("\n", 1);
+
+	uartTransmitString("Daten wurde gesendet.\n");
+	uartTransmitString("Folgendes wurde gesendet:");
+
+	// Sende Daten auf UART
+	for (uint8_t i = 0; i < 8; i++)
+	{
+		uartTransmit(" ", 1);
+		uartTransmitNumber(data[i], 10);
+	}
+	uartTransmit("\n", 1);
+#endif
 }
 //----------------------------------------------------------------------
 
@@ -166,6 +221,11 @@ void ltc6811_write(uint16_t command, uint8_t* data)
 //----------------------------------------------------------------------
 uint8_t ltc6811_read(uint16_t command, uint8_t* data)
 {
+	// Debug Nachricht
+#ifdef DEBUG_LTC6811
+	uartTransmitString("Aufruf von Receive LTC6811.\n");
+#endif
+
 	// PEC berechnen, Anhand Command
 	uint16_t pec;															// pec = Zwischenspeicher 16-Bit Command
 	uint8_t cmd[4];															// Zwischenspeicher Command + Pec CRC
@@ -196,6 +256,31 @@ uint8_t ltc6811_read(uint16_t command, uint8_t* data)
 	// ISOCS ausschalten
 	ISOCS_DISABLE();
 	// Ende der Uebertragung
+
+	// Debug Nachricht
+#ifdef DEBUG_LTC6811
+	uartTransmitString("Command wurde empfangen.\n");
+	uartTransmitString("Folgendes wurde empfangen:");
+
+	// Sende Command auf UART
+	for (uint8_t i = 0; i < 4; i++)
+	{
+		uartTransmit(" ", 1);
+		uartTransmitNumber(cmd[i], 10);
+	}
+	uartTransmit("\n", 1);
+
+	uartTransmitString("Daten wurde empfangen.\n");
+	uartTransmitString("Folgendes wurde empfangen:");
+
+	// Sende Daten auf UART
+	for (uint8_t i = 0; i < 8; i++)
+	{
+		uartTransmit(" ", 1);
+		uartTransmitNumber(data[i], 10);
+	}
+	uartTransmit("\n", 1);
+#endif
 
 	return 0;
 }
@@ -271,6 +356,11 @@ void init_crc(void)
 //----------------------------------------------------------------------
 uint8_t ltc6811_check(void)
 {
+	// Debug Nachricht
+#ifdef DEBUG_LTC6811
+	uartTransmitString("Aufruf von Check LTC6811.\n");
+#endif
+
 	// Variablen definieren
 	uint8_t tmp_data[64] = {0}, error = 0;									// Speicher Registerwerte, Fehlerspeicher
 
@@ -286,34 +376,41 @@ uint8_t ltc6811_check(void)
 	ltc6811_read(RDSTATB, &tmp_data[0]);
 
 	// Thermal Shutdown pruefen
-	if (tmp_data[5] & !(1<<0))
+	if (tmp_data[5] & !(1 << 0))
 	{
-		error |= (1<<0);													// Thermal Shutdown nicht Ok
+		error |= (1 << 0);													// Thermal Shutdown nicht Ok
 	}
 
 	// Selbsttest 1 Digitale Filter
 	if (ltc6811_test(ST1 | MD73) == 1)
 	{
-		error |= (1<<1);													// Selbsttest 1 nicht bestanden
+		error |= (1 << 1);													// Selbsttest 1 nicht bestanden
 	}
 
 	// Selbsttest 2 Digitale Filter
 	if (ltc6811_test(ST2 | MD73) == 1)
 	{
-		error |= (1<<2);													// Selbsttest 2 nicht bestanden
+		error |= (1 << 2);													// Selbsttest 2 nicht bestanden
 	}
 
 	// Selbsttest Multiplexer
 	if (ltc6811_diagn() == 1)
 	{
-		error |= (1<<3);													// Multiplexertest nicht bestanden
+		error |= (1 << 3);													// Multiplexertest nicht bestanden
 	}
 
 	// Open Wire Check durchfuehren
 	if (ltc6811_openwire() == 1)
 	{
-		error |= (1<<4);													// Open-Wire Test nicht bestanden
+		error |= (1 << 4);													// Open-Wire Test nicht bestanden
 	}
+
+	// Debug Nachricht
+#ifdef DEBUG_LTC6811
+	uartTransmitString("Error Code:\t");
+	uartTransmitNumber(error, 10);
+	uartTransmit("\n", 1);
+#endif
 
 	// Fehlercode zurueckgeben
 	return error;															// Fehler 0 = alles Ok, Fehler > 0 = Selbsttest fehlerhaft
@@ -324,6 +421,11 @@ uint8_t ltc6811_check(void)
 //----------------------------------------------------------------------
 uint8_t ltc6811_test(uint16_t command)
 {
+	// Debug Nachricht
+#ifdef DEBUG_LTC6811
+	uartTransmitString("Aufruf von Test LTC6811.\n");
+#endif
+
 	// Variablen definieren
 	uint8_t tmp_data[64] = {0};												// Speicher Registerwerte
 	uint16_t tmp = 0, test_pattern = 0;										// Zwischenspeicher, Kontrollvariable Selbsttest
@@ -428,41 +530,41 @@ uint8_t ltc6811_test(uint16_t command)
 			case 3:
 			case 4:
 			case 5:
-				tmp = ((tmp_data[i*2+3]<<8)|tmp_data[i*2+2]);				// Register CVB umwandeln
+				tmp = ((tmp_data[i*2+3] << 8)|tmp_data[i*2+2]);				// Register CVB umwandeln
 				break;
 			// Register CVC
 			case 6:
 			case 7:
 			case 8:
-				tmp = ((tmp_data[(i+2)*2+1]<<8)|tmp_data[(i+2)*2]);			// Register CVC umwandeln
+				tmp = ((tmp_data[(i+2)*2+1] << 8)|tmp_data[(i+2)*2]);		// Register CVC umwandeln
 				break;
 			// Register CVD
 			case 9:
 			case 10:
 			case 11:
-				tmp = ((tmp_data[(i+2)*2+3]<<8)|tmp_data[(i+2)*2+2]);		// Register CVD umwandeln
+				tmp = ((tmp_data[(i+2)*2+3] << 8)|tmp_data[(i+2)*2+2]);		// Register CVD umwandeln
 				break;
 			// Register AUXA
 			case 12:
 			case 13:
 			case 14:
-				tmp = ((tmp_data[(i+4)*2+1]<<8)|tmp_data[(i+4)*2+1]);		// Register AUXA umwandeln
+				tmp = ((tmp_data[(i+4)*2+1] << 8)|tmp_data[(i+4)*2+1]);		// Register AUXA umwandeln
 				break;
 			// Register AUXB
 			case 15:
 			case 16:
 			case 17:
-				tmp = ((tmp_data[(i+4)*2+3]<<8)|tmp_data[(i+4)*2+2]);		// Register AUXB umwandeln
+				tmp = ((tmp_data[(i+4)*2+3] << 8)|tmp_data[(i+4)*2+2]);		// Register AUXB umwandeln
 				break;
 			// Register STATA
 			case 18:
 			case 29:
 			case 20:
-				tmp = ((tmp_data[(i+6)*2+3]<<8)|tmp_data[(i+6)*2+2]);		// Register STATA umwandeln
+				tmp = ((tmp_data[(i+6)*2+3] << 8)|tmp_data[(i+6)*2+2]);		// Register STATA umwandeln
 				break;
 			// Register STATB
 			case 21:
-				tmp = ((tmp_data[(i+6)*2+3]<<8)|tmp_data[(i+6)*2+2]);		// Register STATB umwandeln
+				tmp = ((tmp_data[(i+6)*2+3] << 8)|tmp_data[(i+6)*2+2]);		// Register STATB umwandeln
 				break;
 			// Kein Register
 			default:
@@ -484,6 +586,11 @@ uint8_t ltc6811_test(uint16_t command)
 //----------------------------------------------------------------------
 uint8_t ltc6811_diagn(void)
 {
+	// Debug Nachricht
+#ifdef DEBUG_LTC6811
+	uartTransmitString("Aufruf von Diagnostic LTC6811.\n");
+#endif
+
 	// Variablen definieren
 	uint8_t tmp_data[8] = {0};												// Speicher Registerwerte
 
@@ -500,7 +607,7 @@ uint8_t ltc6811_diagn(void)
 	ltc6811_read(RDSTATB, &tmp_data[0]);									// Lese Status B Register fuer Multiplexer Check
 
 	// Multiplexer pruefen
-	if (tmp_data[5] & (1<<1))
+	if (tmp_data[5] & (1 << 1))
 	{
 		return 1;															// Multiplexertest nicht OK
 	}
@@ -513,6 +620,11 @@ uint8_t ltc6811_diagn(void)
 //----------------------------------------------------------------------
 uint8_t ltc6811_openwire(void)
 {
+	// Debug Nachricht
+#ifdef DEBUG_LTC6811
+	uartTransmitString("Aufruf von Openwire LTC6811.\n");
+#endif
+
 	// Arrays definieren
 	uint8_t tmp_data[64] = {0};												// Speicher Registerwerte
 	uint16_t cell[1] = {0}, openwire[12] = {0};								// Speicher Zelle, Openwire vergleic Threshold
@@ -569,25 +681,25 @@ uint8_t ltc6811_openwire(void)
 			case 0:
 			case 1:
 			case 2:
-				openwire[i] = (((tmp_data[i*2+33]<<8) + tmp_data[i*2+32]) - ((tmp_data[i*2]<<8) + tmp_data[i*2]));
+				openwire[i] = (((tmp_data[i*2+33] << 8) + tmp_data[i*2+32]) - ((tmp_data[i*2+1] << 8) + tmp_data[i*2]));
 				break;
 			// Leitungen Zelle 4/5 bis 6/7
 			case 3:
 			case 4:
 			case 5:
-				openwire[i] = (((tmp_data[i*2+35]<<8) + tmp_data[i*2+34]) - ((tmp_data[i*2+2]<<8) + tmp_data[i*2+2]));
+				openwire[i] = (((tmp_data[i*2+35] << 8) + tmp_data[i*2+34]) - ((tmp_data[i*2+3] << 8) + tmp_data[i*2+2]));
 				break;
 			// Leitungen Zelle 7/8 bis 9/10
 			case 6:
 			case 7:
 			case 8:
-				openwire[i] = (((tmp_data[i*2+37]<<8) + tmp_data[i*2+36]) - ((tmp_data[i*2]<<8) + tmp_data[i*2]));
+				openwire[i] = (((tmp_data[i*2+37] << 8) + tmp_data[i*2+36]) - ((tmp_data[i*2+5] << 8) + tmp_data[i*2+4]));
 				break;
 			// Leitungen Zelle 10/11 und 11/12
 			case 9:
 			case 10:
 			case 11:
-				openwire[i] = (((tmp_data[i*2+39]<<8) + tmp_data[i*2+38]) - ((tmp_data[i*2]<<8) + tmp_data[i*2]));
+				openwire[i] = (((tmp_data[i*2+39] << 8) + tmp_data[i*2+38]) - ((tmp_data[i*2+7] << 8) + tmp_data[i*2+6]));
 				break;
 			default:
 			break;
@@ -600,20 +712,20 @@ uint8_t ltc6811_openwire(void)
 		// Vergleiche Messdaten mit Threshold
 		if (openwire[i] > OPENWIRE_THRESHOLD)
 		{
-			cell[0] |= (1<<i);												// Wenn Threshold ueberschritten, Offene Leitung
+			cell[0] |= (1 << i);											// Wenn Threshold ueberschritten, Offene Leitung
 		}
 	}
 
 	// Offene Leitung erste Zelle messen
-	if (openwire[0] == 0)
+	if (((tmp_data[1] << 8) + tmp_data[0]) == 0)
 	{
-		cell[0] |= (1<<0);													// Unterste Leitung Offen
+		cell[0] |= (1 << 0);												// Unterste Leitung Offen
 	}
 
 	// Offene Leitung letzte Zelle messen
-	if (openwire[11] == 0)
+	if (((tmp_data[61] << 8) + tmp_data[60]) == 0)
 	{
-		cell[0] |= (1<<11);													// Oberste Leitung offen
+		cell[0] |= (1 << 12);												// Oberste Leitung offen
 	}
 
 	// Wenn offene Leitung vorhanden
@@ -630,6 +742,11 @@ uint8_t ltc6811_openwire(void)
 //----------------------------------------------------------------------
 uint16_t ltc6811_poll(void)
 {
+	// Debug Nachricht
+#ifdef DEBUG_LTC6811
+	uartTransmitString("Aufruf von Polling LTC6811.\n");
+#endif
+
 	// PEC berechnen, Anhand Command
 	uint16_t counter = 0, pec;												// Counter fuer Timeout, pec = Zwischenspeicher 16-Bit Command
 	uint8_t finished = 0, current_time = 0;									// Finish fuer Uebertragung abgeschlossen, Zeit aus HAL_SPI_Receive
@@ -652,11 +769,11 @@ uint16_t ltc6811_poll(void)
 	HAL_SPI_Transmit(&hspi4, cmd, 4, 100);
 
 	// Warten das alle LTC6811 fertig mit der Conversation sind
-	while ((counter<20000)&&(finished == 0))
+	while ((counter < 20000) && (finished == 0))
 	{
 		current_time = HAL_SPI_Receive(&hspi4, (uint8_t*) 0xFF, 1, 100);
 
-		if (current_time>0)
+		if (current_time > 0)
 		{
 			finished = 1;
 		}
@@ -669,6 +786,13 @@ uint16_t ltc6811_poll(void)
 	// ISOCS ausschalten
 	ISOCS_DISABLE();
 	// Ende der Uebertragung
+
+	// Debug Nachricht
+#ifdef DEBUG_LTC6811
+	uartTransmitString("Counter Wert auslesen:\t");
+	uartTransmitNumber(counter, 10);
+	uartTransmit("\n", 1);
+#endif
 
 	return(counter);
 }
