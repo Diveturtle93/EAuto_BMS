@@ -21,7 +21,7 @@
 // Einfuegen der eigenen Include Dateien
 //----------------------------------------------------------------------
 #include "ltc6811.h"
-#include "BasicUart.h"
+#include "error.h"
 //----------------------------------------------------------------------
 
 // Pec Lookuptabelle definieren
@@ -68,7 +68,7 @@ void wakeup_ltc6811(void)
 {
 	// Debug Nachricht
 #ifdef DEBUG_LTC6811
-	uartTransmitString("Chip wird geweckt.\n");
+	ITM_SendString("Chip wird geweckt.\n");
 #endif
 
 	for(uint8_t i = 0; i < LTC6811_DEVICES; i++)							// Wiederholen fuer Anzahl Slaves
@@ -76,7 +76,10 @@ void wakeup_ltc6811(void)
 		// ISOCS einschalten
 		ISOCS_ENABLE();														// Chip-Select einschalten
 
-		HAL_Delay(2);														// isoSPI braucht Zeit bis ready
+		// Dummy Paket senden
+		HAL_SPI_Transmit(&hspi4, (uint8_t*)0xAA, 1, 100);					// Chip wecken
+
+//		HAL_Delay(2);														// isoSPI braucht Zeit bis ready
 
 		// ISOCS ausschalten
 		ISOCS_DISABLE();													// Chip-Select ausschalten
@@ -90,7 +93,7 @@ void ltc6811(uint16_t command)
 {
 	// Debug Nachricht
 #ifdef DEBUG_LTC6811
-	uartTransmitString("Aufruf von Transcreceive LTC6811.\n");
+	ITM_SendString("Aufruf von Transcreceive LTC6811.\n");
 #endif
 
 	// PEC berechnen, Anhand Command
@@ -130,16 +133,16 @@ void ltc6811(uint16_t command)
 
 	// Debug Nachricht
 #ifdef DEBUG_LTC6811
-	uartTransmitString("Command wurde gesendet.\n");
-	uartTransmitString("Folgendes wurde gesendet:");
+	ITM_SendString("Command wurde gesendet.\n");
+	ITM_SendString("Folgendes wurde gesendet:");
 
 	// Sende Command auf UART
 	for (uint8_t i = 0; i < 4; i++)
 	{
-		uartTransmit(" ", 1);
-		uartTransmitNumber(cmd[i], 10);
+		ITM_SendString(" ");
+		ITM_SendNumber(cmd[i]);
 	}
-	uartTransmit("\n", 1);
+	ITM_SendString("\n");
 #endif
 }
 //----------------------------------------------------------------------
@@ -151,7 +154,7 @@ void ltc6811_write(uint16_t command, uint8_t* data)
 {
 	// Debug Nachricht
 #ifdef DEBUG_LTC6811
-	uartTransmitString("Aufruf von Transceive LTC6811.\n"); // 31
+	ITM_SendString("Aufruf von Transceive LTC6811.\n"); // 31
 #endif
 
 	// PEC berechnen, fuer Data Funktion nur bei einem Device gegeben
@@ -192,27 +195,27 @@ void ltc6811_write(uint16_t command, uint8_t* data)
 
 	// Debug Nachricht
 #ifdef DEBUG_LTC6811
-	uartTransmitString("Command wurde gesendet.\n");
-	uartTransmitString("Folgendes wurde gesendet:");
+	ITM_SendString("Command wurde gesendet.\n");
+	ITM_SendString("Folgendes wurde gesendet:");
 
 	// Sende Command auf UART
 	for (uint8_t i = 0; i < 4; i++)
 	{
-		uartTransmit(" ", 1);
-		uartTransmitNumber(cmd[i], 10);
+		ITM_SendString(" ");
+		ITM_SendNumber(cmd[i]);
 	}
-	uartTransmit("\n", 1);
+	ITM_SendString("\n");
 
-	uartTransmitString("Daten wurde gesendet.\n");
-	uartTransmitString("Folgendes wurde gesendet:");
+	ITM_SendString("Daten wurde gesendet.\n");
+	ITM_SendString("Folgendes wurde gesendet:");
 
 	// Sende Daten auf UART
 	for (uint8_t i = 0; i < 8; i++)
 	{
-		uartTransmit(" ", 1);
-		uartTransmitNumber(data[i], 10);
+		ITM_SendString(" ");
+		ITM_SendNumber(data[i]);
 	}
-	uartTransmit("\n", 1);
+	ITM_SendString("\n");
 #endif
 }
 //----------------------------------------------------------------------
@@ -223,7 +226,7 @@ uint8_t ltc6811_read(uint16_t command, uint8_t* data)
 {
 	// Debug Nachricht
 #ifdef DEBUG_LTC6811
-	uartTransmitString("Aufruf von Receive LTC6811.\n");
+	ITM_SendString("Aufruf von Receive LTC6811.\n");
 #endif
 
 	// PEC berechnen, Anhand Command
@@ -259,27 +262,27 @@ uint8_t ltc6811_read(uint16_t command, uint8_t* data)
 
 	// Debug Nachricht
 #ifdef DEBUG_LTC6811
-	uartTransmitString("Command wurde empfangen.\n");
-	uartTransmitString("Folgendes wurde empfangen:");
+	ITM_SendString("Command wurde empfangen.\n");
+	ITM_SendString("Folgendes wurde empfangen:");
 
 	// Sende Command auf UART
 	for (uint8_t i = 0; i < 4; i++)
 	{
-		uartTransmit(" ", 1);
-		uartTransmitNumber(cmd[i], 10);
+		ITM_SendString(" ");
+		ITM_SendNumber(cmd[i]);
 	}
-	uartTransmit("\n", 1);
+	ITM_SendString("\n");
 
-	uartTransmitString("Daten wurde empfangen.\n");
-	uartTransmitString("Folgendes wurde empfangen:");
+	ITM_SendString("Daten wurde empfangen.\n");
+	ITM_SendString("Folgendes wurde empfangen:");
 
 	// Sende Daten auf UART
 	for (uint8_t i = 0; i < 8; i++)
 	{
-		uartTransmit(" ", 1);
-		uartTransmitNumber(data[i], 10);
+		ITM_SendString(" ");
+		ITM_SendNumber(data[i]);
 	}
-	uartTransmit("\n", 1);
+	ITM_SendString("\n");
 #endif
 
 	return 0;
@@ -358,7 +361,7 @@ uint8_t ltc6811_check(void)
 {
 	// Debug Nachricht
 #ifdef DEBUG_LTC6811
-	uartTransmitString("Aufruf von Check LTC6811.\n");
+	ITM_SendString("Aufruf von Check LTC6811.\n");
 #endif
 
 	// Variablen definieren
@@ -407,9 +410,9 @@ uint8_t ltc6811_check(void)
 
 	// Debug Nachricht
 #ifdef DEBUG_LTC6811
-	uartTransmitString("Error Code:\t");
-	uartTransmitNumber(error, 10);
-	uartTransmit("\n", 1);
+	ITM_SendString("Error Code:\t");
+	ITM_SendNumber(error);
+	ITM_SendString("\n");
 #endif
 
 	// Fehlercode zurueckgeben
@@ -423,7 +426,7 @@ uint8_t ltc6811_test(uint16_t command)
 {
 	// Debug Nachricht
 #ifdef DEBUG_LTC6811
-	uartTransmitString("Aufruf von Test LTC6811.\n");
+	ITM_SendString("Aufruf von Test LTC6811.\n");
 #endif
 
 	// Variablen definieren
@@ -588,7 +591,7 @@ uint8_t ltc6811_diagn(void)
 {
 	// Debug Nachricht
 #ifdef DEBUG_LTC6811
-	uartTransmitString("Aufruf von Diagnostic LTC6811.\n");
+	ITM_SendString("Aufruf von Diagnostic LTC6811.\n");
 #endif
 
 	// Variablen definieren
@@ -622,7 +625,7 @@ uint8_t ltc6811_openwire(void)
 {
 	// Debug Nachricht
 #ifdef DEBUG_LTC6811
-	uartTransmitString("Aufruf von Openwire LTC6811.\n");
+	ITM_SendString("Aufruf von Openwire LTC6811.\n");
 #endif
 
 	// Arrays definieren
@@ -744,7 +747,7 @@ uint16_t ltc6811_poll(void)
 {
 	// Debug Nachricht
 #ifdef DEBUG_LTC6811
-	uartTransmitString("Aufruf von Polling LTC6811.\n");
+	ITM_SendString("Aufruf von Polling LTC6811.\n");
 #endif
 
 	// PEC berechnen, Anhand Command
@@ -789,9 +792,9 @@ uint16_t ltc6811_poll(void)
 
 	// Debug Nachricht
 #ifdef DEBUG_LTC6811
-	uartTransmitString("Counter Wert auslesen:\t");
-	uartTransmitNumber(counter, 10);
-	uartTransmit("\n", 1);
+	ITM_SendString("Counter Wert auslesen:\t");
+	ITM_SendNumber(counter);
+	ITM_SendString("\n");
 #endif
 
 	return(counter);

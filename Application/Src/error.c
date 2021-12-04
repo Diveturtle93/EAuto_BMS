@@ -25,16 +25,16 @@
 void hal_error(uint8_t status)
 {
 #ifdef DEBUG
-	if (status == HAL_OK) {													// HAL OK
+	if(status == HAL_OK) {													// HAL OK
 		uartTransmit("HAL OK\n", 7);
 	}
-	else if (status == HAL_ERROR) {											// HAL Error
+	else if(status == HAL_ERROR) {											// HAL Error
 		uartTransmit("HAL ERROR\n", 10);
 	}
-	else if (status == HAL_BUSY) {											// HAL Beschaeftigt
+	else if(status == HAL_BUSY) {											// HAL Beschaeftigt
 		uartTransmit("HAL BUSY\n", 9);
 	}
-	else if (status == HAL_TIMEOUT) {										// HAL Timeout
+	else if(status == HAL_TIMEOUT) {										// HAL Timeout
 		uartTransmit("HAL TIMEOUT\n", 12);
 	}
 #endif
@@ -72,13 +72,108 @@ void software_error(uint8_t errorcode)
 // Core Clock := Maximalfrequenz
 // Im String #GRN# oder #RED# oder #ORG# erscheint die Nachricht in einer Farbe
 //----------------------------------------------------------------------
-void ITM_SendString(char *ptr)
+void ITM_SendString(char *text)
 {
+#ifdef DEBUG
 	// So lange *text != '\0', also ungleich dem "String-Endezeichen(Terminator)"
-	while(*ptr)																// Starte Pointerschleife
+	while(*text)															// Starte Pointerschleife
 	{
-		ITM_SendChar(*ptr);													// Sende ITM Zeichen
-		ptr++;																// Pointer hochzaehlen
+		ITM_SendChar(*text);												// Sende ITM Zeichen
+		text++;																// Pointer hochzaehlen
+	}
+#endif
+}
+//----------------------------------------------------------------------
+
+// Debug Nummer ueber SWO senden
+//----------------------------------------------------------------------
+void ITM_SendNumber(long number)
+{
+#ifdef DEBUG
+	// Variablen definieren
+	unsigned char buf[8 * sizeof(long)];
+	unsigned int i = 0;
+
+	// Wenn Nummer 0 ist
+	if(number == 0)
+	{
+		// Sende 0
+		ITM_SendChar('0');
+
+		// Beende Funktion
+		return;
+	}
+
+	// Wenn Zahl negativ ist
+	if(number < 0)
+	{
+		// Vorzeichen senden
+		ITM_SendChar('-');
+
+		// Nummer invertieren
+		number = number * -1;
+	}
+
+	// Berechne Ziffern bis Zahl 0 ist
+	while(number > 0)
+	{
+		// Ziffern in Puffer schreiben
+		buf[i++] = number % 10;												// Rest berechnen
+		number = number / 10;												// Dividiere durch 10
+	}
+
+	// Sende Zeichen
+	for(; i > 0; i--)
+	{
+		ITM_SendChar('0' + buf[i-1]);
+	}
+#endif
+}
+//----------------------------------------------------------------------
+
+//----------------------------------------------------------------------
+void ITM_SendFloat(double number, int digits)
+{
+	int i = 0;
+
+	// Negative Nummern
+	if(number < 0.0)
+	{
+		ITM_SendChar('-');
+		number = -number;
+	}
+
+	// Runde Zahl auf die angegebene Nachkommazahl, (1.999, 2) wird als "2.00" angezeigt
+	double rounding = 0.5;
+
+	// Schleife mit anzahl Nachkommastellen
+	for(i = 0; i < digits; i++)
+	{
+		rounding = rounding / 10.0;
+	}
+
+	number = number + rounding;
+
+	// Ziehe Integer Wert aus der Zahl
+	unsigned long int_part = (unsigned long) number;						// Integerwert in Float formatieren
+	double remainder = (double)(number - (double)int_part);					// Nachkommastellen isolieren
+	ITM_SendNumber(int_part);												// Sende Intergerwert
+
+	// Wenn Nachkommastellen groeßer 0 ist
+	if (digits > 0)
+	{
+		ITM_SendChar('.');													// Sende Dezimalpunkt
+	}
+
+	int toprint;
+
+	// Solange Ziffern senden wie Nachkommastellen benoetigt werden
+	while(digits-- > 0)
+	{
+		remainder = remainder * 10.0;										// Nachkommastelle in Interger umrechnen
+		toprint = (int)remainder;											// Nachkommastelle in Interger umrechnen
+		ITM_SendNumber(toprint);											// Sende Ziffer
+		remainder = remainder - toprint;									// Intergerwerte aus Float rausrechnen
 	}
 }
 //----------------------------------------------------------------------

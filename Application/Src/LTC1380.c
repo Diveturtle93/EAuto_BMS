@@ -17,6 +17,7 @@
 //----------------------------------------------------------------------
 #include "ltc1380.h"
 #include "ltc6811.h"
+#include "error.h"
 //----------------------------------------------------------------------
 
 // Channel auswaehlen
@@ -25,13 +26,13 @@ void ltc1380_write(uint8_t Address, uint8_t Channel)
 {
 	// Debug Nachricht
 #ifdef DEBUG_LTC1380
-	uartTransmitString("Aufruf von Transceive LTC1380.\n");
-	uartTransmitString("Kanal auf IC einstellen.\n");
-	uartTransmitString("IC:\t");
-	uartTransmitNumber(Address);
-	uartTransmitString("\t\tKanal:\t");
-	uartTransmitNumber(Channel, 10);
-	uartTransmit("\n", 1);
+	ITM_SendString("Aufruf von Transceive LTC1380.\n");
+	ITM_SendString("Kanal auf IC einstellen.\n");
+	ITM_SendString("IC:\t");
+	ITM_SendNumber(Address);
+	ITM_SendString("\t\tKanal:\t");
+	ITM_SendNumber(Channel);
+	ITM_SendString("\n");
 #endif
 
 	// Definiere Array fuer Channel auswaehlen
@@ -47,16 +48,16 @@ void ltc1380_write(uint8_t Address, uint8_t Channel)
 
 	// Debug Nachricht
 #ifdef DEBUG_LTC1380
-	uartTransmitString("Daten wurde gesendet.\n");
-	uartTransmitString("Folgendes wurde gesendet:");
+	ITM_SendString("Daten wurde gesendet.\n");
+	ITM_SendString("Folgendes wurde gesendet:");
 
 	// Sende Daten auf UART
 	for (uint8_t i = 0; i < 6; i++)
 	{
-		uartTransmit(" ", 1);
-		uartTransmitNumber(off[i], 10);
+		ITM_SendString(" ");
+		ITM_SendNumber(off[i]);
 	}
-	uartTransmit("\n", 1);
+	ITM_SendString("\n");
 #endif
 }
 //----------------------------------------------------------------------
@@ -67,9 +68,9 @@ void ltc1380_off(uint8_t Address)
 {
 	// Debug Nachricht
 #ifdef DEBUG_LTC1380
-	uartTransmitString("Aufruf LTC1380 Funktion, alle Kanaele von IC ");
-	uartTransmitNumber(Address, 10);
-	uartTransmitString(" ausschalten.\n");
+	ITM_SendString("Aufruf LTC1380 Funktion, alle Kanaele von IC ");
+	ITM_SendNumber(Address);
+	ITM_SendString(" ausschalten.\n");
 #endif
 
 	// Definiere Array fuer alle Kanaele aus
@@ -84,16 +85,16 @@ void ltc1380_off(uint8_t Address)
 
 	// Debug Nachricht
 #ifdef DEBUG_LTC1380
-	uartTransmitString("Daten wurde gesendet.\n");
-	uartTransmitString("Folgendes wurde gesendet:");
+	ITM_SendString("Daten wurde gesendet.\n");
+	ITM_SendString("Folgendes wurde gesendet:");
 
 	// Sende Daten auf UART
 	for (uint8_t i = 0; i < 6; i++)
 	{
-		uartTransmit(" ", 1);
-		uartTransmitNumber(off[i], 10);
+		ITM_SendString(" ");
+		ITM_SendNumber(off[i]);
 	}
-	uartTransmit("\n", 1);
+	ITM_SendString("\n");
 #endif
 }
 //----------------------------------------------------------------------
@@ -105,7 +106,7 @@ void ltc1380_alloff(void)
 {
 	// Debug Nachricht
 #ifdef DEBUG_LTC1380
-	uartTransmitString("Aufruf LTC1380 Funktion, alle LTC1380 ausschalten.\n");
+	ITM_SendString("Aufruf LTC1380 Funktion, alle LTC1380 ausschalten.\n");
 #endif
 
 	// Definiere Array fuer alle Multiplexer aus
@@ -123,16 +124,16 @@ void ltc1380_alloff(void)
 
 		// Debug Nachricht
 	#ifdef DEBUG_LTC1380
-		uartTransmitString("Daten wurde gesendet.\n");
-		uartTransmitString("Folgendes wurde gesendet:");
+		ITM_SendString("Daten wurde gesendet.\n");
+		ITM_SendString("Folgendes wurde gesendet:");
 
 		// Sende Daten auf UART
 		for (uint8_t i = 0; i < 6; i++)
 		{
-			uartTransmit(" ", 1);
-			uartTransmitNumber(off[i], 10);
+			ITM_SendString(" ");
+			ITM_SendNumber(off[i]);
 		}
-		uartTransmit("\n", 1);
+		ITM_SendString("\n");
 	#endif
 	}
 }

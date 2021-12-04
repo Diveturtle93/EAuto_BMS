@@ -30,7 +30,9 @@
 //----------------------------------------------------------------------
 void hal_error(uint8_t status);
 void software_error(uint8_t errorcode);
-void ITM_SendString(char *ptr);
+void ITM_SendString(char *text);
+void ITM_SendNumber(long number);
+void ITM_SendFloat(double number, int digits);
 //----------------------------------------------------------------------
 
 #endif /* INC_ERROR_H_ */
