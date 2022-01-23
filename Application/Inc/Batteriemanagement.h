@@ -17,6 +17,7 @@
 // CAN-IDs definieren
 //----------------------------------------------------------------------
 // Batteriemanagement-System
+//----------------------------------------------------------------------
 #define BMS_CAN_SAFETY								0x140					// Shutdown Circuit Motorsteuergeraet, Sicherheitsrelevante Daten
 #define BMS_CAN_DIGITAL_OUT							0x240					// Digitale Ausgaenge Motorsteuergeraet, Alle digitalen Ausgaenge
 #define BMS_CAN_DIGITAL_IN							0x241					// Digitale Eingaenge Motorsteuergeraet, Alle digitalen Eingaenge
@@ -35,7 +36,7 @@
 #define KOMBI3_CAN									0x520
 #define KLIMA_CAN									0x5E0
 #define xxx_CAN										0x3D0
-#define xx_CAN										0x5DE					// Immer aktive, außer im Sleep
+#define xx_CAN										0x5DE					// Immer aktiv, außer im Sleep
 #define x_CAN										0x010					// Einmalig gesendet wenn Schlüssel auf Stufe 2
 #define xy_CAN										0x011					// EInmalig gesendet wenn Schlüssel auf Stufe 2
 //----------------------------------------------------------------------

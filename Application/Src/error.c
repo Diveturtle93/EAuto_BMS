@@ -97,21 +97,15 @@ void ITM_SendNumber(long number)
 	// Wenn Nummer 0 ist
 	if(number == 0)
 	{
-		// Sende 0
-		ITM_SendChar('0');
-
-		// Beende Funktion
-		return;
+		ITM_SendChar('0');													// Sende 0
+		return;																// Beende Funktion
 	}
 
 	// Wenn Zahl negativ ist
 	if(number < 0)
 	{
-		// Vorzeichen senden
-		ITM_SendChar('-');
-
-		// Nummer invertieren
-		number = number * -1;
+		ITM_SendChar('-');													// Vorzeichen senden
+		number = number * -1;												// Nummer invertieren
 	}
 
 	// Berechne Ziffern bis Zahl 0 ist
@@ -131,16 +125,18 @@ void ITM_SendNumber(long number)
 }
 //----------------------------------------------------------------------
 
+// Debug Float ueber SWO senden
 //----------------------------------------------------------------------
 void ITM_SendFloat(double number, int digits)
 {
+#ifdef DEBUG
 	int i = 0;
 
-	// Negative Nummern
+	// Wenn Zahl negativ ist
 	if(number < 0.0)
 	{
-		ITM_SendChar('-');
-		number = -number;
+		ITM_SendChar('-');													// Vorzeichen senden
+		number = number * -1;												// Nummer invertieren
 	}
 
 	// Runde Zahl auf die angegebene Nachkommazahl, (1.999, 2) wird als "2.00" angezeigt
@@ -175,5 +171,6 @@ void ITM_SendFloat(double number, int digits)
 		ITM_SendNumber(toprint);											// Sende Ziffer
 		remainder = remainder - toprint;									// Intergerwerte aus Float rausrechnen
 	}
+#endif
 }
 //----------------------------------------------------------------------

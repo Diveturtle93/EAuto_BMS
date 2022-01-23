@@ -13,6 +13,11 @@
 
 //----------------------------------------------------------------------
 
+// Einfuegen der STM Include-Dateien
+//----------------------------------------------------------------------
+#include "main.h"
+//----------------------------------------------------------------------
+
 // Einfuegen der eigenen Include Dateien
 //----------------------------------------------------------------------
 #include "ltc1380.h"
@@ -20,7 +25,7 @@
 #include "error.h"
 //----------------------------------------------------------------------
 
-// Channel auswaehlen
+// Kanal auswaehlen
 //----------------------------------------------------------------------
 void ltc1380_write(uint8_t Address, uint8_t Channel)
 {
@@ -32,7 +37,7 @@ void ltc1380_write(uint8_t Address, uint8_t Channel)
 	ITM_SendNumber(Address);
 	ITM_SendString("\t\tKanal:\t");
 	ITM_SendNumber(Channel);
-	ITM_SendString("\n");
+	ITM_SendChar('\n');
 #endif
 
 	// Definiere Array fuer Channel auswaehlen
@@ -54,15 +59,15 @@ void ltc1380_write(uint8_t Address, uint8_t Channel)
 	// Sende Daten auf UART
 	for (uint8_t i = 0; i < 6; i++)
 	{
-		ITM_SendString(" ");
+		ITM_SendChar(' ');
 		ITM_SendNumber(off[i]);
 	}
-	ITM_SendString("\n");
+	ITM_SendChar('\n');
 #endif
 }
 //----------------------------------------------------------------------
 
-// All Channel off
+// Alle Kanaele eines ICs ausschalten
 //----------------------------------------------------------------------
 void ltc1380_off(uint8_t Address)
 {
@@ -91,16 +96,16 @@ void ltc1380_off(uint8_t Address)
 	// Sende Daten auf UART
 	for (uint8_t i = 0; i < 6; i++)
 	{
-		ITM_SendString(" ");
+		ITM_SendChar(' ');
 		ITM_SendNumber(off[i]);
 	}
-	ITM_SendString("\n");
+	ITM_SendChar('\n');
 #endif
 }
 //----------------------------------------------------------------------
 
 
-// All Multiplexer off
+// Alle Kanaele aller ICs ausschalten
 //----------------------------------------------------------------------
 void ltc1380_alloff(void)
 {
@@ -130,10 +135,10 @@ void ltc1380_alloff(void)
 		// Sende Daten auf UART
 		for (uint8_t i = 0; i < 6; i++)
 		{
-			ITM_SendString(" ");
+			ITM_SendChar(' ');
 			ITM_SendNumber(off[i]);
 		}
-		ITM_SendString("\n");
+		ITM_SendChar('\n');
 	#endif
 	}
 }

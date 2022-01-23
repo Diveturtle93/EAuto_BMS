@@ -62,12 +62,100 @@ const uint16_t pec15Table[256] = {
 };
 //----------------------------------------------------------------------
 
+// Statemaschine ISOSpi
+//----------------------------------------------------------------------
+void set_isospi_state(IsoSpi_State newState)
+{
+	static IsoSpi_State State;
+	State = newState;
+
+#ifdef DEBUG_ISOSPI
+	ITM_SendString("ISOSPI: ");
+
+	ITM_SendString(" Neuer State: ");
+
+	switch (State)
+	{
+		case Idle:
+			ITM_SendString("Idle\n");
+			break;
+
+		case Active:
+			ITM_SendString("Active\n");
+			break;
+
+		case Ready:
+			ITM_SendString("Ready\n");
+			break;
+
+		case GetReady:
+			ITM_SendString("GetReady\n");
+			break;
+
+		default:
+			ITM_SendString("#RED#FEHLER\n");
+			break;
+	}
+#endif
+}
+//----------------------------------------------------------------------
+
+// Statemaschine LTC6811
+//----------------------------------------------------------------------
+void set_ltc6811_state(LTC6811_State newState)
+{
+	static LTC6811_State State;
+	State = newState;
+
+#ifdef DEBUG_LTC6811
+	ITM_SendString("LTC6811: ");
+
+	ITM_SendString(" Neuer State: ");
+
+	switch (State)
+	{
+		case Standby:
+			ITM_SendString("Standby\n");
+			break;
+
+		case Measure:
+			ITM_SendString("Measure\n");
+			break;
+
+		case Refup:
+			ITM_SendString("Refup\n");
+			break;
+
+		case SetRefup:
+			ITM_SendString("SetRefup\n");
+			break;
+
+		case Wakeup:
+			ITM_SendString("Wakeup\n");
+			break;
+
+		case ExtendedBalancing:
+			ITM_SendString("Extended Balancing\n");
+			break;
+
+		case Sleep:
+			ITM_SendString("Sleep\n");
+			break;
+
+		default:
+			ITM_SendString("#RED#FEHLER\n");
+			break;
+	}
+#endif
+}
+//----------------------------------------------------------------------
+
 // Wakeup LTC6811 idle
 //----------------------------------------------------------------------
 void wakeup_ltc6811(void)
 {
 	// Debug Nachricht
-#ifdef DEBUG_LTC6811
+#ifdef DEBUG_ISOSPI
 	ITM_SendString("Chip wird geweckt.\n");
 #endif
 
@@ -92,7 +180,7 @@ void wakeup_ltc6811(void)
 void ltc6811(uint16_t command)
 {
 	// Debug Nachricht
-#ifdef DEBUG_LTC6811
+#ifdef DEBUG_ISOSPI
 	ITM_SendString("Aufruf von Transcreceive LTC6811.\n");
 #endif
 
@@ -132,17 +220,17 @@ void ltc6811(uint16_t command)
 	// Ende der Uebertragung
 
 	// Debug Nachricht
-#ifdef DEBUG_LTC6811
+#ifdef DEBUG_ISOSPI
 	ITM_SendString("Command wurde gesendet.\n");
 	ITM_SendString("Folgendes wurde gesendet:");
 
 	// Sende Command auf UART
 	for (uint8_t i = 0; i < 4; i++)
 	{
-		ITM_SendString(" ");
+		ITM_SendChar(' ');
 		ITM_SendNumber(cmd[i]);
 	}
-	ITM_SendString("\n");
+	ITM_SendChar('\n');
 #endif
 }
 //----------------------------------------------------------------------
@@ -153,7 +241,7 @@ void ltc6811(uint16_t command)
 void ltc6811_write(uint16_t command, uint8_t* data)
 {
 	// Debug Nachricht
-#ifdef DEBUG_LTC6811
+#ifdef DEBUG_ISOSPI
 	ITM_SendString("Aufruf von Transceive LTC6811.\n"); // 31
 #endif
 
@@ -194,17 +282,17 @@ void ltc6811_write(uint16_t command, uint8_t* data)
 	// Ende der Uebertragung
 
 	// Debug Nachricht
-#ifdef DEBUG_LTC6811
+#ifdef DEBUG_ISOSPI
 	ITM_SendString("Command wurde gesendet.\n");
 	ITM_SendString("Folgendes wurde gesendet:");
 
 	// Sende Command auf UART
 	for (uint8_t i = 0; i < 4; i++)
 	{
-		ITM_SendString(" ");
+		ITM_SendChar(' ');
 		ITM_SendNumber(cmd[i]);
 	}
-	ITM_SendString("\n");
+	ITM_SendChar('\n');
 
 	ITM_SendString("Daten wurde gesendet.\n");
 	ITM_SendString("Folgendes wurde gesendet:");
@@ -212,10 +300,10 @@ void ltc6811_write(uint16_t command, uint8_t* data)
 	// Sende Daten auf UART
 	for (uint8_t i = 0; i < 8; i++)
 	{
-		ITM_SendString(" ");
+		ITM_SendChar(' ');
 		ITM_SendNumber(data[i]);
 	}
-	ITM_SendString("\n");
+	ITM_SendChar('\n');
 #endif
 }
 //----------------------------------------------------------------------
@@ -225,7 +313,7 @@ void ltc6811_write(uint16_t command, uint8_t* data)
 uint8_t ltc6811_read(uint16_t command, uint8_t* data)
 {
 	// Debug Nachricht
-#ifdef DEBUG_LTC6811
+#ifdef DEBUG_ISOSPI
 	ITM_SendString("Aufruf von Receive LTC6811.\n");
 #endif
 
@@ -261,17 +349,17 @@ uint8_t ltc6811_read(uint16_t command, uint8_t* data)
 	// Ende der Uebertragung
 
 	// Debug Nachricht
-#ifdef DEBUG_LTC6811
+#ifdef DEBUG_ISOSPI
 	ITM_SendString("Command wurde empfangen.\n");
 	ITM_SendString("Folgendes wurde empfangen:");
 
 	// Sende Command auf UART
 	for (uint8_t i = 0; i < 4; i++)
 	{
-		ITM_SendString(" ");
+		ITM_SendChar(' ');
 		ITM_SendNumber(cmd[i]);
 	}
-	ITM_SendString("\n");
+	ITM_SendChar('\n');
 
 	ITM_SendString("Daten wurde empfangen.\n");
 	ITM_SendString("Folgendes wurde empfangen:");
@@ -279,10 +367,10 @@ uint8_t ltc6811_read(uint16_t command, uint8_t* data)
 	// Sende Daten auf UART
 	for (uint8_t i = 0; i < 8; i++)
 	{
-		ITM_SendString(" ");
+		ITM_SendChar(' ');
 		ITM_SendNumber(data[i]);
 	}
-	ITM_SendString("\n");
+	ITM_SendChar('\n');
 #endif
 
 	return 0;
@@ -355,6 +443,25 @@ void init_crc(void)
 }
 //----------------------------------------------------------------------*/
 
+// Validiere Pec von Daten
+//----------------------------------------------------------------------
+uint8_t peccheck(uint8_t len, uint8_t *data)
+{
+	// Variable definieren
+	uint16_t pec = peclookup(len, data);
+
+	//
+	if (pec == 0)
+	{
+		return 0;
+	}
+	else
+	{
+		return 1;
+	}
+}
+//----------------------------------------------------------------------
+
 // LTC6811 Status auslesen und auswerten
 //----------------------------------------------------------------------
 uint8_t ltc6811_check(void)
@@ -412,7 +519,7 @@ uint8_t ltc6811_check(void)
 #ifdef DEBUG_LTC6811
 	ITM_SendString("Error Code:\t");
 	ITM_SendNumber(error);
-	ITM_SendString("\n");
+	ITM_SendChar('\n');
 #endif
 
 	// Fehlercode zurueckgeben
@@ -794,7 +901,7 @@ uint16_t ltc6811_poll(void)
 #ifdef DEBUG_LTC6811
 	ITM_SendString("Counter Wert auslesen:\t");
 	ITM_SendNumber(counter);
-	ITM_SendString("\n");
+	ITM_SendChar('\n');
 #endif
 
 	return(counter);

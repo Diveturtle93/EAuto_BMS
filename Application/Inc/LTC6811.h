@@ -21,7 +21,34 @@
 
 // Define Debug Symbols
 //----------------------------------------------------------------------
+#define DEBUG_ISOSPI
 #define DEBUG_LTC6811
+//----------------------------------------------------------------------
+
+// Define Statemaschine Typedefines
+//----------------------------------------------------------------------
+// Define IsoSpi States
+//----------------------------------------------------------------------
+typedef enum IsoSpiState
+{
+	Idle,																	// Kommunikation unterbrochen
+	Ready,																	// Kommunikation kann durchgefuehrt werden
+	Active,																	// Kommunikation wird durchgefuehrt
+	GetReady,																// Kommunikation wird vorbereitet
+} IsoSpi_State;
+//----------------------------------------------------------------------
+// Define LTC6811 States
+//----------------------------------------------------------------------
+typedef enum LTC6811State
+{
+	Standby,																// IC im Standby, Referenzspannung inaktiv, Beide Timer laufen
+	Measure,																// Messung am ADC wird durchgefuehrt
+	Refup,																	// Referenzspannung aktiv
+	SetRefup,																// Referenzspannung wird vorbereitet
+	Wakeup,																	// IC wird geweckt
+	ExtendedBalancing,														// Balancing aktiv, Watchdog Timer ausgeschaltet, Entladetimer läuft
+	Sleep																	// IC im Sleep, keine Aktion, Beide Timer ausgeschaltet
+} LTC6811_State;
 //----------------------------------------------------------------------
 
 // Allgemeine Einstellungen
@@ -174,12 +201,15 @@
 
 // Funktionen definieren
 //----------------------------------------------------------------------
+void set_isospi_state(IsoSpi_State newState);								// Setze Statemaschine fuer ISPSpi
+void set_ltc6811_state(LTC6811_State newState);								// Setze Statemaschine fuer LTC6811
 void wakeup_ltc6811(void);													// Aufwachfunktion LTC6811
 void ltc6811(uint16_t command);												// LTC6811 Commando
 void ltc6811_write(uint16_t command, uint8_t *data);						// Schreibfunktion LTC6811
 uint8_t ltc6811_read(uint16_t command, uint8_t *data);						// Lesefunktion LTC6811
 uint16_t peccommand(uint16_t command);										// CRC Berechnung Command, 16 Bit
 uint16_t peclookup(uint8_t len,	uint8_t *data);								// CRC Berechnung Daten Array, 8 Bit
+uint8_t peccheck(uint8_t len, uint8_t *data);								// CRC Validieren und pruefen
 uint8_t ltc6811_check(void);												// Diagnose LTC6811, fuehrt alle Tests durch
 uint8_t ltc6811_test(uint16_t command);										// Diagnose Selbsttest Test 1 und 2
 uint8_t ltc6811_diagn(void);												// Diagnose Multiplexer
@@ -187,6 +217,12 @@ uint8_t ltc6811_openwire(void);												// Leitungscheck offene Leitung
 uint16_t ltc6811_poll(void);												// Poll Data nach Conversion
 //----------------------------------------------------------------------
 //void init_crc(void);														// Wird benoetigt um Pec-Tabelle zu berechnen
+//----------------------------------------------------------------------
+
+// Definiere Zellenarray
+//----------------------------------------------------------------------
+uint8_t CellVolt[LTC6811_DEVICES][12];										// Array fuer gemessene Zellspannungen
+uint8_t CellTemp[LTC6811_DEVICES][12];										// Array fuer gemessene Zelltemperaturen
 //----------------------------------------------------------------------
 
 #endif /* INC_LTC6811_H_ */
