@@ -25,7 +25,6 @@
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
-#include <math.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -99,7 +98,7 @@ int main(void)
   	CAN_FilterTypeDef sFilterConfig;
 
   	// Erstelle Can-Nachrichten
-  	CAN_TxHeaderTypeDef TxMessage = {0x123, 0, CAN_RTR_DATA, CAN_ID_STD, 8, DISABLE};
+  	CAN_TxHeaderTypeDef TxMessage = {0x124, 0, CAN_RTR_DATA, CAN_ID_STD, 8, DISABLE};
   	CAN_TxHeaderTypeDef TxOutput = {BMS_CAN_DIGITAL_OUT, 0, CAN_RTR_DATA, CAN_ID_STD, 4, DISABLE};
   	CAN_TxHeaderTypeDef TxInput = {BMS_CAN_DIGITAL_IN, 0, CAN_RTR_DATA, CAN_ID_STD, 3, DISABLE};
   /* USER CODE END Init */
@@ -141,11 +140,12 @@ int main(void)
 	if (HAL_TIM_Base_Start_IT(&htim1) != HAL_OK);
 	if (HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_1) != HAL_OK);
 	if (HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_2) != HAL_OK);
-  	HAL_TIM_Base_Start(&htim6);
+  	HAL_TIM_Base_Start_IT(&htim6);
 
 	// Leds Testen
 	testPCB_Leds();
-	testLeds();
+	//testInletLeds();
+	//testCockpitLeds();
 
 	// Lese alle Eingaenge
 	readall_inputs();
@@ -172,10 +172,10 @@ int main(void)
     sFilterConfig.FilterBank = 0;
     sFilterConfig.FilterMode = CAN_FILTERMODE_IDMASK;
     sFilterConfig.FilterScale = CAN_FILTERSCALE_32BIT;
-    sFilterConfig.FilterIdHigh = 0x0000;
-    sFilterConfig.FilterIdLow = 0x0000;
-    sFilterConfig.FilterMaskIdHigh = 0x0000;
-    sFilterConfig.FilterMaskIdLow = 0x0000;
+    sFilterConfig.FilterIdHigh = 0x0111 << 5;
+    sFilterConfig.FilterIdLow = 0;
+    sFilterConfig.FilterMaskIdHigh = 0x0111 << 5;
+    sFilterConfig.FilterMaskIdLow = 0;
     sFilterConfig.FilterFIFOAssignment = 0;
     sFilterConfig.FilterActivation = ENABLE;
 
@@ -193,7 +193,9 @@ int main(void)
     	TxData[j] = (j + 1);
     }
 
-	if (!(sdc_in.sdcinput && 0b00001111))										// SDC OK; Motor, BTB, IMD und HVIL OK
+    uartTransmitNumber(sdc_in.sdcinput, 2);
+
+	if ((sdc_in.sdcinput & 0x0E) && (sdc_in.IMD_OK_IN != 1))					// SDC OK; Motor, BTB, IMD und HVIL OK
 	{
 		#define SDC_STRING_ERROR			"\nSDC ist nicht geschlossen"
 		uartTransmit(SDC_STRING_ERROR, sizeof(SDC_STRING_ERROR));
@@ -208,21 +210,21 @@ int main(void)
 
 		// Ausgabe welcher Fehler vorhanden
 		// Motorsteuergeraet Fehler
-		if(!(sdc_in.MotorSDC == 1))
+		if((sdc_in.MotorSDC == 1))
 		{
 			#define SDC_STRING_MOTOR		"\nSDC Motor hat einen Fehler und ist offen"
 			uartTransmit(SDC_STRING_MOTOR, sizeof(SDC_STRING_MOTOR));
 		}
 
 		// BamoCar Fehler
-		if (!(sdc_in.BTB_SDC == 1))
+		if ((sdc_in.BTB_SDC == 1))
 		{
 			#define SDC_STRING_BTB			"\nSDC BTB hat einen Fehler und ist offen"
 			uartTransmit(SDC_STRING_BTB, sizeof(SDC_STRING_BTB));
 		}
 
 		// HVIL Fehler
-		if (!(sdc_in.HVIL == 1))
+		if ((sdc_in.HVIL == 1))
 		{
 			#define SDC_STRING_HVIL			"\nSDC HVIL ist nicht geschlossen"
 			uartTransmit(SDC_STRING_HVIL, sizeof(SDC_STRING_HVIL));
@@ -267,10 +269,37 @@ int main(void)
 			start_flag = 1;												// Setze Start Flag
 		}
 
-		// Task wird alle 500 Millisekunden ausgefuehrt
-		if (((count % 500) == 0) && (start_flag == 1))
+		// Task wird alle 200 Millisekunden ausgefuehrt
+		if (((count % 200) == 0) && (start_flag == 1))
 		{
-			if (rising != 0 && falling != 0)
+			// Daten fuer Ausgaenge zusammenfuehren
+			OutData[0] = system_out.systemoutput;
+			OutData[1] = highcurrent_out.high_out;
+			OutData[2] = leuchten_out.ledoutput;
+			OutData[3] = komfort_out.komfortoutput;
+
+			// Sende Nachricht digitale Ausgaenge
+			status = HAL_CAN_AddTxMessage(&hcan3, &TxOutput, OutData, (uint32_t *)CAN_TX_MAILBOX0);
+			hal_error(status);
+
+			// Daten fuer Eingaenge zusammenfuehren
+			InData[0] = system_in.systeminput;
+			InData[1] = sdc_in.sdcinput;
+			InData[2] = komfort_in.komfortinput;
+
+			// Sende Nachricht digitale Eingaenge
+			status = HAL_CAN_AddTxMessage(&hcan3, &TxInput, InData, (uint32_t *)CAN_TX_MAILBOX0);
+			hal_error(status);
+
+			// Sende Nachricht digitale Eingaenge
+			status = HAL_CAN_AddTxMessage(&hcan3, &TxMessage, TxData, (uint32_t *)CAN_TX_MAILBOX0);
+			hal_error(status);
+		}
+
+		// Task wird alle 400 Millisekunden ausgefuehrt
+		if (((count % 400) == 0) && (start_flag == 1))
+		{
+			/*if (rising != 0 && falling != 0)
 			{
 				int diff = getDifference(rising, falling);
 				dutyCycle = round((float)(diff * 100) / (float)rising);	// (width / period ) * 100
@@ -399,35 +428,9 @@ int main(void)
 						system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;
 						break;
 				}
-			}
+			}*/
 	
 			count = 0;
-		}
-		
-		if ((count % 250) == 0)
-		{
-			// Daten fuer Ausgaenge zusammenfuehren
-			OutData[0] = system_out.systemoutput;
-			OutData[1] = highcurrent_out.high_out;
-			OutData[2] = leuchten_out.ledoutput;
-			OutData[3] = komfort_out.komfortoutput;
-	
-			// Sende Nachricht digitale Ausgaenge
-			status = HAL_CAN_AddTxMessage(&hcan3, &TxOutput, OutData, (uint32_t *)CAN_TX_MAILBOX0);
-			hal_error(status);
-
-			// Daten fuer Eingaenge zusammenfuehren
-			InData[0] = system_in.systeminput;
-			InData[1] = sdc_in.sdcinput;
-			InData[2] = komfort_in.komfortinput;
-	
-			// Sende Nachricht digitale Eingaenge
-			status = HAL_CAN_AddTxMessage(&hcan3, &TxInput, InData, (uint32_t *)CAN_TX_MAILBOX0);
-			hal_error(status);
-	
-			// Sende Nachricht digitale Eingaenge
-			status = HAL_CAN_AddTxMessage(&hcan3, &TxMessage, TxData, (uint32_t *)CAN_TX_MAILBOX0);
-			hal_error(status);
 		}
 
 		// Zuruecksetzen des Start Flags, damit Tasks erst nach einer ms wieder aufgerufen werden kann
@@ -444,7 +447,6 @@ void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
-  RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
 
   /** Configure the main internal regulator output voltage
   */
@@ -482,12 +484,6 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
 
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_7) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USART2;
-  PeriphClkInitStruct.Usart2ClockSelection = RCC_USART2CLKSOURCE_PCLK1;
-  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
   {
     Error_Handler();
   }
@@ -555,4 +551,3 @@ void assert_failed(uint8_t *file, uint32_t line)
 }
 #endif /* USE_FULL_ASSERT */
 
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

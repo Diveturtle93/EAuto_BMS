@@ -98,15 +98,11 @@ void testPCB_Leds(void)
 }
 //----------------------------------------------------------------------
 
-// Teste alle externen LEDs
+// Teste alle externen LEDs, Inlet
 //----------------------------------------------------------------------
-void testLeds(void)
+void testInletLeds(void)
 {
 	// Leds Testen
-	HAL_GPIO_WritePin(AKKU_LED_GPIO_Port, AKKU_LED_Pin, GPIO_PIN_SET);								// Akku LED Kombiinstrument setzen
-	HAL_Delay(1000);
-	HAL_GPIO_WritePin(AKKU_LED_GPIO_Port, AKKU_LED_Pin, GPIO_PIN_RESET);							// Akku LED Kombiinstrument zuruecksetzen
-	HAL_Delay(500);
 	HAL_GPIO_WritePin(INLET_RED_GPIO_Port, INLET_RED_Pin, GPIO_PIN_SET);							// Red Inlet LED setzen
 	HAL_Delay(1000);
 	HAL_GPIO_WritePin(INLET_RED_GPIO_Port, INLET_RED_Pin, GPIO_PIN_RESET);							// Red Inlet LED zuruecksetzen
@@ -117,6 +113,15 @@ void testLeds(void)
 	HAL_Delay(500);
 }
 //----------------------------------------------------------------------
+
+// Teste Cockpit LEDs
+void testCockpitLeds(void)
+{
+	HAL_GPIO_WritePin(AKKU_LED_GPIO_Port, AKKU_LED_Pin, GPIO_PIN_SET);								// Akku LED Kombiinstrument setzen, Ladekontrollleuchte an
+	HAL_Delay(1000);
+	HAL_GPIO_WritePin(AKKU_LED_GPIO_Port, AKKU_LED_Pin, GPIO_PIN_RESET);							// Akku LED Kombiinstrument zuruecksetzen, Ladekontrollleuchte aus
+	HAL_Delay(500);
+}
 
 // Ladekontroll LED setzen
 //----------------------------------------------------------------------
