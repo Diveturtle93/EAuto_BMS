@@ -27,6 +27,8 @@
 // Poti = 213				=> 128 Ohm			, 134
 // Poti = 237				=> 95 Ohm			, 110
 // Poti = 255				=> 65 Ohm			, 92
+// RS Pin Pulse				=> 128 Ohm			, 128
+// Shutdown Pin Low			=>  Ohm			, 128
 
 // Bruecke an B Kurzgeschlossen, Bruecke an A offen
 // Digitaler Wert			Widerstand am Poti	, Errechneter Widerstand
@@ -40,6 +42,23 @@
 // Poti = 213				=> 298 Ohm			, 291
 // Poti = 237				=> 309 Ohm			, 312
 // Poti = 255				=> 347 Ohm
+// RS Pin Pulse				=> 128 Ohm			, 128
+// Shutdown Pin Low			=>  Ohm			, 128
+
+// Bruecke an B Kurzgeschlossen, Bruecke an A  Kurzgeschlossen
+// Digitaler Wert			Widerstand am Poti	, Errechneter Widerstand
+// Poti = 0					=> 65 Ohm			, 92
+// Poti = 35				=> 95 Ohm			, 110
+// Poti = 56				=> 128 Ohm			, 134
+// Poti = 98				=> 148 Ohm			, 150
+// Poti = 128				=> 196 Ohm			, 191
+// Poti = 156				=> 228 Ohm			, 219
+// Poti = 197				=> 259 Ohm			, 249
+// Poti = 213				=> 298 Ohm			, 291
+// Poti = 237				=> 309 Ohm			, 312
+// Poti = 255				=> 65 Ohm			, 92
+// RS Pin Pulse				=> 128 Ohm			, 128
+// Shutdown Pin Low			=> 65 Ohm			, 92
 
 // Dateiheader definieren
 //----------------------------------------------------------------------

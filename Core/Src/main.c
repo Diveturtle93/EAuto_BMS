@@ -141,19 +141,33 @@ int main(void)
 	// Digitales Poti initialisieren
 	initAD8403();
 
+	HAL_Delay(5000);
+
 	// Digitales Poti testen, Werte auf allen Potis langsam von 0 bis 255 zahlen
+	setAllPoti(200);
+
+	HAL_Delay(5000);
+
+	AllPotiMidscale();
+
+	HAL_Delay(120000);
+
 	setAllPoti(255);
 
-	for (uint8_t i = 0; i < 255; i++)
+	HAL_Delay(5000);
+	for (uint8_t i = 255; i >= 10; i--)
 	{
+		HAL_GPIO_TogglePin(RED_LED_GPIO_Port, RED_LED_Pin);
 		setPoti(AD8403_MUX0, i);
-		HAL_Delay(100);
+		HAL_Delay(500);
 		setPoti(AD8403_MUX1, i);
-		HAL_Delay(100);
+		HAL_Delay(500);
 		setPoti(AD8403_MUX2, i);
-		HAL_Delay(100);
+		HAL_Delay(500);
 		setPoti(AD8403_MUX3, i);
-		HAL_Delay(100);
+		HAL_Delay(500);
+		uartTransmitNumber(i, 10);
+		uartTransmit("\n", 1);
 	}
 
 	HAL_GPIO_WritePin(BLUE_LED_GPIO_Port, BLUE_LED_Pin, 1);
