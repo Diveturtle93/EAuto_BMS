@@ -136,13 +136,13 @@ int main(void)
   	// Starte CAN Bus
   	if((status = HAL_CAN_Start(&hcan3)) != HAL_OK)
   	{
-  		/* Start Error */
+  		// Start Error
   		hal_error(status);
   		Error_Handler();
   	}
   	uartTransmit("CAN START\n", 10);
 
-  	// Aktiviere Interrupts für CAN Bus
+  	// Aktiviere Interrupts fuer CAN Bus
   	if((status = HAL_CAN_ActivateNotification(&hcan3, CAN_IT_RX_FIFO0_MSG_PENDING)) != HAL_OK)
   	{
   		/* Notification Error */
@@ -172,9 +172,11 @@ int main(void)
 
     // Test CAN Nachricht beschreiben
     for (uint8_t j = 0; j < 8; j++)
+    {
     	TxData[j] = (j + 1);
+    }
 
-	if (!(sdc_in.sdcinput && 0b00001111))										// SDC OK; Motor, BTB, IMD und HVIL OK
+	if ((sdc_in.sdcinput & 0x0E) && (sdc_in.IMD_OK_IN != 1))					// SDC OK; Motor, BTB, IMD und HVIL OK
 	{
 		#define SDC_STRING_ERROR			"\nSDC ist nicht geschlossen"
 		uartTransmit(SDC_STRING_ERROR, sizeof(SDC_STRING_ERROR));
@@ -189,28 +191,28 @@ int main(void)
 
 		// Ausgabe welcher Fehler vorhanden
 		// Motorsteuergeraet Fehler
-		if(!(sdc_in.MotorSDC == 1))
+		if(sdc_in.MotorSDC == 1)
 		{
 			#define SDC_STRING_MOTOR		"\nSDC Motor hat einen Fehler und ist offen"
 			uartTransmit(SDC_STRING_MOTOR, sizeof(SDC_STRING_MOTOR));
 		}
 
 		// BamoCar Fehler
-		if (!(sdc_in.BTB_SDC == 1))
+		if (sdc_in.BTB_SDC == 1)
 		{
 			#define SDC_STRING_BTB			"\nSDC BTB hat einen Fehler und ist offen"
 			uartTransmit(SDC_STRING_BTB, sizeof(SDC_STRING_BTB));
 		}
 
 		// HVIL Fehler
-		if (!(sdc_in.HVIL == 1))
+		if (sdc_in.HVIL == 1)
 		{
 			#define SDC_STRING_HVIL			"\nSDC HVIL ist nicht geschlossen"
 			uartTransmit(SDC_STRING_HVIL, sizeof(SDC_STRING_HVIL));
 		}
 
 		// IMD Fehler
-		if (!(sdc_in.IMD_OK_IN == 1))
+		if (sdc_in.IMD_OK_IN != 1)
 		{
 			#define SDC_STRING_IMD			"\nSDC IMD hat einen Fehler"
 			uartTransmit(SDC_STRING_IMD, sizeof(SDC_STRING_IMD));
@@ -246,7 +248,7 @@ int main(void)
 
 		// Sende Nachricht digitale Ausgaenge
 		status = HAL_CAN_AddTxMessage(&hcan3, &TxOutput, OutData, (uint32_t *)CAN_TX_MAILBOX0);
-		hal_error(status);
+		//hal_error(status);
 
 		// Daten fuer Eingaenge zusammenfuehren
 		InData[0] = system_in.systeminput;
@@ -254,12 +256,12 @@ int main(void)
 		InData[2] = komfort_in.komfortinput;
 
 		// Sende Nachricht digitale Eingaenge
-		status = HAL_CAN_AddTxMessage(&hcan3, &TxInput, InData, (uint32_t *)CAN_TX_MAILBOX0);
-		hal_error(status);
+		status = HAL_CAN_AddTxMessage(&hcan3, &TxInput, InData, (uint32_t *)CAN_TX_MAILBOX1);
+		//hal_error(status);
 
 		// Sende Nachricht digitale Eingaenge
-		status = HAL_CAN_AddTxMessage(&hcan3, &TxMessage, TxData, (uint32_t *)CAN_TX_MAILBOX0);
-		hal_error(status);
+		status = HAL_CAN_AddTxMessage(&hcan3, &TxMessage, TxData, (uint32_t *)CAN_TX_MAILBOX2);
+		//hal_error(status);
 
 		HAL_Delay(500);
   }
@@ -274,7 +276,6 @@ void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
-  RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
 
   /** Configure the main internal regulator output voltage
   */
@@ -312,12 +313,6 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
 
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_7) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USART2;
-  PeriphClkInitStruct.Usart2ClockSelection = RCC_USART2CLKSOURCE_PCLK1;
-  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
   {
     Error_Handler();
   }
@@ -362,4 +357,3 @@ void assert_failed(uint8_t *file, uint32_t line)
 }
 #endif /* USE_FULL_ASSERT */
 
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
