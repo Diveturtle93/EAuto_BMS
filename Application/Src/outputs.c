@@ -136,8 +136,11 @@ void testCockpitLeds(void)
 //----------------------------------------------------------------------
 void setLadekontrolle(void)
 {
+	// Status Ladekontrolle setzen
+	leuchten_out.AkkuErrorLed = 1;
+
 	// Ladekontrolle im Cockpit setzen
-	HAL_GPIO_WritePin(AKKU_LED_GPIO_Port, AKKU_LED_Pin, GPIO_PIN_SET);								// Akku LED Kombiinstrument setzen
+	HAL_GPIO_WritePin(AKKU_LED_GPIO_Port, AKKU_LED_Pin, leuchten_out.AkkuErrorLed);					// Akku LED Kombiinstrument setzen
 }
 //----------------------------------------------------------------------
 
@@ -145,7 +148,22 @@ void setLadekontrolle(void)
 //----------------------------------------------------------------------
 void resetLadekontrolle(void)
 {
+	// Status Ladekontrolle zuruecksetzen
+	leuchten_out.AkkuErrorLed = 0;
+
 	// Ladekontrolle im Cockpit zuruecksetzen
-	HAL_GPIO_WritePin(AKKU_LED_GPIO_Port, AKKU_LED_Pin, GPIO_PIN_RESET);							// Akku LED Kombiinstrument zuruecksetzen
+	HAL_GPIO_WritePin(AKKU_LED_GPIO_Port, AKKU_LED_Pin, leuchten_out.AkkuErrorLed);					// Akku LED Kombiinstrument zuruecksetzen
+}
+//----------------------------------------------------------------------
+
+// Selbsterhaltung einschalten
+//----------------------------------------------------------------------
+void setPowerOn(void)
+{
+	// Status PowerOn setzen
+	system_out.Power_On = 1;
+
+	// Selbsterhaltung einschalten
+	HAL_GPIO_WritePin(POWER_ON_GPIO_Port, POWER_ON_Pin, system_out.Power_On);						// BMS bleibt aktiv bei auschalten von KL15
 }
 //----------------------------------------------------------------------

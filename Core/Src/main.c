@@ -193,6 +193,9 @@ int main(void)
     	TxData[j] = (j + 1);
     }
 
+    // Einschalten PowerOn
+    setPowerOn();
+
     uartTransmitNumber(sdc_in.sdcinput, 2);
 
 	if ((sdc_in.sdcinput & 0x0E) && (sdc_in.IMD_OK_IN != 1))					// SDC OK; Motor, BTB, IMD und HVIL OK

@@ -101,6 +101,7 @@ void testInletLeds(void);													// Teste Inlet LEDs fuer je 1s
 void testCockpitLeds(void);													// Teste Cockpit LEDs fuer je 1s
 void setLadekontrolle(void);												// Ladekontrolle setzen
 void resetLadekontrolle(void);												// Ladekontrolle zuruecksetzen
+void setPowerOn(void);														// Selbsterhaltung setzen
 //----------------------------------------------------------------------
 
 #endif /* INC_OUTPUTS_H_ */
