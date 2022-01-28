@@ -98,7 +98,7 @@ int main(void)
   	CAN_FilterTypeDef sFilterConfig;
 
   	// Erstelle Can-Nachrichten
-  	CAN_TxHeaderTypeDef TxMessage = {0x123, 0, CAN_RTR_DATA, CAN_ID_STD, 8, DISABLE};
+  	CAN_TxHeaderTypeDef TxMessage = {0x124, 0, CAN_RTR_DATA, CAN_ID_STD, 8, DISABLE};
   	CAN_TxHeaderTypeDef TxOutput = {BMS_CAN_DIGITAL_OUT, 0, CAN_RTR_DATA, CAN_ID_STD, 4, DISABLE};
   	CAN_TxHeaderTypeDef TxInput = {BMS_CAN_DIGITAL_IN, 0, CAN_RTR_DATA, CAN_ID_STD, 3, DISABLE};
   	CAN_TxHeaderTypeDef TxIMD = {BMS_CAN_SAFETY, 0, CAN_RTR_DATA, CAN_ID_STD, 5, DISABLE};

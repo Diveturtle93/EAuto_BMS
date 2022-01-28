@@ -68,18 +68,21 @@ void imd_status(void)
 				{
 					// IMD Status speichern
 					system_in.IMD_PWM_STATUS = IMD_KURZSCHLUSS_KL15;				// Kurzschluss von HV nach Pluspol
+					imd.PWM_STATUS = IMD_KURZSCHLUSS_KL15;							// Kurzschluss von HV nach Pluspol
 				}
 				// Wenn IMD 0 ist
 				else
 				{
 					// IMD Status speichern
 					system_in.IMD_PWM_STATUS = IMD_KURZSCHLUSS_GND;					// Kurzschluss von HV nach Masse
+					imd.PWM_STATUS = IMD_KURZSCHLUSS_GND;							// Kurzschluss von HV nach Masse
 				}
 				break;
 
 			case 10:																// Case 10 Hz
 				// IMD Status speichern
-				system_in.IMD_PWM_STATUS = IMD_NORMAL;
+				system_in.IMD_PWM_STATUS = IMD_NORMAL;								// IMD funktioniert normal
+				imd.PWM_STATUS = IMD_NORMAL;										// IMD funktioniert normal
 
 				// DutyCycle abfragen
 				if (imd.DutyCycle > 5 && imd.DutyCycle < 95)						// IMD PWM
@@ -97,6 +100,7 @@ void imd_status(void)
 				{
 					// IMD Status speichern
 					system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;						// Fehlerausgabe
+					imd.PWM_STATUS = IMD_FREQ_ERROR;								// Fehlerausgabe
 				}
 				break;
 
@@ -117,12 +121,14 @@ void imd_status(void)
 				{
 					// IMD Status speichern
 					system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;						// Fehlerausgabe
+					imd.PWM_STATUS = IMD_FREQ_ERROR;								// Fehlerausgabe
 				}
 				break;
 
 			case 30:																// Case 30 Hz
 				// IMD Status speichern
-				system_in.IMD_PWM_STATUS = IMD_SCHNELLSTART;
+				system_in.IMD_PWM_STATUS = IMD_SCHNELLSTART;						// Schnellstartmessung
+				imd.PWM_STATUS = IMD_SCHNELLSTART;									// Schnellstartmessung
 
 				// DutyCycle abfragen
 				if (imd.DutyCycle > 5 && imd.DutyCycle < 11)						// IMD Gut
@@ -138,12 +144,14 @@ void imd_status(void)
 				{
 					// IMD Status speichern
 					system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;						// Fehlerausgabe
+					imd.PWM_STATUS = IMD_FREQ_ERROR;								// Fehlerausgabe
 				}
 				break;
 
 			case 40:																// Case 40 Hz
 				// IMD Status speichern
-				system_in.IMD_PWM_STATUS = IMD_GERAETEFEHLER;
+				system_in.IMD_PWM_STATUS = IMD_GERAETEFEHLER;						// Geraetefehler
+				imd.PWM_STATUS = IMD_GERAETEFEHLER;									// Geraetefehler
 
 				// DutyCyle abfragen
 				if (imd.DutyCycle > 47 && imd.DutyCycle < 53)						// IMD PWM
@@ -155,12 +163,14 @@ void imd_status(void)
 				{
 					// IMD Status speichern
 					system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;						// Fehlerausgabe
+					imd.PWM_STATUS = IMD_FREQ_ERROR;								// Fehlerausgabe
 				}
 				break;
 
 			case 50:																// Case 50 Hz
 				// IMD Status speichern
-				system_in.IMD_PWM_STATUS = IMD_ANSCHLUSSFEHLER_ERDE;
+				system_in.IMD_PWM_STATUS = IMD_ANSCHLUSSFEHLER_ERDE;				// Anschluss an Erde festgestellt
+				imd.PWM_STATUS = IMD_ANSCHLUSSFEHLER_ERDE;							// Anschluss an Erde festgestellt
 
 				// DutyCycle abfragen
 				if (imd.DutyCycle > 47 && imd.DutyCycle < 53)						// IMD PWM
@@ -172,12 +182,14 @@ void imd_status(void)
 				{
 					// IMD Status speichern
 					system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;						// Fehlerausgabe
+					imd.PWM_STATUS = IMD_FREQ_ERROR;								// Fehlerausgabe
 				}
 				break;
 
 			default:																// Case Default Fehler
 				// IMD Status speichern
 				system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;							// Fehlerausgabe
+				imd.PWM_STATUS = IMD_FREQ_ERROR;									// Fehlerausgabe
 				break;
 		}
 	}
@@ -187,7 +199,8 @@ void imd_status(void)
 		{
 			case 10:																// Case 10 Hz
 				// IMD Status speichern
-				system_in.IMD_PWM_STATUS = IMD_NORMAL;
+				system_in.IMD_PWM_STATUS = IMD_NORMAL;								// IMD funktioniert normal
+				imd.PWM_STATUS = IMD_NORMAL;										// IMD funktioniert normal
 
 				// DutyCycle abfragen
 				if (imd.DutyCycle > 5 && imd.DutyCycle < 95)						// IMD PWM
@@ -205,12 +218,14 @@ void imd_status(void)
 				{
 					// IMD Status speichern
 					system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;						// Fehlerausgabe
+					imd.PWM_STATUS = IMD_FREQ_ERROR;								// Fehlerausgabe
 				}
 				break;
 
 			case 20:
 				// IMD Status speichern
-				system_in.IMD_PWM_STATUS = IMD_UNTERSPANNUNG;
+				system_in.IMD_PWM_STATUS = IMD_UNTERSPANNUNG;						// Unterspannung an HV erkannt
+				imd.PWM_STATUS = IMD_UNTERSPANNUNG;									// Unterspannung an HV erkannt
 
 				// DutyCycle abfragen
 				if (imd.DutyCycle > 5 && imd.DutyCycle < 95)						// IMD PWM
@@ -228,12 +243,14 @@ void imd_status(void)
 				{
 					// IMD Status speichern
 					system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;						// Fehlerausgabe
+					imd.PWM_STATUS = IMD_FREQ_ERROR;								// Fehlerausgabe
 				}
 				break;
 
 			default:																// Case Default Fehler
 				// IMD Status speichern
 				system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;							// Fehlerausgabe
+				imd.PWM_STATUS = IMD_FREQ_ERROR;									// Fehlerausgabe
 				break;
 		}
 
