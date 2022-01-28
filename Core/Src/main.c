@@ -56,10 +56,10 @@
 
 /* USER CODE BEGIN PV */
 CAN_RxHeaderTypeDef RxMessage;
-uint8_t RxData[8], can_change = 0;
+uint8_t RxData[8];
 static volatile uint16_t rising = 0;
 static volatile uint16_t falling = 0;
-volatile uint8_t millisekunden_flag_1 = 0;
+volatile uint8_t millisekunden_flag_1 = 0, can_change = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -172,9 +172,9 @@ int main(void)
     sFilterConfig.FilterBank = 0;
     sFilterConfig.FilterMode = CAN_FILTERMODE_IDMASK;
     sFilterConfig.FilterScale = CAN_FILTERSCALE_32BIT;
-    sFilterConfig.FilterIdHigh = 0x0111 << 5;
+    sFilterConfig.FilterIdHigh = 0;
     sFilterConfig.FilterIdLow = 0;
-    sFilterConfig.FilterMaskIdHigh = 0x0111 << 5;
+    sFilterConfig.FilterMaskIdHigh = 0;
     sFilterConfig.FilterMaskIdLow = 0;
     sFilterConfig.FilterFIFOAssignment = 0;
     sFilterConfig.FilterActivation = ENABLE;
@@ -272,6 +272,9 @@ int main(void)
 		// Task wird alle 200 Millisekunden ausgefuehrt
 		if (((count % 200) == 0) && (start_flag == 1))
 		{
+			// Lese Eingaenge
+			readall_inputs();
+
 			// Daten fuer Ausgaenge zusammenfuehren
 			OutData[0] = system_out.systemoutput;
 			OutData[1] = highcurrent_out.high_out;
@@ -280,7 +283,6 @@ int main(void)
 
 			// Sende Nachricht digitale Ausgaenge
 			status = HAL_CAN_AddTxMessage(&hcan3, &TxOutput, OutData, (uint32_t *)CAN_TX_MAILBOX0);
-			hal_error(status);
 
 			// Daten fuer Eingaenge zusammenfuehren
 			InData[0] = system_in.systeminput;
@@ -289,146 +291,34 @@ int main(void)
 
 			// Sende Nachricht digitale Eingaenge
 			status = HAL_CAN_AddTxMessage(&hcan3, &TxInput, InData, (uint32_t *)CAN_TX_MAILBOX0);
-			hal_error(status);
 
 			// Sende Nachricht digitale Eingaenge
 			status = HAL_CAN_AddTxMessage(&hcan3, &TxMessage, TxData, (uint32_t *)CAN_TX_MAILBOX0);
-			hal_error(status);
 		}
 
 		// Task wird alle 400 Millisekunden ausgefuehrt
 		if (((count % 400) == 0) && (start_flag == 1))
 		{
-			/*if (rising != 0 && falling != 0)
+			if(can_change == 1)
 			{
-				int diff = getDifference(rising, falling);
-				dutyCycle = round((float)(diff * 100) / (float)rising);	// (width / period ) * 100
-				frequency = timerPeriod / rising;						// timer restarts after rising edge so time between two rising edge is whatever is measured
-			}
-			else
-			{
-				dutyCycle = 0;
-				frequency = 0;
-			}
 
-			uartTransmitNumber(dutyCycle, 10);
-			uartTransmitNumber(frequency, 10);
-
-			if (sdc_in.IMD_OK_IN == 1)
-			{
-				switch (frequency)
+				if((RxMessage.StdId == 0x111) && ((RxData[0] & 0x01) == 1))
 				{
-					case 0:
-						system_in.IMD_PWM = HAL_GPIO_ReadPin(IMD_PWM_GPIO_Port, IMD_PWM_Pin);						// Eingang IMD PWM
-						if (system_in.IMD_PWM == 1)
-						{
-							system_in.IMD_PWM_STATUS = IMD_KURZSCHLUSS_KL15;
-						}
-						else
-						{
-							system_in.IMD_PWM_STATUS = IMD_KURZSCHLUSS_GND;
-						}
-						break;
-					case 10:
-						system_in.IMD_PWM_STATUS = IMD_NORMAL;
-						if (dutyCycle > 5 && dutyCycle < 95)								// IMD PWM
-						{
-							R_IMD = 90 * 1200 / (dutyCycle - 5) - 1200;
-							uartTransmitNumber(R_IMD, 10);
-						}
-						else																// IMD Invalid
-						{
-							system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;
-						}
-						break;
-					case 20:
-						system_in.IMD_PWM_STATUS = IMD_UNTERSPANNUNG;
-						if (dutyCycle > 5 && dutyCycle < 95)								// IMD PWM
-						{
-							R_IMD = 90 * 1200 / (dutyCycle - 5) - 1200;
-							uartTransmitNumber(R_IMD, 10);
-						}
-						else																// IMD Invalid
-						{
-							system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;
-						}
-						break;
-					case 30:
-						system_in.IMD_PWM_STATUS = IMD_SCHNELLSTART;
-						if (dutyCycle > 5 && dutyCycle < 11)								// IMD Gut
-						{
-
-						}
-						else if (dutyCycle > 89 && dutyCycle < 95)							// IMD Schlecht
-						{
-
-						}
-						else																// IMD Fehlerhaft
-						{
-							system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;
-						}
-						break;
-					case 40:
-						system_in.IMD_PWM_STATUS = IMD_GERAETEFEHLER;
-						if (dutyCycle > 47 && dutyCycle < 53)								// IMD PWM
-						{
-
-						}
-						else																// IMD Invalid
-						{
-							system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;
-						}
-						break;
-					case 50:
-						system_in.IMD_PWM_STATUS = IMD_ANSCHLUSSFEHLER_ERDE;
-						if (dutyCycle > 47 && dutyCycle < 53)								// IMD PWM
-						{
-
-						}
-						else																// IMD Invalid
-						{
-							system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;
-						}
-						break;																// IMD Error, kein anderes Ereignis zutrefend
-					default:
-						system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;
-						break;
+					highcurrent_out.IsoEN = 1;
+					HAL_GPIO_WritePin(ISOSPI_EN_GPIO_Port, ISOSPI_EN_Pin, highcurrent_out.IsoEN);
+					leuchten_out.BlueLed = 1;
+					HAL_GPIO_WritePin(BLUE_LED_GPIO_Port, BLUE_LED_Pin, leuchten_out.BlueLed);
 				}
-			}
-			else
-			{
-				switch (frequency)
+
+				if((RxMessage.StdId == 0x111) && ((RxData[0] & 0x01) != 1))
 				{
-
-					case 10:
-						system_in.IMD_PWM_STATUS = IMD_NORMAL;
-						if (dutyCycle > 5 && dutyCycle < 95)								// IMD PWM
-						{
-							R_IMD = 90 * 1200 / (dutyCycle - 5) - 1200;
-							uartTransmitNumber(R_IMD, 10);
-						}
-						else																// IMD Invalid
-						{
-							system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;
-						}
-						break;
-					case 20:
-						system_in.IMD_PWM_STATUS = IMD_UNTERSPANNUNG;
-						if (dutyCycle > 5 && dutyCycle < 95)								// IMD PWM
-						{
-							R_IMD = 90 * 1200 / (dutyCycle - 5) - 1200;
-							uartTransmitNumber(R_IMD, 10);
-						}
-						else																// IMD Invalid
-						{
-							system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;
-						}
-						break;																// IMD Error, kein anderes Ereignis zutrefend
-					default:
-						system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;
-						break;
+					highcurrent_out.IsoEN = 0;
+					HAL_GPIO_WritePin(ISOSPI_EN_GPIO_Port, ISOSPI_EN_Pin, highcurrent_out.IsoEN);
+					leuchten_out.BlueLed = 0;
+					HAL_GPIO_WritePin(BLUE_LED_GPIO_Port, BLUE_LED_Pin, leuchten_out.BlueLed);
 				}
-			}*/
+				can_change = 0;
+			}
 	
 			count = 0;
 		}

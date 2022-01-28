@@ -143,6 +143,7 @@ Mcu.UserName=STM32F767ZITx
 MxCube.Version=6.4.0
 MxDb.Version=DB.6.0.40
 NVIC.BusFault_IRQn=true\:0\:0\:false\:false\:true\:true\:false
+NVIC.CAN3_RX0_IRQn=true\:0\:0\:false\:false\:true\:true\:true
 NVIC.DebugMonitor_IRQn=true\:0\:0\:false\:false\:true\:true\:false
 NVIC.ForceEnableDMAVector=true
 NVIC.HardFault_IRQn=true\:0\:0\:false\:false\:true\:true\:false

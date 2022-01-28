@@ -40,7 +40,7 @@ union highcurrent_out_tag {
 		uint8_t PrechargeOut : 1;				// 2
 		uint8_t HV_M : 1;						// 3
 		uint8_t HV_CHG : 1;						// 4
-		uint8_t  : 1;							// 5
+		uint8_t IsoEN : 1;						// 5
 		uint8_t Heater1 : 1;					// 6
 		uint8_t Heater2 : 1;					// 7
 	};

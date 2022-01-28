@@ -75,6 +75,15 @@ void writeall_outputs(void)
 //----------------------------------------------------------------------
 void writeled_outputs(void)
 {
+	leuchten_out.ledoutput = 0;
+
+	// Schreibe Leuchtdioden Ausgaenge
+	HAL_GPIO_WritePin(INLET_RED_GPIO_Port, INLET_RED_Pin, leuchten_out.InletRed);					// Red Inlet LED
+	HAL_GPIO_WritePin(INLET_GREEN_GPIO_Port, INLET_GREEN_Pin, leuchten_out.InletGreen);				// Green Inlet LED
+	HAL_GPIO_WritePin(AKKU_LED_GPIO_Port, AKKU_LED_Pin, leuchten_out.AkkuErrorLed);					// Akku LED Kombiinstrument
+	HAL_GPIO_WritePin(RED_LED_GPIO_Port, RED_LED_Pin, leuchten_out.RedLed);							// Rote LED Platine
+	HAL_GPIO_WritePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin, leuchten_out.GreenLed);					// Gruene LED Platine
+	HAL_GPIO_WritePin(BLUE_LED_GPIO_Port, BLUE_LED_Pin, leuchten_out.BlueLed);						// Blaue LED Platine
 }
 //----------------------------------------------------------------------
 

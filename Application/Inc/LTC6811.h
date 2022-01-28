@@ -19,9 +19,9 @@
 //----------------------------------------------------------------------
 #define LTC6811_DEVICES		1						// Number of devices in daisy chain
 #define LTC6811_UVOLT		2000					// Unterspannung einer Zelle		3.2 = 2000 * 16 * 100µV, Spannung = VUV * 16 * 100µV, VUV muss im Register stehen
-#define LTC6811_OVOLT		2625					// Überspannung einer Zelle			4.2 = 2625 * 16 * 100µV, Spannung = VOV * 16 * 100µV, VOV muss im Register stehen
+#define LTC6811_OVOLT		2625					// Ueberspannung einer Zelle		4.2 = 2625 * 16 * 100µV, Spannung = VOV * 16 * 100µV, VOV muss im Register stehen
 #define LTC6811_UTEMP		0						// Untertemperatur einer Zelle
-#define LTC6811_OTEMP		50						// Übertemperatur einer Zelle
+#define LTC6811_OTEMP		50						// Uebertemperatur einer Zelle
 //----------------------------------------------------------------------
 
 // Command Codes definieren							// Datasheet Page 49 Table 34
@@ -138,7 +138,7 @@ void ltc6811_read(uint16_t command, uint8_t *data);
 uint16_t peccommand(uint16_t command);
 uint16_t peclookup(uint8_t len,	uint8_t *data);
 //----------------------------------------------------------------------
-//void init_crc(void);								// Wird benötigt um Pec-Tabelle zu berechnen
+//void init_crc(void);								// Wird benoetigt um Pec-Tabelle zu berechnen
 //----------------------------------------------------------------------
 
 #endif

@@ -56,6 +56,7 @@
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
+extern CAN_HandleTypeDef hcan3;
 extern TIM_HandleTypeDef htim6;
 /* USER CODE BEGIN EV */
 
@@ -209,6 +210,20 @@ void TIM6_DAC_IRQHandler(void)
   /* USER CODE BEGIN TIM6_DAC_IRQn 1 */
 
   /* USER CODE END TIM6_DAC_IRQn 1 */
+}
+
+/**
+  * @brief This function handles CAN3 RX0 interrupt.
+  */
+void CAN3_RX0_IRQHandler(void)
+{
+  /* USER CODE BEGIN CAN3_RX0_IRQn 0 */
+
+  /* USER CODE END CAN3_RX0_IRQn 0 */
+  HAL_CAN_IRQHandler(&hcan3);
+  /* USER CODE BEGIN CAN3_RX0_IRQn 1 */
+
+  /* USER CODE END CAN3_RX0_IRQn 1 */
 }
 
 /* USER CODE BEGIN 1 */
