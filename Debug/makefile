@@ -13,7 +13,6 @@ RM := rm -rf
 -include Core/Startup/subdir.mk
 -include Core/Src/subdir.mk
 -include Application/Src/subdir.mk
--include subdir.mk
 -include objects.mk
 
 ifneq ($(MAKECMDGOALS),clean)
@@ -85,7 +84,7 @@ BatteriemanagementSystem.bin: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TO
 
 # Other Targets
 clean:
-	-$(RM) $(SIZE_OUTPUT)$(OBJDUMP_LIST)$(EXECUTABLES)$(OBJS)$(S_DEPS)$(S_UPPER_DEPS)$(C_DEPS)$(OBJCOPY_BIN) BatteriemanagementSystem.elf
+	-$(RM) BatteriemanagementSystem.bin BatteriemanagementSystem.elf BatteriemanagementSystem.list default.size.stdout
 	-@echo ' '
 
 pre-build:
@@ -101,6 +100,6 @@ fail-specified-linker-script-missing:
 warn-no-linker-script-specified:
 	@echo 'Warning: No linker script specified. Check the linker settings in the build configuration.'
 
-.PHONY: all clean dependents fail-specified-linker-script-missing warn-no-linker-script-specified main-build pre-build
+.PHONY: all clean dependents main-build fail-specified-linker-script-missing warn-no-linker-script-specified pre-build
 
 -include ../makefile.targets

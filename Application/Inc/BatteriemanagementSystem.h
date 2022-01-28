@@ -29,12 +29,12 @@
 #define BMS_CAN_Zellen21							0x643					// Batterie-Zellen 1-4 Modul 2
 #define BMS_CAN_Zellen22							0x644					// Batterie-Zellen 5-8 Modul 2
 #define BMS_CAN_Zellen23							0x645					// Batterie-Zellen 9-12 Modul 2
-#define BMS_CAN_Temperatur11						0x640					// Batterie-Temperatur 1-4 Modul 1
-#define BMS_CAN_Temperatur12						0x641					// Batterie-Temperatur 5-8 Modul 1
-#define BMS_CAN_Temperatur13						0x642					// Batterie-Temperatur 9-12 Modul 1
-#define BMS_CAN_Temperatur21						0x643					// Batterie-Temperatur 1-4 Modul 2
-#define BMS_CAN_Temperatur22						0x644					// Batterie-Temperatur 5-8 Modul 2
-#define BMS_CAN_Temperatur23						0x645					// Batterie-Temperatur 9-12 Modul 2
+#define BMS_CAN_Temperatur11						0x740					// Batterie-Temperatur 1-4 Modul 1
+#define BMS_CAN_Temperatur12						0x741					// Batterie-Temperatur 5-8 Modul 1
+#define BMS_CAN_Temperatur13						0x742					// Batterie-Temperatur 9-12 Modul 1
+#define BMS_CAN_Temperatur21						0x743					// Batterie-Temperatur 1-4 Modul 2
+#define BMS_CAN_Temperatur22						0x744					// Batterie-Temperatur 5-8 Modul 2
+#define BMS_CAN_Temperatur23						0x745					// Batterie-Temperatur 9-12 Modul 2
 //----------------------------------------------------------------------
 // Motorsteuergeraet neu
 //----------------------------------------------------------------------
