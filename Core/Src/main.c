@@ -159,7 +159,7 @@ int main(void)
   	}
   	uartTransmit("CAN START\n", 10);
 
-  	// Aktiviere Interrupts für CAN Bus
+  	// Aktiviere Interrupts fuer CAN Bus
   	if((status = HAL_CAN_ActivateNotification(&hcan3, CAN_IT_RX_FIFO0_MSG_PENDING)) != HAL_OK)
   	{
   		/* Notification Error */
@@ -297,6 +297,33 @@ int main(void)
 
 			// Sende Nachricht digitale Eingaenge
 			status = HAL_CAN_AddTxMessage(&hcan3, &TxMessage, TxData, (uint32_t *)CAN_TX_MAILBOX0);
+
+			// AMS OK einlesen, und auswerten
+			if((sdc_in.sdcinput & 0x0F) == 0x09)						// Bitmaske 0x0F, Wert 0x08 anpassen
+			{
+				system_out.AmsOK = 1;									// AMS setzen
+			}
+			// Falls Fehler im Shutdown-Circuit
+			else
+			{
+				system_out.AmsOK = 0;									// AMS zuruecksetzen
+			}
+
+			// Ausgabe AMS OK
+			HAL_GPIO_WritePin(AMS_OK_GPIO_Port, AMS_OK_Pin, system_out.AmsOK);
+
+			// Freigabe erteilen
+			if((system_out.AmsOK == 1) && !(sdc_in.PrechargeIn == 1))	// Wenn AMS OK und Vorgeladen
+			{
+				system_out.Freigabe = 1;								// Freigabe erteilen
+			}
+			else
+			{
+				system_out.Freigabe = 0;								// Freigabe zuruecknehmen
+			}
+
+			// Ausgabe Freigabe / Run
+			HAL_GPIO_WritePin(FREIGABE_GPIO_Port, FREIGABE_Pin, system_out.Freigabe);
 		}
 
 		// Task wird alle 400 Millisekunden ausgefuehrt

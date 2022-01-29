@@ -40,9 +40,9 @@ union system_input_tag {
 union sdc_in_tag {
 	struct {
 		uint8_t IMD_OK_IN : 1;					// 0
-		uint8_t HVIL : 1;						// 1
-		uint8_t MotorSDC : 1;					// 2
-		uint8_t BTB_SDC : 1;					// 3
+		uint8_t BTB_SDC : 1;					// 1
+		uint8_t HVIL : 1;						// 2
+		uint8_t MotorSDC : 1;					// 3
 		uint8_t PrechargeIn : 1;				// 4
 		uint8_t  : 1;							// 5
 		uint8_t  : 1;							// 6
