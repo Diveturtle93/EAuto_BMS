@@ -127,6 +127,9 @@ int main(void)
   	// IsoSPI einschalten, Isolierte Spannungsversorgung IsoSPI und HV-Precharge Messung einschalten
   	ISOSPI_ENABLE();
 
+  	// Warten fuer eine kurze Zeit
+  	HAL_Delay(20);
+
     uartTransmit("\n", 1);
 #define TEST_LTC6811	"Starte Batteriemanagement-System\n"
     uartTransmit(TEST_LTC6811, sizeof(TEST_LTC6811));
@@ -149,7 +152,7 @@ int main(void)
 		uartTransmit(LTC6811_PASSED, sizeof(LTC6811_PASSED));			// Ausgabe bei Erfolgreichem Selbsttest
 	}
 
-	ltc6811_read(RDCFG, &data[0]);
+	/*ltc6811_read(RDCFG, &data[0]);
 
 	// Alle Register zuruecksetzen
 	ltc6811(CLRCELL);
@@ -158,6 +161,7 @@ int main(void)
 
 	ltc6811(ADAX | MD262 | GPIOALL);
 	ltc6811_read(RDAUXA, &data[0]);
+	ltc6811(ADCVC | MD73 | CELLALL);*/
 
   /* USER CODE END 2 */
 
@@ -168,14 +172,13 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-		ltc6811(ADCVC | MD73 | CELLALL);
+		/*ltc6811(ADCVC | MD73 | CELLALL);
 		HAL_Delay(300);
 
 		ltc6811_read(RDCVA, &data[0]);
 		ltc6811_read(RDCVB, &data[6]);
 		ltc6811_read(RDCVC, &data[12]);
 		ltc6811_read(RDCVD, &data[18]);
-		ltc6811_read(RDCFG, &data[26]);
 
 		for (uint8_t i = 0; i < 12; i++)
 		{
@@ -196,7 +199,7 @@ int main(void)
 		tmp /= 12;
 		uartTransmitNumber(tmp, 10);
 
-		uartTransmit("\n", 1);
+		uartTransmit("\n", 1);*/
   }
   /* USER CODE END 3 */
 }

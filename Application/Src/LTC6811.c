@@ -167,7 +167,7 @@ void wakeup_ltc6811(void)
 		// Dummy Paket senden
 		HAL_SPI_Transmit(&hspi4, (uint8_t*)0xAA, 1, 100);					// Chip wecken
 
-//		HAL_Delay(2);														// isoSPI braucht Zeit bis ready
+		HAL_Delay(2);														// isoSPI braucht Zeit bis ready
 
 		// ISOCS ausschalten
 		ISOCS_DISABLE();													// Chip-Select ausschalten
@@ -489,31 +489,66 @@ uint8_t ltc6811_check(void)
 	if (tmp_data[5] & !(1 << 0))
 	{
 		error |= (1 << 0);													// Thermal Shutdown nicht Ok
+
+#ifdef DEBUG_LTC6811
+		ITM_SendString("Thermal Shutdown");
+		ITM_SendChar('\n');
+		ITM_SendChar('\n');
+		ITM_SendChar('\n');
+#endif
 	}
 
 	// Selbsttest 1 Digitale Filter
 	if (ltc6811_test(ST1 | MD73) == 1)
 	{
 		error |= (1 << 1);													// Selbsttest 1 nicht bestanden
+
+#ifdef DEBUG_LTC6811
+		ITM_SendString("Selbsttest 1 Fehler");
+		ITM_SendChar('\n');
+		ITM_SendChar('\n');
+		ITM_SendChar('\n');
+#endif
 	}
 
 	// Selbsttest 2 Digitale Filter
 	if (ltc6811_test(ST2 | MD73) == 1)
 	{
 		error |= (1 << 2);													// Selbsttest 2 nicht bestanden
+
+#ifdef DEBUG_LTC6811
+		ITM_SendString("Selbsttest 2 Fehler");
+		ITM_SendChar('\n');
+		ITM_SendChar('\n');
+		ITM_SendChar('\n');
+#endif
 	}
 
-	// Selbsttest Multiplexer
+	/*// Selbsttest Multiplexer
 	if (ltc6811_diagn() == 1)
 	{
 		error |= (1 << 3);													// Multiplexertest nicht bestanden
+
+#ifdef DEBUG_LTC6811
+		ITM_SendString("Multiplexer Fehler");
+		ITM_SendChar('\n');
+		ITM_SendChar('\n');
+		ITM_SendChar('\n');
+#endif
 	}
 
 	// Open Wire Check durchfuehren
 	if (ltc6811_openwire() == 1)
 	{
 		error |= (1 << 4);													// Open-Wire Test nicht bestanden
-	}
+
+#ifdef DEBUG_LTC6811
+		ITM_SendString("Openwire Fehler");
+		ITM_SendChar('\n');
+		ITM_SendChar('\n');
+		ITM_SendChar('\n');
+#endif
+	}*/
 
 	// Debug Nachricht
 #ifdef DEBUG_LTC6811
@@ -565,7 +600,7 @@ uint8_t ltc6811_test(uint16_t command)
 
 	// Lookup fuer Selbstest digitaler Filter
 	// Kontrollvariable heraussuchen
-	if (command && MD2714)													// Wenn Sampling Frequenz = MD2714
+	if (command & MD2714)													// Wenn Sampling Frequenz = MD2714
 	{
 		// Wenn ADCOPT gesetzt
 /*		if (ADCOPT == 1)
@@ -589,12 +624,12 @@ uint8_t ltc6811_test(uint16_t command)
 		else																// Wenn ADCOPT nicht gesetzt
 		{*/
 			// Wenn Selbsttest 1 gewaehlt
-			if (command == ST1)
+			if (command & ST1)
 			{
 				test_pattern = 0x9565;										// Registerwert bei 27kHz
 			}
 			// Wenn Selbsttest 2 gewaehlt
-			else if (command == ST2)
+			else if (command & ST2)
 			{
 				test_pattern = 0x6A9A;										// Registerwert bei 27kHz
 			}
@@ -608,12 +643,12 @@ uint8_t ltc6811_test(uint16_t command)
 	else
 	{
 		// Wenn Selbsttest 1 gewaehlt
-		if (command == ST1)
+		if (command & ST1)
 		{
 			test_pattern = 0x9555;											// Registerwert bei allen anderen Sampling Frequenzen
 		}
 		// Wenn Selbsttest 2 gewaehlt
-		else if (command == ST2)
+		else if (command & ST2)
 		{
 			test_pattern = 0x6AAA;											// Registerwert bei allen anderen Sampling Frequenzen
 		}
@@ -658,7 +693,7 @@ uint8_t ltc6811_test(uint16_t command)
 			case 12:
 			case 13:
 			case 14:
-				tmp = ((tmp_data[(i+4)*2+1] << 8)|tmp_data[(i+4)*2+1]);		// Register AUXA umwandeln
+				tmp = ((tmp_data[(i+4)*2+1] << 8)|tmp_data[(i+4)*2]);		// Register AUXA umwandeln
 				break;
 			// Register AUXB
 			case 15:
@@ -670,7 +705,7 @@ uint8_t ltc6811_test(uint16_t command)
 			case 18:
 			case 29:
 			case 20:
-				tmp = ((tmp_data[(i+6)*2+3] << 8)|tmp_data[(i+6)*2+2]);		// Register STATA umwandeln
+				tmp = ((tmp_data[(i+6)*2+1] << 8)|tmp_data[(i+6)*2]);		// Register STATA umwandeln
 				break;
 			// Register STATB
 			case 21:
@@ -684,10 +719,14 @@ uint8_t ltc6811_test(uint16_t command)
 		// Vergleiche Registerwert mit Vorgabewert aus Datenblatt
 		if (tmp != test_pattern)
 		{
+			ITM_SendString("Test failed: ");
+			ITM_SendNumber(i);
+			ITM_SendChar('\n');
 			return 1;														// Selbsttest 1 nicht OK
 		}
 	}
 
+	ITM_SendString("Test passed");
 	return 0;																// Selbsttest 1 OK
 }
 //----------------------------------------------------------------------
