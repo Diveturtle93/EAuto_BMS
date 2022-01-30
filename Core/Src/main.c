@@ -85,7 +85,7 @@ int main(void)
   /* USER CODE BEGIN 1 */
 	FRESULT res; /* FatFs function common result code */
 	uint32_t byteswritten; /* File write/read counts */
-	uint8_t wtext[] = "STM32 FATFS works great!"; /* File write buffer */
+	uint8_t wtext[] = "STM32 FATFS works great!\r"; /* File write buffer */
 	uint8_t rtext[_MAX_SS];/* File read buffer */
   /* USER CODE END 1 */
 
@@ -240,6 +240,41 @@ int main(void)
 	}
 	f_mount(&SDFatFS, (TCHAR const*)NULL, 0);
 	uartTransmit("FS Unmount\n", 11);
+
+	if(f_mount(&SDFatFS, (TCHAR const*)SDPath, 0) != FR_OK)
+		{
+			uartTransmit("FS Mount schlaegt fehlt\n", 24);
+			Error_Handler();
+		}
+		else
+		{
+			//Open file for writing (Exists)
+			if(f_open(&SDFile, "STM32.TXT", FA_OPEN_APPEND | FA_OPEN_EXISTING | FA_WRITE) != FR_OK)
+			{
+				uartTransmit("FS Open schlaegt fehlt\n", 23);
+				Error_Handler();
+			}
+			else
+			{
+
+				//Write to the text file
+				res = f_write(&SDFile, "Test 2, update File!", strlen("Test 2, update File!"), (void *)&byteswritten);
+				uartTransmit("SD Karte beschreiben\n", 21);
+				if((byteswritten == 0) || (res != FR_OK))
+				{
+					uartTransmit("FS Write schlaegt fehlt\n", 24);
+					Error_Handler();
+				}
+				else
+				{
+
+					f_close(&SDFile);
+					uartTransmit("FS Close\n", 9);
+				}
+			}
+		}
+		f_mount(&SDFatFS, (TCHAR const*)NULL, 0);
+		uartTransmit("FS Unmount\n", 11);
 
   /* USER CODE END 2 */
 
