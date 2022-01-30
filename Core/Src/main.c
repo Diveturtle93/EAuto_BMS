@@ -21,11 +21,13 @@
 #include "main.h"
 #include "adc.h"
 #include "can.h"
+#include "dma.h"
+#include "fatfs.h"
+#include "sdmmc.h"
 #include "spi.h"
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
-#include <math.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -35,8 +37,8 @@
 #include "outputs.h"
 #include "BatteriemanagementSystem.h"
 #include "error.h"
-#include "imd.h"
-#include "..\..\Application\Src\my_math.c"
+
+#include <string.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -81,7 +83,10 @@ void SystemClock_Config(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
+	FRESULT res; /* FatFs function common result code */
+	uint32_t byteswritten; /* File write/read counts */
+	uint8_t wtext[] = "STM32 FATFS works great!"; /* File write buffer */
+	uint8_t rtext[_MAX_SS];/* File read buffer */
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -91,7 +96,8 @@ int main(void)
 
   /* USER CODE BEGIN Init */
 	// Definiere Variablen fuer Main-Funktion
-	uint16_t dutyCycle, timerPeriod, frequency, count = 0, R_IMD;
+//	uint16_t dutyCycle, timerPeriod, frequency, R_IMD;
+	uint16_t count = 0;
 	uint8_t start_flag = 0;
 
 	// Definiere Variablen fuer Main-Funktion
@@ -122,6 +128,9 @@ int main(void)
   MX_SPI1_Init();
   MX_CAN3_Init();
   MX_TIM6_Init();
+  MX_SDMMC1_SD_Init();
+  MX_DMA_Init();
+  MX_FATFS_Init();
   /* USER CODE BEGIN 2 */
 
 	/* Schreibe Resetquelle auf die Konsole */
@@ -136,16 +145,12 @@ int main(void)
   	collectSystemInfo();
 #endif
 
-	timerPeriod = (HAL_RCC_GetPCLK2Freq() / htim1.Init.Prescaler);
   	// Start timer
-	if (HAL_TIM_Base_Start_IT(&htim1) != HAL_OK);
-	if (HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_1) != HAL_OK);
-	if (HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_2) != HAL_OK);
-  	HAL_TIM_Base_Start(&htim6);
+  	HAL_TIM_Base_Start_IT(&htim6);
 
 	// Leds Testen
 	testPCB_Leds();
-	testLeds();
+//	testLeds();
 
 	// Lese alle Eingaenge
 	readall_inputs();
@@ -193,60 +198,48 @@ int main(void)
     	TxData[j] = (j + 1);
     }
 
-	if (!(sdc_in.sdcinput && 0b00001111))										// SDC OK; Motor, BTB, IMD und HVIL OK
+	if(f_mount(&SDFatFS, (TCHAR const*)SDPath, 0) != FR_OK)
 	{
-		#define SDC_STRING_ERROR			"\nSDC ist nicht geschlossen"
-		uartTransmit(SDC_STRING_ERROR, sizeof(SDC_STRING_ERROR));
-
-		// LEDs setzen bei SDC Fehler
-		leuchten_out.GreenLed = 0;
-		leuchten_out.RedLed = 1;
-		leuchten_out.AkkuErrorLed = 0;
-		HAL_GPIO_WritePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin, leuchten_out.GreenLed);
-		HAL_GPIO_WritePin(RED_LED_GPIO_Port, RED_LED_Pin, leuchten_out.RedLed);
-		HAL_GPIO_WritePin(AKKU_LED_GPIO_Port, AKKU_LED_Pin, leuchten_out.AkkuErrorLed);
-
-		// Ausgabe welcher Fehler vorhanden
-		// Motorsteuergeraet Fehler
-		if(!(sdc_in.MotorSDC == 1))
-		{
-			#define SDC_STRING_MOTOR		"\nSDC Motor hat einen Fehler und ist offen"
-			uartTransmit(SDC_STRING_MOTOR, sizeof(SDC_STRING_MOTOR));
-		}
-
-		// BamoCar Fehler
-		if (!(sdc_in.BTB_SDC == 1))
-		{
-			#define SDC_STRING_BTB			"\nSDC BTB hat einen Fehler und ist offen"
-			uartTransmit(SDC_STRING_BTB, sizeof(SDC_STRING_BTB));
-		}
-
-		// HVIL Fehler
-		if (!(sdc_in.HVIL == 1))
-		{
-			#define SDC_STRING_HVIL			"\nSDC HVIL ist nicht geschlossen"
-			uartTransmit(SDC_STRING_HVIL, sizeof(SDC_STRING_HVIL));
-		}
-
-		// IMD Fehler
-		if (!(sdc_in.IMD_OK_IN == 1))
-		{
-			#define SDC_STRING_IMD			"\nSDC IMD hat einen Fehler"
-			uartTransmit(SDC_STRING_IMD, sizeof(SDC_STRING_IMD));
-		}
+		uartTransmit("FS Mount schlaegt fehlt\n", 24);
+		Error_Handler();
 	}
 	else
 	{
-		// Keine Fehler, LEDs fuer OK setzen
-		system_out.AmsOK = 1;
-		HAL_GPIO_WritePin(AMS_OK_GPIO_Port, AMS_OK_Pin, system_out.AmsOK);
-		leuchten_out.GreenLed = 1;
-		HAL_GPIO_WritePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin, leuchten_out.GreenLed);
+		if(f_mkfs((TCHAR const*)SDPath, FM_ANY, 0, rtext, sizeof(rtext)) != FR_OK)
+		{
+			uartTransmit("FS make Filesystem schlaegt fehlt\n", 34);
+			Error_Handler();
+		}
+		else
+		{
+			//Open file for writing (Create)
+			if(f_open(&SDFile, "STM32.TXT", FA_CREATE_ALWAYS | FA_WRITE) != FR_OK)
+			{
+				uartTransmit("FS Open schlaegt fehlt\n", 23);
+				Error_Handler();
+			}
+			else
+			{
 
-		// Ausgabe SDC geschlossen
-		#define SDC_STRING_OK				"\nSDC ist geschlossen"
-		uartTransmit(SDC_STRING_OK, sizeof(SDC_STRING_OK));
+				//Write to the text file
+				res = f_write(&SDFile, wtext, strlen((char *)wtext), (void *)&byteswritten);
+				uartTransmit("SD Karte beschreiben\n", 21);
+				if((byteswritten == 0) || (res != FR_OK))
+				{
+					uartTransmit("FS Write schlaegt fehlt\n", 24);
+					Error_Handler();
+				}
+				else
+				{
+
+					f_close(&SDFile);
+					uartTransmit("FS Close\n", 9);
+				}
+			}
+		}
 	}
+	f_mount(&SDFatFS, (TCHAR const*)NULL, 0);
+	uartTransmit("FS Unmount\n", 11);
 
   /* USER CODE END 2 */
 
@@ -266,144 +259,8 @@ int main(void)
 			// Setzen des Start Flags,  damit Tasks nur einmal pro ms aufgerufen werden kann
 			start_flag = 1;												// Setze Start Flag
 		}
-
-		// Task wird alle 500 Millisekunden ausgefuehrt
-		if (((count % 500) == 0) && (start_flag == 1))
-		{
-			if (rising != 0 && falling != 0)
-			{
-				int diff = getDifference(rising, falling);
-				dutyCycle = round((float)(diff * 100) / (float)rising);	// (width / period ) * 100
-				frequency = timerPeriod / rising;						// timer restarts after rising edge so time between two rising edge is whatever is measured
-			}
-			else
-			{
-				dutyCycle = 0;
-				frequency = 0;
-			}
-
-			uartTransmitNumber(dutyCycle, 10);
-			uartTransmitNumber(frequency, 10);
-
-			if (sdc_in.IMD_OK_IN == 1)
-			{
-				switch (frequency)
-				{
-					case 0:
-						system_in.IMD_PWM = HAL_GPIO_ReadPin(IMD_PWM_GPIO_Port, IMD_PWM_Pin);						// Eingang IMD PWM
-						if (system_in.IMD_PWM == 1)
-						{
-							system_in.IMD_PWM_STATUS = IMD_KURZSCHLUSS_KL15;
-						}
-						else
-						{
-							system_in.IMD_PWM_STATUS = IMD_KURZSCHLUSS_GND;
-						}
-						break;
-					case 10:
-						system_in.IMD_PWM_STATUS = IMD_NORMAL;
-						if (dutyCycle > 5 && dutyCycle < 95)								// IMD PWM
-						{
-							R_IMD = 90 * 1200 / (dutyCycle - 5) - 1200;
-							uartTransmitNumber(R_IMD, 10);
-						}
-						else																// IMD Invalid
-						{
-							system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;
-						}
-						break;
-					case 20:
-						system_in.IMD_PWM_STATUS = IMD_UNTERSPANNUNG;
-						if (dutyCycle > 5 && dutyCycle < 95)								// IMD PWM
-						{
-							R_IMD = 90 * 1200 / (dutyCycle - 5) - 1200;
-							uartTransmitNumber(R_IMD, 10);
-						}
-						else																// IMD Invalid
-						{
-							system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;
-						}
-						break;
-					case 30:
-						system_in.IMD_PWM_STATUS = IMD_SCHNELLSTART;
-						if (dutyCycle > 5 && dutyCycle < 11)								// IMD Gut
-						{
-
-						}
-						else if (dutyCycle > 89 && dutyCycle < 95)							// IMD Schlecht
-						{
-
-						}
-						else																// IMD Fehlerhaft
-						{
-							system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;
-						}
-						break;
-					case 40:
-						system_in.IMD_PWM_STATUS = IMD_GERAETEFEHLER;
-						if (dutyCycle > 47 && dutyCycle < 53)								// IMD PWM
-						{
-
-						}
-						else																// IMD Invalid
-						{
-							system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;
-						}
-						break;
-					case 50:
-						system_in.IMD_PWM_STATUS = IMD_ANSCHLUSSFEHLER_ERDE;
-						if (dutyCycle > 47 && dutyCycle < 53)								// IMD PWM
-						{
-
-						}
-						else																// IMD Invalid
-						{
-							system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;
-						}
-						break;																// IMD Error, kein anderes Ereignis zutrefend
-					default:
-						system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;
-						break;
-				}
-			}
-			else
-			{
-				switch (frequency)
-				{
-
-					case 10:
-						system_in.IMD_PWM_STATUS = IMD_NORMAL;
-						if (dutyCycle > 5 && dutyCycle < 95)								// IMD PWM
-						{
-							R_IMD = 90 * 1200 / (dutyCycle - 5) - 1200;
-							uartTransmitNumber(R_IMD, 10);
-						}
-						else																// IMD Invalid
-						{
-							system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;
-						}
-						break;
-					case 20:
-						system_in.IMD_PWM_STATUS = IMD_UNTERSPANNUNG;
-						if (dutyCycle > 5 && dutyCycle < 95)								// IMD PWM
-						{
-							R_IMD = 90 * 1200 / (dutyCycle - 5) - 1200;
-							uartTransmitNumber(R_IMD, 10);
-						}
-						else																// IMD Invalid
-						{
-							system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;
-						}
-						break;																// IMD Error, kein anderes Ereignis zutrefend
-					default:
-						system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;
-						break;
-				}
-			}
-	
-			count = 0;
-		}
 		
+		// Task wird alle 250 Millisekunden ausgefuehrt
 		if ((count % 250) == 0)
 		{
 			// Daten fuer Ausgaenge zusammenfuehren
@@ -414,7 +271,7 @@ int main(void)
 	
 			// Sende Nachricht digitale Ausgaenge
 			status = HAL_CAN_AddTxMessage(&hcan3, &TxOutput, OutData, (uint32_t *)CAN_TX_MAILBOX0);
-			hal_error(status);
+			//hal_error(status);
 
 			// Daten fuer Eingaenge zusammenfuehren
 			InData[0] = system_in.systeminput;
@@ -423,11 +280,19 @@ int main(void)
 	
 			// Sende Nachricht digitale Eingaenge
 			status = HAL_CAN_AddTxMessage(&hcan3, &TxInput, InData, (uint32_t *)CAN_TX_MAILBOX0);
-			hal_error(status);
+			//hal_error(status);
 	
 			// Sende Nachricht digitale Eingaenge
 			status = HAL_CAN_AddTxMessage(&hcan3, &TxMessage, TxData, (uint32_t *)CAN_TX_MAILBOX0);
-			hal_error(status);
+			//hal_error(status);
+		}
+
+		// Task wird alle 500 Millisekunden ausgefuehrt
+		if (((count % 500) == 0) && (start_flag == 1))
+		{
+
+
+			count = 0;
 		}
 
 		// Zuruecksetzen des Start Flags, damit Tasks erst nach einer ms wieder aufgerufen werden kann
@@ -444,7 +309,6 @@ void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
-  RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
 
   /** Configure the main internal regulator output voltage
   */
@@ -485,12 +349,6 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USART2;
-  PeriphClkInitStruct.Usart2ClockSelection = RCC_USART2CLKSOURCE_PCLK1;
-  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
-  {
-    Error_Handler();
-  }
 }
 
 /* USER CODE BEGIN 4 */
@@ -516,11 +374,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	{
 		if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_1)
 		{
-			rising = calculateMovingAverage(rising, HAL_TIM_ReadCapturedValue(&htim1, TIM_CHANNEL_1), 64);
+
 		}
 		else if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_2)
 		{
-			falling = calculateMovingAverage(falling, HAL_TIM_ReadCapturedValue(&htim1, TIM_CHANNEL_2), 64);
+
 		}
 	}
 }
@@ -555,4 +413,3 @@ void assert_failed(uint8_t *file, uint32_t line)
 }
 #endif /* USE_FULL_ASSERT */
 
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
