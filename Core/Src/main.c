@@ -34,6 +34,7 @@
 #include "error.h"
 #include "inputs.h"
 #include "outputs.h"
+#include "my_math.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -84,7 +85,7 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-  uint16_t spannungen[12] = {0};
+  uint16_t spannungen[12] = {0}, tmp_mean;
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -152,7 +153,7 @@ int main(void)
 		uartTransmit(LTC6811_PASSED, sizeof(LTC6811_PASSED));			// Ausgabe bei Erfolgreichem Selbsttest
 	}
 
-	/*ltc6811_read(RDCFG, &data[0]);
+	ltc6811_read(RDCFG, &data[0]);
 
 	// Alle Register zuruecksetzen
 	ltc6811(CLRCELL);
@@ -161,7 +162,10 @@ int main(void)
 
 	ltc6811(ADAX | MD262 | GPIOALL);
 	ltc6811_read(RDAUXA, &data[0]);
-	ltc6811(ADCVC | MD73 | CELLALL);*/
+
+	ltc6811(ADCVC | MD73 | CELLALL);
+
+	tmp_mean = 65535;
 
   /* USER CODE END 2 */
 
@@ -172,7 +176,7 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-		/*ltc6811(ADCVC | MD73 | CELLALL);
+		ltc6811(ADCVC | MD73 | CELLALL);
 		HAL_Delay(300);
 
 		ltc6811_read(RDCVA, &data[0]);
@@ -198,8 +202,12 @@ int main(void)
 		}
 		tmp /= 12;
 		uartTransmitNumber(tmp, 10);
+		uartTransmit(";", 1);
 
-		uartTransmit("\n", 1);*/
+		tmp_mean = calculateMovingAverage(tmp_mean, tmp, 10);
+		uartTransmitNumber(tmp_mean, 10);
+
+		uartTransmit("\n", 1);
   }
   /* USER CODE END 3 */
 }

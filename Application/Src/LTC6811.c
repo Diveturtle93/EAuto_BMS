@@ -22,6 +22,7 @@
 //----------------------------------------------------------------------
 #include "ltc6811.h"
 #include "error.h"
+#include "my_math.h"
 //----------------------------------------------------------------------
 
 // Pec Lookuptabelle definieren
@@ -827,25 +828,25 @@ uint8_t ltc6811_openwire(void)
 				break;
 			case 1:
 			case 2:
-				openwire[i] = (((pullup[i*2+1] << 8) + pullup[i*2]) - ((pulldown[i*2+1] << 8) + pulldown[i*2]));
+				openwire[i] = getDifference(((pullup[i*2+1] << 8) + pullup[i*2]), ((pulldown[i*2+1] << 8) + pulldown[i*2]));
 				break;
 			// Leitungen Zelle 4/5 bis 6/7
 			case 3:
 			case 4:
 			case 5:
-				openwire[i] = (((pullup[i*2+3] << 8) + pullup[i*2+2]) - ((pulldown[i*2+3] << 8) + pulldown[i*2+2]));
+				openwire[i] = getDifference(((pullup[i*2+3] << 8) + pullup[i*2+2]), ((pulldown[i*2+3] << 8) + pulldown[i*2+2]));
 				break;
 			// Leitungen Zelle 7/8 bis 9/10
 			case 6:
 			case 7:
 			case 8:
-				openwire[i] = (((pullup[i*2+5] << 8) + pullup[i*2+4]) - ((pulldown[i*2+5] << 8) + pulldown[i*2+4]));
+				openwire[i] = getDifference(((pullup[i*2+5] << 8) + pullup[i*2+4]), ((pulldown[i*2+5] << 8) + pulldown[i*2+4]));
 				break;
 			// Leitungen Zelle 10/11 und 11/12
 			case 9:
 			case 10:
 			case 11:
-				openwire[i] = (((pullup[i*2+7] << 8) + pullup[i*2+6]) - ((pulldown[i*2+7] << 8) + pulldown[i*2+6]));
+				openwire[i] = getDifference(((pullup[i*2+7] << 8) + pullup[i*2+6]), ((pulldown[i*2+7] << 8) + pulldown[i*2+6]));
 				break;
 			case 12:
 				openwire[i] = ((pullup[29] << 8) + pullup[28]);
@@ -859,7 +860,7 @@ uint8_t ltc6811_openwire(void)
 	for (uint8_t i = 1; i < 12; i++)
 	{
 		// Vergleiche Messdaten mit Threshold
-		if ((openwire[i] > OPENWIRE_THRESHOLD) && (openwire[i] < (65535 - OPENWIRE_THRESHOLD)))
+		if (openwire[i] > OPENWIRE_THRESHOLD)
 		{
 			cell[0] |= (1 << i);											// Wenn Threshold ueberschritten, Offene Leitung
 		}
