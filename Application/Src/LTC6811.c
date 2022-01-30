@@ -524,7 +524,7 @@ uint8_t ltc6811_check(void)
 #endif
 	}
 
-	/*// Selbsttest Multiplexer
+	// Selbsttest Multiplexer
 	if (ltc6811_diagn() == 1)
 	{
 		error |= (1 << 3);													// Multiplexertest nicht bestanden
@@ -548,7 +548,7 @@ uint8_t ltc6811_check(void)
 		ITM_SendChar('\n');
 		ITM_SendChar('\n');
 #endif
-	}*/
+	}
 
 	// Debug Nachricht
 #ifdef DEBUG_LTC6811
@@ -775,83 +775,83 @@ uint8_t ltc6811_openwire(void)
 #endif
 
 	// Arrays definieren
-	uint8_t tmp_data[64] = {0};												// Speicher Registerwerte
-	uint16_t cell[1] = {0}, openwire[12] = {0};								// Speicher Zelle, Openwire vergleic Threshold
-
-	// Pullup Current
-	// Verzoegerungszeit zum wecken des LTC6811
-	wakeup_ltc6811();
-
-	// Commands fuer Openwire Test, Durchgang 1
-	ltc6811(ADOW | MD262 | PUP);											// Pullup Current
-	HAL_Delay(300);
+	uint8_t pulldown[32] = {0}, pullup[32] = {0};							// Speicher Registerwerte
+	uint16_t cell[1] = {0}, openwire[13] = {0};								// Speicher Zelle, Openwire vergleic Threshold
 
 	// Verzoegerungszeit zum wecken des LTC6811
 	wakeup_ltc6811();
 
-	// Commands fuer Openwire Test, Durchgang 2
-	ltc6811(ADOW | MD262 | PUP);											// Pullup Current
-	HAL_Delay(300);
+	// Pullup Current, drei Durchgaenge
+	for (uint8_t i = 0; i < 2; i++)
+	{
+
+		// Commands fuer Openwire Test
+		ltc6811(ADOW | MD262 | PUP);										// Pullup Current
+		HAL_Delay(300);
+	}
 
 	// Register auslesen OpenWire
-	ltc6811_read(RDCVA, &tmp_data[0]);
-	ltc6811_read(RDCVB, &tmp_data[8]);
-	ltc6811_read(RDCVC, &tmp_data[16]);
-	ltc6811_read(RDCVD, &tmp_data[24]);
+	ltc6811_read(RDCVA, &pullup[0]);
+	ltc6811_read(RDCVB, &pullup[8]);
+	ltc6811_read(RDCVC, &pullup[16]);
+	ltc6811_read(RDCVD, &pullup[24]);
 
-	// Pulldown Current
-	// Verzoegerungszeit zum wecken des LTC6811
-	wakeup_ltc6811();
-
-	// Commands fuer Openwire Test, Durchgang 1
-	ltc6811(ADOW | MD262);													// Pulldown Current
-	HAL_Delay(300);
 
 	// Verzoegerungszeit zum wecken des LTC6811
 	wakeup_ltc6811();
 
-	// Commands fuer Openwire Test, Durchgang 2
-	ltc6811(ADOW | MD262);													// Pulldown Current
-	HAL_Delay(300);
+	// Pulldown Current, drei Durchgaenge
+	for (uint8_t i = 0; i < 2; i++)
+	{
+
+		// Commands fuer Openwire Test
+		ltc6811(ADOW | MD262 | PUP);											// Pulldown Current
+		HAL_Delay(300);
+	}
 
 	// Register auslesen OpenWire
-	ltc6811_read(RDCVA, &tmp_data[32]);
-	ltc6811_read(RDCVB, &tmp_data[40]);
-	ltc6811_read(RDCVC, &tmp_data[48]);
-	ltc6811_read(RDCVD, &tmp_data[56]);
+	ltc6811_read(RDCVA, &pulldown[0]);
+	ltc6811_read(RDCVB, &pulldown[8]);
+	ltc6811_read(RDCVC, &pulldown[16]);
+	ltc6811_read(RDCVD, &pulldown[24]);
 
 	// Schleife zum umformatieren der Daten
-	for (uint8_t i = 1; i < 12; i++)
+	for (uint8_t i = 0; i < 13; i++)
 	{
 		// Auswahl welche Leitung
 		switch (i)
 		{
 			// Leitungen Zelle 1/2 bis 3/4
 			case 0:
+				openwire[i] = ((pulldown[1] << 8) + pulldown[0]);
+				break;
 			case 1:
 			case 2:
-				openwire[i] = (((tmp_data[i*2+33] << 8) + tmp_data[i*2+32]) - ((tmp_data[i*2+1] << 8) + tmp_data[i*2]));
+				openwire[i] = (((pullup[i*2+1] << 8) + pullup[i*2]) - ((pulldown[i*2+1] << 8) + pulldown[i*2]));
 				break;
 			// Leitungen Zelle 4/5 bis 6/7
 			case 3:
 			case 4:
 			case 5:
-				openwire[i] = (((tmp_data[i*2+35] << 8) + tmp_data[i*2+34]) - ((tmp_data[i*2+3] << 8) + tmp_data[i*2+2]));
+				openwire[i] = (((pullup[i*2+3] << 8) + pullup[i*2+2]) - ((pulldown[i*2+3] << 8) + pulldown[i*2+2]));
 				break;
 			// Leitungen Zelle 7/8 bis 9/10
 			case 6:
 			case 7:
 			case 8:
-				openwire[i] = (((tmp_data[i*2+37] << 8) + tmp_data[i*2+36]) - ((tmp_data[i*2+5] << 8) + tmp_data[i*2+4]));
+				openwire[i] = (((pullup[i*2+5] << 8) + pullup[i*2+4]) - ((pulldown[i*2+5] << 8) + pulldown[i*2+4]));
 				break;
 			// Leitungen Zelle 10/11 und 11/12
 			case 9:
 			case 10:
 			case 11:
-				openwire[i] = (((tmp_data[i*2+39] << 8) + tmp_data[i*2+38]) - ((tmp_data[i*2+7] << 8) + tmp_data[i*2+6]));
+				openwire[i] = (((pullup[i*2+7] << 8) + pullup[i*2+6]) - ((pulldown[i*2+7] << 8) + pulldown[i*2+6]));
+				break;
+			case 12:
+				openwire[i] = ((pullup[29] << 8) + pullup[28]);
 				break;
 			default:
-			break;
+				break;
 		}
 	}
 
@@ -859,20 +859,20 @@ uint8_t ltc6811_openwire(void)
 	for (uint8_t i = 1; i < 12; i++)
 	{
 		// Vergleiche Messdaten mit Threshold
-		if (openwire[i] > OPENWIRE_THRESHOLD)
+		if ((openwire[i] > OPENWIRE_THRESHOLD) && (openwire[i] < (65535 - OPENWIRE_THRESHOLD)))
 		{
 			cell[0] |= (1 << i);											// Wenn Threshold ueberschritten, Offene Leitung
 		}
 	}
 
 	// Offene Leitung erste Zelle messen
-	if (((tmp_data[1] << 8) + tmp_data[0]) == 0)
+	if (openwire[0] == 0)
 	{
 		cell[0] |= (1 << 0);												// Unterste Leitung Offen
 	}
 
 	// Offene Leitung letzte Zelle messen
-	if (((tmp_data[61] << 8) + tmp_data[60]) == 0)
+	if (openwire[12] == 0)
 	{
 		cell[0] |= (1 << 12);												// Oberste Leitung offen
 	}
