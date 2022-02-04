@@ -92,7 +92,9 @@ void imd_status(void)
 
 #ifdef DEBUG_IMD
 					// Ausgabe Widerstandswert
+					uartTransmit("Widerstand: \t", 13);
 					uartTransmitNumber(imd.Resistanc, 10);
+					uartTransmit("\n", 1);
 #endif
 				}
 				// Falls DutyCycle nicht im Wertebereich ist
@@ -113,7 +115,9 @@ void imd_status(void)
 
 #ifdef DEBUG_IMD
 					// Ausgabe Widerstandswert
+					uartTransmit("Widerstand: \t", 13);
 					uartTransmitNumber(imd.Resistanc, 10);
+					uartTransmit("\n", 1);
 #endif
 				}
 				// Falls DutyCycle nicht im Wertebereich ist
@@ -195,6 +199,18 @@ void imd_status(void)
 	}
 	else
 	{
+#ifdef DEBUG_IMD
+		// Ausgabe Frequenz
+		uartTransmit("Frequenz: \t", 11);
+		uartTransmitNumber(imd.Frequency, 10);
+		uartTransmit("\n", 1);
+
+		// Ausgabe DutyCycle
+		uartTransmit("DutyCycle: \t", 12);
+		uartTransmitNumber(imd.DutyCycle, 10);
+		uartTransmit("\n", 1);
+#endif
+
 		switch (imd.Frequency)
 		{
 			case 10:																// Case 10 Hz
@@ -210,7 +226,9 @@ void imd_status(void)
 
 #ifdef DEBUG_IMD
 					// Ausgabe Widerstandswert
+					uartTransmit("Widerstand: \t", 13);
 					uartTransmitNumber(imd.Resistanc, 10);
+					uartTransmit("\n", 1);
 #endif
 				}
 				// Falls DutyCycle nicht im Wertebereich ist
@@ -235,7 +253,9 @@ void imd_status(void)
 
 #ifdef DEBUG_IMD
 					// Ausgabe Widerstandswert
+					uartTransmit("Widerstand: \t", 13);
 					uartTransmitNumber(imd.Resistanc, 10);
+					uartTransmit("\n", 1);
 #endif
 				}
 				// Falls DutyCycle nicht im Wertebereich ist
@@ -258,5 +278,12 @@ void imd_status(void)
 		system_out.ImdOK = 0;
 		HAL_GPIO_WritePin(IMD_OK_OUT_GPIO_Port, IMD_OK_OUT_Pin, system_out.ImdOK);	// IMD Status von BMS ausgeben
 	}
+
+#ifdef DEBUG_IMD
+	// Ausgabe Status
+	uartTransmit("Status: \t", 9);
+	uartTransmitNumber(imd.PWM_STATUS, 10);
+	uartTransmit("\n", 1);
+#endif
 }
 //----------------------------------------------------------------------

@@ -25,7 +25,6 @@
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
-#include <math.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -37,6 +36,7 @@
 #include "error.h"
 #include "imd.h"
 #include "..\..\Application\Src\my_math.c"
+#include <math.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -91,7 +91,8 @@ int main(void)
 
   /* USER CODE BEGIN Init */
 	// Definiere Variablen fuer Main-Funktion
-	uint16_t timerPeriod, count = 0;
+	uint16_t count = 0;
+	uint32_t timerPeriod;
 
 	// Definiere Variablen fuer Main-Funktion
 	uint8_t TxData[8], OutData[4], InData[3], status, task_start = 0;
@@ -136,11 +137,14 @@ int main(void)
   	collectSystemInfo();
 #endif
 
-	timerPeriod = (HAL_RCC_GetPCLK2Freq() / htim1.Init.Prescaler);
+	timerPeriod = (HAL_RCC_GetPCLK2Freq() / (htim1.Init.Prescaler / 2));
   	// Start timer
-	if (HAL_TIM_Base_Start_IT(&htim1) != HAL_OK);
-	if (HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_1) != HAL_OK);
-	if (HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_2) != HAL_OK);
+	if (HAL_TIM_Base_Start(&htim1) != HAL_OK)
+	  	uartTransmit("Timer 1\n", 8);
+	if (HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_1) != HAL_OK)
+	  	uartTransmit("Channel 1\n", 10);
+	if (HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_2) != HAL_OK)
+	  	uartTransmit("Channel 2\n", 10);
   	HAL_TIM_Base_Start_IT(&htim6);
 
 	// Leds Testen
@@ -243,14 +247,20 @@ int main(void)
 			if (rising != 0 && falling != 0)
 			{
 				int diff = getDifference(rising, falling);
-				imd.DutyCycle = round((float)(diff * 100) / (float)rising);	// (width / period ) * 100
-				imd.Frequency = timerPeriod / rising;						// timer restarts after rising edge so time between two rising edge is whatever is measured
+				imd.DutyCycle = 100 - round((float)(diff * 100) / (float)rising);	// (width / period ) * 100
+				imd.Frequency = timerPeriod / rising;				// timer restarts after rising edge so time between two rising edge is whatever is measured
 			}
 			else
 			{
 				imd.DutyCycle = 0;
 				imd.Frequency = 0;
 			}
+			uartTransmitNumber(falling, 10);
+			uartTransmit("\n", 1);
+			uartTransmitNumber(rising, 10);
+			uartTransmit("\n", 1);
+			uartTransmitNumber(timerPeriod, 10);
+			uartTransmit("\n", 1);
 
 			imd_status();
 
@@ -272,7 +282,6 @@ void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
-  RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
 
   /** Configure the main internal regulator output voltage
   */
@@ -313,12 +322,6 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USART2;
-  PeriphClkInitStruct.Usart2ClockSelection = RCC_USART2CLKSOURCE_PCLK1;
-  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
-  {
-    Error_Handler();
-  }
 }
 
 /* USER CODE BEGIN 4 */
@@ -338,18 +341,35 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	{
 		millisekunden_flag_1 = 1;
 	}
+}
 
+void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
+{
 	// Timer IMD
 	if (htim == &htim1)
 	{
 		if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_1)
 		{
-			rising = calculateMovingAverage(rising, HAL_TIM_ReadCapturedValue(&htim1, TIM_CHANNEL_1), 64);
+			rising = calculateMovingAverage(rising, HAL_TIM_ReadCapturedValue(&htim1, TIM_CHANNEL_1), 10);
 		}
 		else if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_2)
 		{
-			falling = calculateMovingAverage(falling, HAL_TIM_ReadCapturedValue(&htim1, TIM_CHANNEL_2), 64);
+			falling = calculateMovingAverage(falling, HAL_TIM_ReadCapturedValue(&htim1, TIM_CHANNEL_2), 10);
 		}
+
+		/*if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_1)  // If the interrupt is triggered by channel 1
+		{
+			// Read the IC value
+			ICValue = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_1);
+
+			if (ICValue != 0)
+			{
+				// calculate the Duty Cycle
+				Duty = (HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_2) *100)/ICValue;
+
+				Frequency = 90000000/ICValue;
+			}
+		}*/
 	}
 }
 /* USER CODE END 4 */
@@ -383,4 +403,3 @@ void assert_failed(uint8_t *file, uint32_t line)
 }
 #endif /* USE_FULL_ASSERT */
 
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
