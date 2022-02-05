@@ -18,7 +18,9 @@
 //----------------------------------------------------------------------
 union imd_tag {
 	struct {
-		uint8_t PWM_STATUS : 4;					// 0 - 3					// 0 = Kurzschluss gegen Masse, 0Hz
+		uint32_t Frequency : 6;					// Frequenz abspeichern		// 0 - 5
+		uint32_t Resistanc : 18;				// Widerstand abspeichern	// 6 - 25
+		uint32_t PWM_STATUS : 4;				// 26 - 29					// 0 = Kurzschluss gegen Masse, 0Hz
 																			// 1 = Normalzustand, 10Hz
 																			// 2 = bei Unterspannung, 20Hz
 																			// 3 = Schnellstart-Messung, 30Hz
@@ -28,12 +30,11 @@ union imd_tag {
 																			// 7 = Frequenz ausserhalb des gueltigen Bereiches
 																			// 8 = DutyCycle ausserhalb des gueltigen Bereiches
 																			// 9 = Plausibilitaetsfehler
-		uint8_t Frequency : 6;					// Frequenz abspeichern		// 4 - 9
-		uint8_t DutyCycle : 7;					// Duty-Cycle abspeichern	// 10 - 16
-		uint32_t Resistanc : 18;				// Widerstand abspeichern	// 17 - 34
+		uint8_t DutyCycle : 7;					// Duty-Cycle abspeichern	// 32 - 38
+		uint8_t : 1;							// Free						// 39
 	};
 
-	uint8_t status[5];							// 6 Byte
+	uint8_t status[5];							// 5 Byte
 } imd;
 //----------------------------------------------------------------------
 

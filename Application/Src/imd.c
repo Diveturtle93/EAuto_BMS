@@ -67,6 +67,9 @@ void imd_status(void)
 			// PWM Pin einlesen
 			system_in.IMD_PWM = HAL_GPIO_ReadPin(IMD_PWM_GPIO_Port, IMD_PWM_Pin);
 
+			// IMD-Widerstand auf Null setzen
+			imd.Resistanc = 0;
+
 			// Wenn IMD 1 ist
 			if (system_in.IMD_PWM == 1)
 			{
