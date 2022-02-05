@@ -60,7 +60,7 @@ CAN_RxHeaderTypeDef RxMessage;
 uint8_t RxData[8], can_change = 0;
 static volatile uint16_t rising = 0;
 static volatile uint16_t falling = 0;
-volatile uint8_t millisekunden_flag_1 = 0;
+volatile uint8_t millisekunden_flag_1 = 0, pwm_change = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -91,6 +91,7 @@ int main(void)
 
   /* USER CODE BEGIN Init */
 	// Definiere Variablen fuer Main-Funktion
+	uint8_t pwm_count = 0;
 	uint16_t count = 0;
 	uint32_t timerPeriod;
 
@@ -139,12 +140,9 @@ int main(void)
 
 	timerPeriod = (HAL_RCC_GetPCLK2Freq() / (htim1.Init.Prescaler / 2));
   	// Start timer
-	if (HAL_TIM_Base_Start(&htim1) != HAL_OK)
-	  	uartTransmit("Timer 1\n", 8);
-	if (HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_1) != HAL_OK)
-	  	uartTransmit("Channel 1\n", 10);
-	if (HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_2) != HAL_OK)
-	  	uartTransmit("Channel 2\n", 10);
+	if (HAL_TIM_Base_Start(&htim1) != HAL_OK);
+	if (HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_1) != HAL_OK);
+	if (HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_2) != HAL_OK);
   	HAL_TIM_Base_Start_IT(&htim6);
 
 	// Leds Testen
@@ -244,17 +242,33 @@ int main(void)
 		// Task wird alle 500 Millisekunden ausgefuehrt
 		if (((count % 500) == 0) && (task_start == 1))
 		{
-			if (rising != 0 && falling != 0)
+			if (pwm_change == 1)
 			{
-				int diff = getDifference(rising, falling);
-				imd.DutyCycle = 100 - round((float)(diff * 100) / (float)rising);	// (width / period ) * 100
-				imd.Frequency = timerPeriod / rising;				// timer restarts after rising edge so time between two rising edge is whatever is measured
+				if (rising != 0 && falling != 0)
+				{
+					int diff = getDifference(rising, falling);
+					imd.DutyCycle = 100 - round((float)(diff * 100) / (float)rising);	// (width / period ) * 100
+					imd.Frequency = timerPeriod / rising;				// timer restarts after rising edge so time between two rising edge is whatever is measured
+				}
+
+				pwm_change = 0;
 			}
 			else
 			{
-				imd.DutyCycle = 0;
-				imd.Frequency = 0;
+				if (pwm_count == 1)
+				{
+					imd.DutyCycle = 0;
+					imd.Frequency = 0;
+					rising = 0;
+					falling = 0;
+					pwm_count = 0;
+				}
+				else
+				{
+					pwm_count++;
+				}
 			}
+
 			uartTransmitNumber(falling, 10);
 			uartTransmit("\n", 1);
 			uartTransmitNumber(rising, 10);
@@ -348,6 +362,7 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 	// Timer IMD
 	if (htim == &htim1)
 	{
+		pwm_change = 1;
 		if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_1)
 		{
 			rising = calculateMovingAverage(rising, HAL_TIM_ReadCapturedValue(&htim1, TIM_CHANNEL_1), 10);
@@ -356,20 +371,6 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 		{
 			falling = calculateMovingAverage(falling, HAL_TIM_ReadCapturedValue(&htim1, TIM_CHANNEL_2), 10);
 		}
-
-		/*if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_1)  // If the interrupt is triggered by channel 1
-		{
-			// Read the IC value
-			ICValue = HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_1);
-
-			if (ICValue != 0)
-			{
-				// calculate the Duty Cycle
-				Duty = (HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_2) *100)/ICValue;
-
-				Frequency = 90000000/ICValue;
-			}
-		}*/
 	}
 }
 /* USER CODE END 4 */

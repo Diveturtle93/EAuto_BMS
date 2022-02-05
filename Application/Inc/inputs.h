@@ -23,16 +23,17 @@
 //----------------------------------------------------------------------
 union system_input_tag {
 	struct {
-		uint8_t IMD_PWM_STATUS : 3;				// 0 - 2					// 0 = Kurzschluss gegen Masse, 0Hz
+		uint8_t IMD_PWM_STATUS : 4;				// 0 - 2					// 0 = Kurzschluss gegen Masse, 0Hz
 																			// 1 = Normalzustand, 10Hz
 																			// 2 = bei Unterspannung, 20Hz
 																			// 3 = Schnellstart-Messung, 30Hz
 																			// 4 = Geraetefehler, 40Hz
 																			// 5 = Anschlussfehler gegen Erde, 50Hz
 																			// 6 = Kurzschluss gegen KL15, 0Hz
-																			// 7 = IMD Error, Frequenz ausserhalb des gueltigen Bereiches
-		uint8_t IMD_PWM : 1;					// 3
-		uint8_t  : 1;							// 4
+																			// 7 = Frequenz ausserhalb des gueltigen Bereiches
+																			// 8 = DutyCycle ausserhalb des gueltigen Bereiches
+																			// 9 = Plausibilitaetsfehler
+		uint8_t IMD_PWM : 1;					// 4
 		uint8_t KL15 : 1;						// 5
 		uint8_t Crash : 1;						// 6
 		uint8_t Wakeup : 1;						// 7
