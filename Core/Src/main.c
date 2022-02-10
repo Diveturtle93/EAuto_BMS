@@ -31,6 +31,7 @@
 #include "BasicUart.h"
 #include "SystemInfo.h"
 #include "LTC6811.h"
+#include "LTC1380.h"
 #include "error.h"
 #include "inputs.h"
 #include "outputs.h"
@@ -54,8 +55,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-uint8_t data[36] = {0}, temp;
-uint32_t tmp;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -85,7 +85,9 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-  uint16_t spannungen[12] = {0}, tmp_mean;
+  uint8_t data[36] = {0}, temp;
+  uint32_t tmp;
+  uint16_t spannungen[12] = {0}, temperatur[2] = {0}, tmp_mean;
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -135,7 +137,7 @@ int main(void)
 #define TEST_LTC6811	"Starte Batteriemanagement-System\n"
     uartTransmit(TEST_LTC6811, sizeof(TEST_LTC6811));
 
-	if ((temp = ltc6811_check()) != 0)									// LTC6804 Selftest durchfuehren
+	/*if ((temp = ltc6811_check()) != 0)									// LTC6804 Selftest durchfuehren
 	{
 #define LTC6811_FAILED	"Selbsttest LTC6811 fehlerhaft\n"
 		uartTransmit(LTC6811_FAILED, sizeof(LTC6811_FAILED));			// Ausgabe bei Fehlerhaftem Selbsttest
@@ -151,19 +153,33 @@ int main(void)
 	{
 #define LTC6811_PASSED	"Selbsttest LTC6811 erfolgreich\n"
 		uartTransmit(LTC6811_PASSED, sizeof(LTC6811_PASSED));			// Ausgabe bei Erfolgreichem Selbsttest
-	}
-
-	ltc6811_read(RDCFG, &data[0]);
+	}*/
 
 	// Alle Register zuruecksetzen
 	ltc6811(CLRCELL);
 	ltc6811(CLRSTAT);
 	ltc6811(CLRAUX);
 
-	ltc6811(ADAX | MD262 | GPIOALL);
-	ltc6811_read(RDAUXA, &data[0]);
+	/*data[0] = 0xF8;
+	data[1] = 0xCF;
+	data[2] = 0x17;
+	data[3] = 0xA4;
+	data[4] = 0x00;
+	data[5] = 0x00;
+	ltc6811_write(WRCFG, &data[0]);
 
-	ltc6811(ADCVC | MD73 | CELLALL);
+
+
+	ltc6811_read(RDCFG, &data[10]);
+	for (uint8_t i = 0; i < 8; i++)
+	{
+		uartTransmitNumber(data[10+i], 10);
+	}
+	uartTransmit(";", 1);*/
+
+	ltc1380_write(LTC1380_MUX0, TEMPERATUR0);							// Multiplexer 0 einstellen
+	ltc1380_write(LTC1380_MUX2, TEMPERATUR0);							// Multiplexer 1 einstellen
+	ltc6811(ADCVAX | MD73 | CELLALL);									// Initial Command Zellen auslesen
 
 	tmp_mean = 65535;
 
@@ -183,6 +199,8 @@ int main(void)
 		ltc6811_read(RDCVB, &data[6]);
 		ltc6811_read(RDCVC, &data[12]);
 		ltc6811_read(RDCVD, &data[18]);
+
+		uartTransmit("Spannungen\n", 11);
 
 		for (uint8_t i = 0; i < 12; i++)
 		{
@@ -208,6 +226,40 @@ int main(void)
 		uartTransmitNumber(tmp_mean, 10);
 
 		uartTransmit("\n", 1);
+
+		uartTransmit("Temperaturen\n", 13);
+
+		for (uint8_t j = 0; j < 8; j++)
+		{
+			ltc1380_write(LTC1380_MUX0, j);									// Multiplexer 0 einstellen
+			ltc1380_write(LTC1380_MUX2, j);									// Multiplexer 1 einstellen
+			HAL_Delay(100);
+			ltc6811(ADAX | MD262 | GPIOALL);								// Initial Command Zellen auslesen
+			HAL_Delay(300);
+			ltc6811_read(RDAUXA, &data[0]);
+
+			for (uint8_t i = 0; i < 3; i++)
+			{
+				temperatur[i] = ((data[i*2+1]<<8) | data[i*2]);
+			}
+			uartTransmitNumber(temperatur[0], 10);
+			uartTransmit(";", 1);
+			uartTransmitNumber(temperatur[1], 10);
+			uartTransmit(";", 1);
+
+			if (j == 7)
+			{
+				uartTransmitNumber(temperatur[2], 10);
+				uartTransmit(";", 1);
+			}
+		}
+
+		uartTransmit("\n", 1);
+
+		temp++;
+
+		if(temp == 2)
+			return 1;
   }
   /* USER CODE END 3 */
 }

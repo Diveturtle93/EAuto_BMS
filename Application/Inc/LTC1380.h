@@ -16,7 +16,7 @@
 
 // Define Debug Symbols
 //----------------------------------------------------------------------
-#define DEBUG_LTC1380
+//#define DEBUG_LTC1380
 //----------------------------------------------------------------------
 
 // Konstanten definieren
@@ -26,10 +26,10 @@
 
 // Addressen
 //----------------------------------------------------------------------
-#define LTC1380_MUX0 0b10010000												// Adresse fue IC 1
-#define LTC1380_MUX1 0b10010010												// Adresse fue IC 2
-#define LTC1380_MUX2 0b10010100												// Adresse fue IC 3
-#define LTC1380_MUX3 0b10010110												// Adresse fue IC 4
+#define LTC1380_MUX0 		0b10010000										// Adresse fue IC 1
+#define LTC1380_MUX1		0b10010010										// Adresse fue IC 2
+#define LTC1380_MUX2		0b10010100										// Adresse fue IC 3
+#define LTC1380_MUX3		0b10010110										// Adresse fue IC 4
 //----------------------------------------------------------------------
 
 // Channel Auswahl

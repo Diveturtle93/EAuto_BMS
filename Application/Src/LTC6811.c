@@ -65,7 +65,7 @@ const uint16_t pec15Table[256] = {
 
 // Statemaschine ISOSpi
 //----------------------------------------------------------------------
-void set_isospi_state(IsoSpi_State newState)
+/*void set_isospi_state(IsoSpi_State newState)
 {
 	static IsoSpi_State State;
 	State = newState;
@@ -98,12 +98,12 @@ void set_isospi_state(IsoSpi_State newState)
 			break;
 	}
 #endif
-}
+}*/
 //----------------------------------------------------------------------
 
 // Statemaschine LTC6811
 //----------------------------------------------------------------------
-void set_ltc6811_state(LTC6811_State newState)
+/*void set_ltc6811_state(LTC6811_State newState)
 {
 	static LTC6811_State State;
 	State = newState;
@@ -148,7 +148,7 @@ void set_ltc6811_state(LTC6811_State newState)
 			break;
 	}
 #endif
-}
+}*/
 //----------------------------------------------------------------------
 
 // Wakeup LTC6811 idle
@@ -166,9 +166,9 @@ void wakeup_ltc6811(void)
 		ISOCS_ENABLE();														// Chip-Select einschalten
 
 		// Dummy Paket senden
-		HAL_SPI_Transmit(&hspi4, (uint8_t*)0xAA, 1, 100);					// Chip wecken
+		HAL_SPI_Transmit(&hspi4, (uint8_t*) 0xAA, 1, 100);					// Chip wecken
 
-		HAL_Delay(2);														// isoSPI braucht Zeit bis ready
+		//HAL_Delay(2);														// isoSPI braucht Zeit bis ready
 
 		// ISOCS ausschalten
 		ISOCS_DISABLE();													// Chip-Select ausschalten
@@ -212,7 +212,7 @@ void ltc6811(uint16_t command)
 		for (uint8_t i = 0; i < 9; i++)
 		{
 			// Dummy-Byte uebertragen
-			HAL_SPI_Transmit(&hspi4, (uint8_t*) 0xFF, 1, 100);
+			HAL_SPI_Transmit(&hspi4, (uint8_t*) 0xAA, 1, HAL_MAX_DELAY);
 		}
 	}
 	
@@ -249,8 +249,17 @@ void ltc6811_write(uint16_t command, uint8_t* data)
 	// PEC berechnen, fuer Data Funktion nur bei einem Device gegeben
 	uint16_t pec_c, pec_d;													// pec_c = Zwischenspeicher 16-Bit Command, pec_d = Zwischenspeicher 16-Bit Data
 	uint8_t cmd[4];															// Zwischenspeicher Command + Pec CRC
-	pec_c = peccommand(command);
-	pec_d = peclookup(6, data);
+	uint8_t tmp[8];															// Zwischenspeicher Daten + Pec CRC
+	pec_c = peccommand(command);											// Pec Command berechnen
+	pec_d = peclookup(6, data);												// Pec Daten berechnen
+
+
+	for (uint8_t i = 0; i < 6; i++)
+	{
+		tmp[i] = data[i];
+	}
+	tmp[6] = ((pec_d >> 8) & 0xFF);
+	tmp[7] = (pec_d & 0xFE);
 	
 	// Verzoegerungszeit zum wecken des LTC6811
 	wakeup_ltc6811();
@@ -268,15 +277,11 @@ void ltc6811_write(uint16_t command, uint8_t* data)
 	HAL_SPI_Transmit(&hspi4, cmd, 4, 100);
 	
 	// Data senden
-	for (uint8_t i = 0; i < 6; i++)
-	{
-		// Sende Daten
-		HAL_SPI_Transmit(&hspi4, (uint8_t*) &data[i], 1, 100);
-	}
-
-	// Sende Pec fuer Daten
-	HAL_SPI_Transmit(&hspi4, (uint8_t*) ((pec_d >> 8) & 0xFF), 1, 100);
-	HAL_SPI_Transmit(&hspi4, (uint8_t*) (pec_d & 0xFE), 1, 100);
+//	for (uint8_t i = 0; i < 6; i++)
+//	{
+		// Sende Daten fuer einen IC
+		HAL_SPI_Transmit(&hspi4, tmp, 8, 100);
+//	}
 	
 	// ISOCS ausschalten
 	ISOCS_DISABLE();
@@ -408,6 +413,8 @@ uint16_t peclookup(uint8_t len,	uint8_t *data)								// len = Anzahl Byte, data
 		// Kalkuliere Pec Anhand der Lookuptabelle
 		addr = ((remainder >> 7) ^ data[i]) & 0xFF;							// Tabellenaddresse berechnen
 		remainder = (remainder << 8) ^ pec15Table[addr];					// Pec berechnen
+//		uartTransmitNumber(data[i], 16);
+//		uartTransmit("\n", 1);
 	}
 	
 	// Pec zurueckgeben
@@ -494,8 +501,6 @@ uint8_t ltc6811_check(void)
 #ifdef DEBUG_LTC6811
 		ITM_SendString("Thermal Shutdown");
 		ITM_SendChar('\n');
-		ITM_SendChar('\n');
-		ITM_SendChar('\n');
 #endif
 	}
 
@@ -507,10 +512,9 @@ uint8_t ltc6811_check(void)
 #ifdef DEBUG_LTC6811
 		ITM_SendString("Selbsttest 1 Fehler");
 		ITM_SendChar('\n');
-		ITM_SendChar('\n');
-		ITM_SendChar('\n');
 #endif
 	}
+	HAL_Delay(300);
 
 	// Selbsttest 2 Digitale Filter
 	if (ltc6811_test(ST2 | MD73) == 1)
@@ -520,10 +524,9 @@ uint8_t ltc6811_check(void)
 #ifdef DEBUG_LTC6811
 		ITM_SendString("Selbsttest 2 Fehler");
 		ITM_SendChar('\n');
-		ITM_SendChar('\n');
-		ITM_SendChar('\n');
 #endif
 	}
+	HAL_Delay(300);
 
 	// Selbsttest Multiplexer
 	if (ltc6811_diagn() == 1)
@@ -532,8 +535,6 @@ uint8_t ltc6811_check(void)
 
 #ifdef DEBUG_LTC6811
 		ITM_SendString("Multiplexer Fehler");
-		ITM_SendChar('\n');
-		ITM_SendChar('\n');
 		ITM_SendChar('\n');
 #endif
 	}
@@ -545,8 +546,6 @@ uint8_t ltc6811_check(void)
 
 #ifdef DEBUG_LTC6811
 		ITM_SendString("Openwire Fehler");
-		ITM_SendChar('\n');
-		ITM_SendChar('\n');
 		ITM_SendChar('\n');
 #endif
 	}
@@ -720,14 +719,17 @@ uint8_t ltc6811_test(uint16_t command)
 		// Vergleiche Registerwert mit Vorgabewert aus Datenblatt
 		if (tmp != test_pattern)
 		{
+#ifdef DEBUG_LTC6811
 			ITM_SendString("Test failed: ");
 			ITM_SendNumber(i);
 			ITM_SendChar('\n');
+#endif
 			return 1;														// Selbsttest 1 nicht OK
 		}
 	}
-
-	ITM_SendString("Test passed");
+#ifdef DEBUG_LTC6811
+	ITM_SendString("Test passed\n");
+#endif
 	return 0;																// Selbsttest 1 OK
 }
 //----------------------------------------------------------------------
