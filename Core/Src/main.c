@@ -85,7 +85,7 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-  uint8_t data[36] = {0}, temp;
+  uint8_t data[36] = {0}, temp, CFG[6] = {0};
   uint32_t tmp;
   uint16_t spannungen[12] = {0}, temperatur[2] = {0}, tmp_mean;
   /* USER CODE END Init */
@@ -155,30 +155,28 @@ int main(void)
 		uartTransmit(LTC6811_PASSED, sizeof(LTC6811_PASSED));			// Ausgabe bei Erfolgreichem Selbsttest
 	}*/
 
-	// Alle Register zuruecksetzen
-	ltc6811(CLRCELL);
-	ltc6811(CLRSTAT);
-	ltc6811(CLRAUX);
+    // LTC6811 initialisieren
+	CFG[0] = 0xF8;
+	CFG[1] = 0xCF;
+	CFG[2] = 0x17;
+	CFG[3] = 0xA4;
+	CFG[4] = 0x00;
+	CFG[5] = 0x00;
+	ltc6811_write(WRCFG, &CFG[0]);
 
-	/*data[0] = 0xF8;
-	data[1] = 0xCF;
-	data[2] = 0x17;
-	data[3] = 0xA4;
-	data[4] = 0x00;
-	data[5] = 0x00;
-	ltc6811_write(WRCFG, &data[0]);
-
-
-
-	ltc6811_read(RDCFG, &data[10]);
+	/*ltc6811_read(RDCFG, &data[10]);
 	for (uint8_t i = 0; i < 8; i++)
 	{
 		uartTransmitNumber(data[10+i], 10);
 	}
 	uartTransmit(";", 1);*/
 
-	ltc1380_write(LTC1380_MUX0, TEMPERATUR0);							// Multiplexer 0 einstellen
-	ltc1380_write(LTC1380_MUX2, TEMPERATUR0);							// Multiplexer 1 einstellen
+	// Alle Register zuruecksetzen
+	ltc6811(CLRCELL);
+	ltc6811(CLRSTAT);
+	ltc6811(CLRAUX);
+
+	// Erster ADC Vorgang ist ungueltig
 	ltc6811(ADCVAX | MD73 | CELLALL);									// Initial Command Zellen auslesen
 
 	tmp_mean = 65535;

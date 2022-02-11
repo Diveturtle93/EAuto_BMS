@@ -325,6 +325,7 @@ uint8_t ltc6811_read(uint16_t command, uint8_t* data)
 
 	// PEC berechnen, Anhand Command
 	uint16_t pec;															// pec = Zwischenspeicher 16-Bit Command
+	uint16_t tmp;															// Zwischenspeicher fuer Pruefung CRC
 	uint8_t cmd[4];															// Zwischenspeicher Command + Pec CRC
 	pec = peccommand(command);
 	
@@ -349,7 +350,28 @@ uint8_t ltc6811_read(uint16_t command, uint8_t* data)
 		// Dummy Byte senden
 		HAL_SPI_Receive(&hspi4, &data[i*8], 8, 100);
 	}
-	
+
+	// Pec zuruecksetzen
+	pec = 0;
+
+	// Pec pruefen
+	for (uint8_t i = 0; i < LTC6811_DEVICES; i++)
+	{
+		tmp = ((data[i + 6] << 8) + data[i + 7]);
+		pec = peclookup(6, &data[i*8]);
+
+		if (pec != tmp)
+		{
+			uartTransmit("Pec Error: ", 11);
+			uartTransmitNumber(i + 1, 10);
+			uartTransmit(" ", 1);
+			uartTransmitNumber(tmp, 16);
+			uartTransmit(" ", 1);
+			uartTransmitNumber(pec, 16);
+			uartTransmit("\n", 1);
+		}
+	}
+
 	// ISOCS ausschalten
 	ISOCS_DISABLE();
 	// Ende der Uebertragung
