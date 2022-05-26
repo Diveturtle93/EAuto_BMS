@@ -221,8 +221,8 @@ uint16_t ltc6811_poll(void);												// Poll Data nach Conversion
 
 // Definiere Zellenarray
 //----------------------------------------------------------------------
-uint8_t CellVolt[LTC6811_DEVICES][12];										// Array fuer gemessene Zellspannungen
-uint8_t CellTemp[LTC6811_DEVICES][12];										// Array fuer gemessene Zelltemperaturen
+//uint8_t CellVolt[LTC6811_DEVICES][12];										// Array fuer gemessene Zellspannungen
+//uint8_t CellTemp[LTC6811_DEVICES][12];										// Array fuer gemessene Zelltemperaturen
 //----------------------------------------------------------------------
 
 #endif /* INC_LTC6811_H_ */

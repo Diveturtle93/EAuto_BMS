@@ -32,9 +32,9 @@
 #include "SystemInfo.h"
 #include "LTC6811.h"
 #include "LTC1380.h"
+#include "outputs.h"
 #include "error.h"
 #include "inputs.h"
-#include "outputs.h"
 #include "my_math.h"
 /* USER CODE END Includes */
 
@@ -255,9 +255,6 @@ int main(void)
 		uartTransmit("\n", 1);
 
 		temp++;
-
-		if(temp == 2)
-			return 1;
   }
   /* USER CODE END 3 */
 }
@@ -340,7 +337,10 @@ void Error_Handler(void)
 	uartTransmit(STRING_ERROR_HANDLER, sizeof(STRING_ERROR_HANDLER));
 #endif
 	// Beginne Endlosschleife nachdem Fehler aufgetreten ist
-	while (1);
+	while (1)
+	{
+
+	}
   /* USER CODE END Error_Handler_Debug */
 }
 

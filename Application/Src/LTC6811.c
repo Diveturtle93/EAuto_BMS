@@ -249,26 +249,34 @@ void ltc6811_write(uint16_t command, uint8_t* data)
 	// PEC berechnen, fuer Data Funktion nur bei einem Device gegeben
 	uint16_t pec_c, pec_d;													// pec_c = Zwischenspeicher 16-Bit Command, pec_d = Zwischenspeicher 16-Bit Data
 	uint8_t cmd[4];															// Zwischenspeicher Command + Pec CRC
-	uint8_t tmp[8];															// Zwischenspeicher Daten + Pec CRC
+	uint8_t tmp_data[8*LTC6811_DEVICES];									// Zwischenspeicher Daten + Pec CRC
 	pec_c = peccommand(command);											// Pec Command berechnen
-	pec_d = peclookup(6, data);												// Pec Daten berechnen
-
-
-	for (uint8_t i = 0; i < 6; i++)
-	{
-		tmp[i] = data[i];
-	}
-	tmp[6] = ((pec_d >> 8) & 0xFF);
-	tmp[7] = (pec_d & 0xFE);
-	
-	// Verzoegerungszeit zum wecken des LTC6811
-	wakeup_ltc6811();
 
 	// Command in cmd abspeichern
 	cmd[0] = ((command  >> 8) & 0x07);
 	cmd[1] = (command & 0xFF);
 	cmd[2] = ((pec_c >> 8) & 0xFF);
 	cmd[3] = (pec_c & 0xFE);
+
+	// Daten in tmp_data abspeichern zum Senden
+	for (uint8_t j = 0; j < LTC6811_DEVICES; j++)
+	{
+		// Schleife um Daten fuer einen IC abzuspeichern
+		for (uint8_t i = 0; i < 6; i++)
+		{
+			tmp_data[j*8+i] = data[j*6+i];
+		}
+
+		// Pec berechnen pro IC einmal
+		pec_d = peclookup(6, &tmp_data[j*8]);								// Pec Daten berechnen
+
+		// Pec abspeichern fuer einen IC
+		tmp_data[6] = ((pec_d >> 8) & 0xFF);
+		tmp_data[7] = (pec_d & 0xFE);
+	}
+	
+	// Verzoegerungszeit zum wecken des LTC6811
+	wakeup_ltc6811();
 
 	// ISOCS einschalten
 	ISOCS_ENABLE();
@@ -280,7 +288,7 @@ void ltc6811_write(uint16_t command, uint8_t* data)
 //	for (uint8_t i = 0; i < 6; i++)
 //	{
 		// Sende Daten fuer einen IC
-		HAL_SPI_Transmit(&hspi4, tmp, 8, 100);
+		HAL_SPI_Transmit(&hspi4, tmp_data, 8, 100);
 //	}
 	
 	// ISOCS ausschalten
@@ -362,13 +370,13 @@ uint8_t ltc6811_read(uint16_t command, uint8_t* data)
 
 		if (pec != tmp)
 		{
-			uartTransmit("Pec Error: ", 11);
+			/*uartTransmit("Pec Error: ", 11);
 			uartTransmitNumber(i + 1, 10);
 			uartTransmit(" ", 1);
 			uartTransmitNumber(tmp, 16);
 			uartTransmit(" ", 1);
 			uartTransmitNumber(pec, 16);
-			uartTransmit("\n", 1);
+			uartTransmit("\n", 1);*/
 		}
 	}
 
