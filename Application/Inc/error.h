@@ -24,6 +24,11 @@
 #define ERROR_LTC6811_OPENWIRE					5
 #define ERROR_LTC6811_OVERVOLT					6
 #define ERROR_LTC6811_UNDERVOLT					7
+#define SDC_BTB_ERROR					10
+#define SDC_MOTOR_ERROR					11
+#define SDC_HVIL_ERROR					12
+#define IMD_ERROR						13
+#define AMS_ERROR						14
 //----------------------------------------------------------------------
 
 // Funktionen definieren

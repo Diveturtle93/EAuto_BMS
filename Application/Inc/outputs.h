@@ -54,7 +54,7 @@ typedef union __leuchten_out_tag {
 	struct {
 		uint8_t InletRed : 1;					// 0
 		uint8_t InletGreen : 1;					// 1
-		uint8_t AkkuLed : 1;					// 2
+		uint8_t AkkuErrorLed : 1;				// 2
 		uint8_t  : 1;							// 3
 		uint8_t  : 1;							// 4
 		uint8_t RedLed : 1;						// 5
@@ -74,6 +74,9 @@ typedef union __komfort_out_tag {
 		uint8_t  : 1;							// 2
 		uint8_t  : 1;							// 3
 		uint8_t  : 1;							// 4
+		uint8_t  : 1;							// 5
+		uint8_t  : 1;							// 6
+		uint8_t  : 1;							// 7
 	};
 
 	uint8_t komfortoutput;						// 1 Byte
@@ -84,7 +87,7 @@ typedef union __komfort_out_tag {
 //----------------------------------------------------------------------
 #define SYSTEM_OUTPUT				0b00000000								// 8 Bit, 8 Systemausgaenge
 #define HIGH_OUTPUT					0b00000000								// 8 Bit, 7 Hochstromfaehige Ausgaenge
-#define LED_OUTPUT					0b01000000								// 8 Bit, 6 Leuchtdioden
+#define LED_OUTPUT					0b11100111								// 8 Bit, 6 Leuchtdioden
 #define KOMFORT_OUTPUT				0b00000000								// 8 Bit, 1 Komfortausgaenge
 //----------------------------------------------------------------------
 
@@ -102,6 +105,9 @@ void init_outputs(void);													// Initialisiere Ausgaenge
 void writeall_outputs(void);												// Schreibe alle Ausgaenge
 void writeled_outputs(void);												// Schreibe alle LED-Ausgaenge
 void testPCB_Leds(void);													// Teste PCB LEDs fuer je 1s
+void testLeds(void);														// Teste LEDs fuer je 1s
+void setLadekontrolle(void);												// Ladekontrolle setzen
+void resetLadekontrolle(void);												// Ladekontrolle zuruecksetzen
 //----------------------------------------------------------------------
 
 #endif /* INC_OUTPUTS_H_ */
