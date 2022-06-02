@@ -25,7 +25,6 @@
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
-#include <math.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -39,7 +38,6 @@
 #include "my_math.h"
 #include "BatteriemanagementSystem.h"
 #include "imd.h"
-#include "..\..\Application\Src\my_math.c"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -93,12 +91,14 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-  uint8_t data[36] = {0}, temp, CFG[6] = {0};
-  uint32_t tmp;
-  uint16_t spannungen[12] = {0}, temperatur[2] = {0}, tmp_mean;
 	// Definiere Variablen fuer Main-Funktion
 	uint16_t dutyCycle, timerPeriod, frequency, count = 0, R_IMD;
 	uint8_t start_flag = 0;
+
+	// Definiere Variablen fuer BMS Zellen
+	uint8_t data[36] = {0}, temp, CFG[6] = {0};
+	uint32_t tmp;
+	uint16_t spannungen[12] = {0}, temperatur[2] = {0}, tmp_mean;
 
 	// Definiere Variablen fuer Main-Funktion
 	uint8_t TxData[8], OutData[4], InData[3], status;
@@ -185,13 +185,6 @@ int main(void)
 	CFG[5] = 0x00;
 	ltc6811_write(WRCFG, &CFG[0]);
 
-	/*ltc6811_read(RDCFG, &data[10]);
-	for (uint8_t i = 0; i < 8; i++)
-	{
-		uartTransmitNumber(data[10+i], 10);
-	}
-	uartTransmit(";", 1);*/
-
 	// Alle Register zuruecksetzen
 	ltc6811(CLRCELL);
 	ltc6811(CLRSTAT);
@@ -207,13 +200,6 @@ int main(void)
 	if (HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_1) != HAL_OK);
 	if (HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_2) != HAL_OK);
   	HAL_TIM_Base_Start(&htim6);
-
-	// Leds Testen
-	testPCB_Leds();
-	testLeds();
-
-	// Lese alle Eingaenge
-	readall_inputs();
 
   	// Starte CAN Bus
   	if((status = HAL_CAN_Start(&hcan3)) != HAL_OK)
@@ -534,6 +520,8 @@ int main(void)
 		
 		if ((count % 250) == 0)
 		{
+			readall_inputs();
+
 			// Daten fuer Ausgaenge zusammenfuehren
 			OutData[0] = system_out.systemoutput;
 			OutData[1] = highcurrent_out.high_out;
@@ -577,6 +565,7 @@ void SystemClock_Config(void)
   */
   __HAL_RCC_PWR_CLK_ENABLE();
   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
@@ -593,12 +582,14 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+
   /** Activate the Over-Drive mode
   */
   if (HAL_PWREx_EnableOverDrive() != HAL_OK)
   {
     Error_Handler();
   }
+
   /** Initializes the CPU, AHB and APB buses clocks
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
@@ -694,4 +685,3 @@ void assert_failed(uint8_t *file, uint32_t line)
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
-
