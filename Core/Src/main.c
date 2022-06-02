@@ -204,13 +204,13 @@ int main(void)
   	// Starte CAN Bus
   	if((status = HAL_CAN_Start(&hcan3)) != HAL_OK)
   	{
-  		/* Start Error */
+  		// Start Error
   		hal_error(status);
   		Error_Handler();
   	}
   	uartTransmit("CAN START\n", 10);
 
-  	// Aktiviere Interrupts für CAN Bus
+  	// Aktiviere Interrupts fuer CAN Bus
   	if((status = HAL_CAN_ActivateNotification(&hcan3, CAN_IT_RX_FIFO0_MSG_PENDING)) != HAL_OK)
   	{
   		/* Notification Error */
@@ -244,7 +244,7 @@ int main(void)
     	TxData[j] = (j + 1);
     }
 
-	if (!(sdc_in.sdcinput && 0b00001111))										// SDC OK; Motor, BTB, IMD und HVIL OK
+	if ((sdc_in.sdcinput & 0x0E) && (sdc_in.IMD_OK_IN != 1))					// SDC OK; Motor, BTB, IMD und HVIL OK
 	{
 		#define SDC_STRING_ERROR			"\nSDC ist nicht geschlossen"
 		uartTransmit(SDC_STRING_ERROR, sizeof(SDC_STRING_ERROR));
@@ -259,28 +259,28 @@ int main(void)
 
 		// Ausgabe welcher Fehler vorhanden
 		// Motorsteuergeraet Fehler
-		if(!(sdc_in.MotorSDC == 1))
+		if(sdc_in.MotorSDC == 1)
 		{
 			#define SDC_STRING_MOTOR		"\nSDC Motor hat einen Fehler und ist offen"
 			uartTransmit(SDC_STRING_MOTOR, sizeof(SDC_STRING_MOTOR));
 		}
 
 		// BamoCar Fehler
-		if (!(sdc_in.BTB_SDC == 1))
+		if (sdc_in.BTB_SDC == 1)
 		{
 			#define SDC_STRING_BTB			"\nSDC BTB hat einen Fehler und ist offen"
 			uartTransmit(SDC_STRING_BTB, sizeof(SDC_STRING_BTB));
 		}
 
 		// HVIL Fehler
-		if (!(sdc_in.HVIL == 1))
+		if (sdc_in.HVIL == 1)
 		{
 			#define SDC_STRING_HVIL			"\nSDC HVIL ist nicht geschlossen"
 			uartTransmit(SDC_STRING_HVIL, sizeof(SDC_STRING_HVIL));
 		}
 
 		// IMD Fehler
-		if (!(sdc_in.IMD_OK_IN == 1))
+		if (sdc_in.IMD_OK_IN != 1)
 		{
 			#define SDC_STRING_IMD			"\nSDC IMD hat einen Fehler"
 			uartTransmit(SDC_STRING_IMD, sizeof(SDC_STRING_IMD));
