@@ -90,10 +90,10 @@ typedef union __komfort_out_tag {
 
 // Definiere globale Variablen
 //----------------------------------------------------------------------
-extern system_out_tag system_out;
-extern highcurrent_out_tag highcurrent_out;
-extern leuchten_out_tag leuchten_out;
-extern komfort_out_tag komfort_out;
+extern system_out_tag system_out;											// Variable fuer Systemausgaenge definieren
+extern highcurrent_out_tag highcurrent_out;									// Variable fuer Highcurrentausgaenge definieren
+extern leuchten_out_tag leuchten_out;										// Variable fuer Leuchtenausgaenge definieren
+extern komfort_out_tag komfort_out;											// Variable fuer Komfortausgaenge definieren
 //----------------------------------------------------------------------
 
 // Funktionen definieren

@@ -221,8 +221,41 @@ uint16_t ltc6811_poll(void);												// Poll Data nach Conversion
 
 // Definiere Zellenarray
 //----------------------------------------------------------------------
-//uint8_t CellVolt[LTC6811_DEVICES][12];										// Array fuer gemessene Zellspannungen
-//uint8_t CellTemp[LTC6811_DEVICES][12];										// Array fuer gemessene Zelltemperaturen
+typedef union __ltc6811_configuration_tag {
+	struct {
+		uint8_t LTC_GPIO5 : 1;												// GPIO 5
+		uint8_t LTC_GPIO4 : 1;												// GPIO 4
+		uint8_t LTC_GPIO3 : 1;												// GPIO 3
+		uint8_t LTC_GPIO2 : 1;												// GPIO 2
+		uint8_t LTC_GPIO1 : 1;												// GPIO 1
+		uint8_t REFON : 1;													// Reference voltage shutdown
+		uint8_t SWTRD : 1;													// SWT Pin
+		uint8_t ADCOPT : 1;													// ADC Mode Option
+		uint16_t VUV : 12;													// Undervoltage Treshold
+		uint16_t VOV : 12;													// Overvoltage Treshold
+		uint8_t DCC1 : 1;													// Zelle 1 Balancing
+		uint8_t DCC2 : 1;													// Zelle 2 Balancing
+		uint8_t DCC3 : 1;													// Zelle 3 Balancing
+		uint8_t DCC4 : 1;													// Zelle 4 Balancing
+		uint8_t DCC5 : 1;													// Zelle 5 Balancing
+		uint8_t DCC6 : 1;													// Zelle 6 Balancing
+		uint8_t DCC7 : 1;													// Zelle 7 Balancing
+		uint8_t DCC8 : 1;													// Zelle 8 Balancing
+		uint8_t DCC9 : 1;													// Zelle 9 Balancing
+		uint8_t DCC10 : 1;													// Zelle 10 Balancing
+		uint8_t DCC11 : 1;													// Zelle 11 Balancing
+		uint8_t DCC12 : 1;													// Zelle 12 Balancing
+		uint8_t DCTO : 4;													// Timeout fuer Balancing
+	};
+
+	uint8_t ltc6811_configuration[6];										// Array fuer COnfiguration Register
+} ltc6811_configuration_tag;
+//----------------------------------------------------------------------
+
+//----------------------------------------------------------------------
+extern ltc6811_configuration_tag Ltc6811_Conf;								// LTC6811 Configurations Register
+extern uint8_t CellVolt[LTC6811_DEVICES][12];								// Array fuer gemessene Zellspannungen
+extern uint8_t CellTemp[LTC6811_DEVICES][12];								// Array fuer gemessene Zelltemperaturen
 //----------------------------------------------------------------------
 
 #endif /* INC_LTC6811_H_ */

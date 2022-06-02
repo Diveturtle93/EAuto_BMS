@@ -137,7 +137,7 @@ int main(void)
 #define TEST_LTC6811	"Starte Batteriemanagement-System\n"
     uartTransmit(TEST_LTC6811, sizeof(TEST_LTC6811));
 
-	/*if ((temp = ltc6811_check()) != 0)									// LTC6804 Selftest durchfuehren
+	if ((temp = ltc6811_check()) != 0)									// LTC6804 Selftest durchfuehren
 	{
 #define LTC6811_FAILED	"Selbsttest LTC6811 fehlerhaft\n"
 		uartTransmit(LTC6811_FAILED, sizeof(LTC6811_FAILED));			// Ausgabe bei Fehlerhaftem Selbsttest
@@ -147,13 +147,13 @@ int main(void)
 	    uartTransmitNumber(temp, 10);
 		uartTransmit("\n", 1);
 
-		//return 0;														// Programm abbrechen
+		return 0;														// Programm abbrechen
 	}
 	else
 	{
 #define LTC6811_PASSED	"Selbsttest LTC6811 erfolgreich\n"
 		uartTransmit(LTC6811_PASSED, sizeof(LTC6811_PASSED));			// Ausgabe bei Erfolgreichem Selbsttest
-	}*/
+	}
 
     // LTC6811 initialisieren
 	CFG[0] = 0xF8;
@@ -191,7 +191,7 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 		ltc6811(ADCVC | MD73 | CELLALL);
-		HAL_Delay(300);
+		HAL_Delay(100);
 
 		ltc6811_read(RDCVA, &data[0]);
 		ltc6811_read(RDCVB, &data[6]);
@@ -231,9 +231,7 @@ int main(void)
 		{
 			ltc1380_write(LTC1380_MUX0, j);									// Multiplexer 0 einstellen
 			ltc1380_write(LTC1380_MUX2, j);									// Multiplexer 1 einstellen
-			HAL_Delay(100);
-			ltc6811(ADAX | MD262 | GPIOALL);								// Initial Command Zellen auslesen
-			HAL_Delay(300);
+			ltc6811(ADAX | MD73 | GPIOALL);									// Initial Command Zellen auslesen
 			ltc6811_read(RDAUXA, &data[0]);
 
 			for (uint8_t i = 0; i < 3; i++)

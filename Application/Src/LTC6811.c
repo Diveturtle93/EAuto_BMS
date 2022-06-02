@@ -23,6 +23,14 @@
 #include "ltc6811.h"
 #include "error.h"
 #include "my_math.h"
+#include "BasicUart.h"
+//----------------------------------------------------------------------
+
+// Definiere Zellenarray
+//----------------------------------------------------------------------
+ltc6811_configuration_tag Ltc6811_Conf;										// LTC6811 Configurations Register
+uint8_t CellVolt[LTC6811_DEVICES][12];										// Array fuer gemessene Zellspannungen
+uint8_t CellTemp[LTC6811_DEVICES][12];										// Array fuer gemessene Zelltemperaturen
 //----------------------------------------------------------------------
 
 // Pec Lookuptabelle definieren
@@ -166,7 +174,7 @@ void wakeup_ltc6811(void)
 		ISOCS_ENABLE();														// Chip-Select einschalten
 
 		// Dummy Paket senden
-		HAL_SPI_Transmit(&hspi4, (uint8_t*) 0xAA, 1, 100);					// Chip wecken
+		HAL_SPI_Transmit(&hspi4, (uint8_t*) 0xAA, 1, 100);					// Chip wecken, isoSPI braucht Zeit bis ready
 
 		//HAL_Delay(2);														// isoSPI braucht Zeit bis ready
 
@@ -365,20 +373,43 @@ uint8_t ltc6811_read(uint16_t command, uint8_t* data)
 	// Pec pruefen
 	for (uint8_t i = 0; i < LTC6811_DEVICES; i++)
 	{
+		// Variante 1, Pec berechnen und pruefen, ob richtiger Pec mitgesendet wurde
 		tmp = ((data[i + 6] << 8) + data[i + 7]);
 		pec = peclookup(6, &data[i*8]);
 
+#ifdef DEBUG_LTC6811
 		if (pec != tmp)
 		{
-			/*uartTransmit("Pec Error: ", 11);
+			uartTransmit("Pec Error1: ", 11);
 			uartTransmitNumber(i + 1, 10);
 			uartTransmit(" ", 1);
 			uartTransmitNumber(tmp, 16);
 			uartTransmit(" ", 1);
 			uartTransmitNumber(pec, 16);
-			uartTransmit("\n", 1);*/
+			uartTransmit("\n", 1);
 		}
+#endif
+
+		// Pec zuruecksetzen
+		pec = 0;
+
+		// Variante 2, Daten inklusive Pec mit durch Peccheck pruefen, ob Ergebnis gleich 0 ist
+		pec = peccheck(8, &data[i*8]);
+
+#ifdef DEBUG_LTC6811
+		if (pec != 0)
+		{
+			uartTransmit("Pec Error2: ", 11);
+			uartTransmitNumber(i + 1, 10);
+			uartTransmit(" ", 1);
+			uartTransmitNumber(tmp, 16);
+			uartTransmit(" ", 1);
+			uartTransmitNumber(pec, 16);
+			uartTransmit("\n", 1);
+		}
+#endif
 	}
+
 
 	// ISOCS ausschalten
 	ISOCS_DISABLE();
@@ -488,11 +519,12 @@ uint8_t peccheck(uint8_t len, uint8_t *data)
 	// Variable definieren
 	uint16_t pec = peclookup(len, data);
 
-	//
+	// Wenn Ergebnis 0, ist Pec OK
 	if (pec == 0)
 	{
 		return 0;
 	}
+	// Wenn Ergebnis 1, ist Pec nicht OK
 	else
 	{
 		return 1;
@@ -568,6 +600,7 @@ uint8_t ltc6811_check(void)
 		ITM_SendChar('\n');
 #endif
 	}
+	HAL_Delay(300);
 
 	// Open Wire Check durchfuehren
 	if (ltc6811_openwire() == 1)
@@ -633,7 +666,7 @@ uint8_t ltc6811_test(uint16_t command)
 	if (command & MD2714)													// Wenn Sampling Frequenz = MD2714
 	{
 		// Wenn ADCOPT gesetzt
-/*		if (ADCOPT == 1)
+		if (Ltc6811_Conf.ADCOPT == 1)
 		{
 			// Wenn Selbsttest 1 gewaehlt
 			if (command == ST1)
@@ -652,7 +685,7 @@ uint8_t ltc6811_test(uint16_t command)
 			}
 		}
 		else																// Wenn ADCOPT nicht gesetzt
-		{*/
+		{
 			// Wenn Selbsttest 1 gewaehlt
 			if (command & ST1)
 			{
@@ -668,7 +701,7 @@ uint8_t ltc6811_test(uint16_t command)
 			{
 				test_pattern = 0;											// Registerwert = 0 damit Fehler ausloest
 			}
-//		}
+		}
 	}
 	else
 	{
@@ -782,8 +815,8 @@ uint8_t ltc6811_diagn(void)
 	// Command senden
 	ltc6811(DIAGN);															// Multiplexer Check
 
-	// Verzoegerungszeit zum wecken des LTC6811
-	wakeup_ltc6811();
+	// Verzoegerungszeit 10ms, DIAG Befehl braucht ca. 400µs bis 4ms
+	HAL_Delay(10);
 
 	// Lese Register
 	ltc6811_read(RDSTATB, &tmp_data[0]);									// Lese Status B Register fuer Multiplexer Check

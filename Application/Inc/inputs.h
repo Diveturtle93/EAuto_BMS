@@ -72,9 +72,9 @@ typedef union __komfort_in_tag {
 
 // Definiere globale Variablen
 //----------------------------------------------------------------------
-extern system_input_tag system_in;
-extern sdc_in_tag sdc_in;
-extern komfort_in_tag komfort_in;
+extern system_input_tag system_in;											// Variable fuer Systemeingaenge definieren
+extern sdc_in_tag sdc_in;													// Variable fuer SDC-Eingaenge definieren
+extern komfort_in_tag komfort_in;											// Variable fuer Komforteingaenge definieren
 //----------------------------------------------------------------------
 
 // Funktionen definieren
