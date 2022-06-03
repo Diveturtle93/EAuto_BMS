@@ -193,12 +193,6 @@ typedef enum LTC6811State
 #define ISOCS_DISABLE() (HAL_GPIO_WritePin(ISOSPI_CS_GPIO_Port, ISOSPI_CS_Pin, GPIO_PIN_SET))		// Chip-Select disable
 //----------------------------------------------------------------------
 
-// Definiere IsoSPI Enable Leitung
-//----------------------------------------------------------------------
-#define ISOSPI_ENABLE() (HAL_GPIO_WritePin(ISOSPI_EN_GPIO_Port, ISOSPI_EN_Pin, GPIO_PIN_SET))		// Iso SPI enable
-#define ISOSPI_DISABLE() (HAL_GPIO_WritePin(ISOSPI_EN_GPIO_Port, ISOSPI_EN_Pin, GPIO_PIN_RESET))	// Iso SPI disable
-//----------------------------------------------------------------------
-
 // Funktionen definieren
 //----------------------------------------------------------------------
 void set_isospi_state(IsoSpi_State newState);								// Setze Statemaschine fuer ISPSpi

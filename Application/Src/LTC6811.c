@@ -22,8 +22,9 @@
 //----------------------------------------------------------------------
 #include "ltc6811.h"
 #include "error.h"
-#include "my_math.h"
 #include "BasicUart.h"
+#include "SPI_resource.h"
+#include "my_math.h"
 //----------------------------------------------------------------------
 
 // Definiere Zellenarray

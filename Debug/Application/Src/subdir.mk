@@ -5,6 +5,7 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
+../Application/Src/AD8403.c \
 ../Application/Src/BasicUart.c \
 ../Application/Src/LTC1380.c \
 ../Application/Src/LTC6811.c \
@@ -17,6 +18,7 @@ C_SRCS += \
 ../Application/Src/outputs.c 
 
 OBJS += \
+./Application/Src/AD8403.o \
 ./Application/Src/BasicUart.o \
 ./Application/Src/LTC1380.o \
 ./Application/Src/LTC6811.o \
@@ -29,6 +31,7 @@ OBJS += \
 ./Application/Src/outputs.o 
 
 C_DEPS += \
+./Application/Src/AD8403.d \
 ./Application/Src/BasicUart.d \
 ./Application/Src/LTC1380.d \
 ./Application/Src/LTC6811.d \
@@ -48,7 +51,7 @@ Application/Src/%.o Application/Src/%.su: ../Application/Src/%.c Application/Src
 clean: clean-Application-2f-Src
 
 clean-Application-2f-Src:
-	-$(RM) ./Application/Src/BasicUart.d ./Application/Src/BasicUart.o ./Application/Src/BasicUart.su ./Application/Src/LTC1380.d ./Application/Src/LTC1380.o ./Application/Src/LTC1380.su ./Application/Src/LTC6811.d ./Application/Src/LTC6811.o ./Application/Src/LTC6811.su ./Application/Src/SystemInfo.d ./Application/Src/SystemInfo.o ./Application/Src/SystemInfo.su ./Application/Src/error.d ./Application/Src/error.o ./Application/Src/error.su ./Application/Src/imd.d ./Application/Src/imd.o ./Application/Src/imd.su ./Application/Src/inputs.d ./Application/Src/inputs.o ./Application/Src/inputs.su ./Application/Src/millis.d ./Application/Src/millis.o ./Application/Src/millis.su ./Application/Src/my_math.d ./Application/Src/my_math.o ./Application/Src/my_math.su ./Application/Src/outputs.d ./Application/Src/outputs.o ./Application/Src/outputs.su
+	-$(RM) ./Application/Src/AD8403.d ./Application/Src/AD8403.o ./Application/Src/AD8403.su ./Application/Src/BasicUart.d ./Application/Src/BasicUart.o ./Application/Src/BasicUart.su ./Application/Src/LTC1380.d ./Application/Src/LTC1380.o ./Application/Src/LTC1380.su ./Application/Src/LTC6811.d ./Application/Src/LTC6811.o ./Application/Src/LTC6811.su ./Application/Src/SystemInfo.d ./Application/Src/SystemInfo.o ./Application/Src/SystemInfo.su ./Application/Src/error.d ./Application/Src/error.o ./Application/Src/error.su ./Application/Src/imd.d ./Application/Src/imd.o ./Application/Src/imd.su ./Application/Src/inputs.d ./Application/Src/inputs.o ./Application/Src/inputs.su ./Application/Src/millis.d ./Application/Src/millis.o ./Application/Src/millis.su ./Application/Src/my_math.d ./Application/Src/my_math.o ./Application/Src/my_math.su ./Application/Src/outputs.d ./Application/Src/outputs.o ./Application/Src/outputs.su
 
 .PHONY: clean-Application-2f-Src
 

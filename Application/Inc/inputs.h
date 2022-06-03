@@ -27,6 +27,7 @@ typedef union __system_input_tag {
 																			// 6 = Kurzschluss gegen KL15, 0Hz
 																			// 7 = IMD Error, Frequenz ausserhalb des gueltigen Bereiches
 		uint8_t IMD_PWM : 1;					// 3
+		uint8_t  : 1;							// 4
 		uint8_t KL15 : 1;						// 5
 		uint8_t Crash : 1;						// 6
 		uint8_t Wakeup : 1;						// 7

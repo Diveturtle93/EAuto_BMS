@@ -25,6 +25,7 @@
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
+#include <math.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -39,6 +40,7 @@
 #include "BatteriemanagementSystem.h"
 #include "imd.h"
 #include "AD8403.h"
+#include "SPI_resource.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -302,38 +304,6 @@ int main(void)
 
 	// Digitales Poti initialisieren
 	initAD8403();
-
-	HAL_Delay(5000);
-
-	// Digitales Poti testen, Werte auf allen Potis langsam von 0 bis 255 zahlen
-	setAllPoti(200);
-
-	HAL_Delay(5000);
-
-	AllPotiMidscale();
-
-	HAL_Delay(120000);
-
-	setAllPoti(255);
-
-	HAL_Delay(5000);
-	for (uint8_t i = 255; i >= 10; i--)
-	{
-		HAL_GPIO_TogglePin(RED_LED_GPIO_Port, RED_LED_Pin);
-		setPoti(AD8403_MUX0, i);
-		HAL_Delay(500);
-		setPoti(AD8403_MUX1, i);
-		HAL_Delay(500);
-		setPoti(AD8403_MUX2, i);
-		HAL_Delay(500);
-		setPoti(AD8403_MUX3, i);
-		HAL_Delay(500);
-		uartTransmitNumber(i, 10);
-		uartTransmit("\n", 1);
-	}
-
-	HAL_GPIO_WritePin(BLUE_LED_GPIO_Port, BLUE_LED_Pin, 1);
-
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -385,6 +355,7 @@ int main(void)
 			ltc1380_write(LTC1380_MUX0, j);									// Multiplexer 0 einstellen
 			ltc1380_write(LTC1380_MUX2, j);									// Multiplexer 1 einstellen
 			ltc6811(ADAX | MD73 | GPIOALL);									// Initial Command Zellen auslesen
+			HAL_Delay(5);
 			ltc6811_read(RDAUXA, &data[0]);
 
 			for (uint8_t i = 0; i < 3; i++)
