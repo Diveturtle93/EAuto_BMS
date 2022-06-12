@@ -246,7 +246,6 @@
 		<project id="BatteriemanagementSystem.null.1209321738" name="BatteriemanagementSystem"/>
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
-	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
 	<storageModule moduleId="scannerConfiguration">
 		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		<scannerConfigBuildInfo instanceId="com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.release.1521111052;com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.release.1521111052.;com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.257670922;com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.1556013805">
@@ -263,5 +262,8 @@
 		<configuration configurationName="Release">
 			<resource resourceType="PROJECT" workspacePath="/BatteriemanagementSystem"/>
 		</configuration>
+	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets">
+		<buildTargets/>
 	</storageModule>
 </cproject>

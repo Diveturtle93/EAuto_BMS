@@ -1,54 +1,64 @@
 //----------------------------------------------------------------------
-// Titel	:	LTC1380.h
+// Titel	:	DWT.c
 //----------------------------------------------------------------------
 // Sprache	:	C
-// Datum	:	25.09.2020
+// Datum	:	Jun 12, 2022
 // Version	:	1.0
 // Autor	:	Diveturtle93
-// Projekt	:	Batteriemanagement-System
+// Projekt	:	BatteriemanagementSystem
 //----------------------------------------------------------------------
 
-// Dateiheader definieren
-//----------------------------------------------------------------------
-#ifndef LTC1380_H
-#define LTC1380_H
+// Einfuegen der standard Include-Dateien
 //----------------------------------------------------------------------
 
-// Include-Dateien einfuegen
-//----------------------------------------------------------------------
-#include <stdint.h>
 //----------------------------------------------------------------------
 
-// Konstanten definieren
+// Einfuegen der STM Include-Dateien
 //----------------------------------------------------------------------
-#define LTC1380_DEVICES		2						// Anzahl der ICs
-//----------------------------------------------------------------------
-
-// Addressen
-//----------------------------------------------------------------------
-#define LTC1380_MUX0 0b10010000
-#define LTC1380_MUX1 0b10010010
-#define LTC1380_MUX2 0b10010100
-#define LTC1380_MUX3 0b10010110
+#include "main.h"
 //----------------------------------------------------------------------
 
-// Channel Auswahl
+// Einfuegen der eigenen Include Dateien
 //----------------------------------------------------------------------
-#define TEMPERATUR0			0
-#define TEMPERATUR1			1
-#define TEMPERATUR2			2
-#define TEMPERATUR3			3
-#define TEMPERATUR4			4
-#define TEMPERATUR5			5
-#define TEMPERATUR6			6
-#define TEMPERATUR7			7
+#include "DWT.h"
 //----------------------------------------------------------------------
 
-// Funktionen definieren
+// DWT-Einheit aktivieren
 //----------------------------------------------------------------------
-void ltc1380_write(uint8_t Address, uint8_t Channel);
-void ltc1380_off(uint8_t Address);
-void ltc1380_alloff(void);
+void DWT_Enable(void)
+{
+	CoreDebug -> DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+}
 //----------------------------------------------------------------------
 
-#endif
+//Schalte DWT ein
+//----------------------------------------------------------------------
+void DWT_CycCounterEn()
+{
+	DWT -> CTRL = 0x40000001;
+}
+//----------------------------------------------------------------------
+
+// Schalte DWT aus
+//----------------------------------------------------------------------
+void DWT_CycCounterDis(void)
+{
+	DWT -> CTRL = 0x40000000;
+}
+//----------------------------------------------------------------------
+
+// Lese DWT Zaehlerstand
+//----------------------------------------------------------------------
+uint32_t DWT_CycCounterRead(void)
+{
+	return DWT -> CYCCNT;
+}
+//----------------------------------------------------------------------
+
+// Loesche DWT Zaehlerstand
+//----------------------------------------------------------------------
+void DWT_CycCounterClear(void)
+{
+	DWT -> CYCCNT = 0;
+}
+//----------------------------------------------------------------------

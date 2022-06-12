@@ -23,6 +23,13 @@
 #include "inputs.h"
 //----------------------------------------------------------------------
 
+// Variablen einbinden
+//----------------------------------------------------------------------
+system_input_tag system_in;													// Variable fuer Systemeingaenge definieren
+sdc_in_tag sdc_in;															// Variable fuer SDC-Eingaenge definieren
+komfort_in_tag komfort_in;													// Variable fuer Komforteingaenge definieren
+//----------------------------------------------------------------------
+
 // Lese alle Eingaenge
 //----------------------------------------------------------------------
 void readall_inputs(void)

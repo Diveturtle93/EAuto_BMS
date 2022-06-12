@@ -25,7 +25,6 @@
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
-#include <math.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -37,6 +36,7 @@
 #include "error.h"
 #include "imd.h"
 #include "..\..\Application\Src\my_math.c"
+#include "DWT.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -248,6 +248,24 @@ int main(void)
 		uartTransmit(SDC_STRING_OK, sizeof(SDC_STRING_OK));
 	}
 
+	uint32_t DWT_count = 0, test = 0;
+
+	// Systick-Zaehler benutzen
+	DWT_Enable();									// DWT-Einheit aktivieren
+	DWT_CycCounterEn();								// Zaehler aktivieren
+	DWT_CycCounterClear();							// Zaehler loeschen
+
+	HAL_GPIO_WritePin(RED_LED_GPIO_Port, RED_LED_Pin, SET);
+
+	DWT_count = DWT_CycCounterRead();
+	test = DWT_count / SYSTICK_CLKSOURCE_HCLK;
+
+	uartTransmitNumber(test, 10);
+  	uartTransmit("\n", 1);
+  	DWT_CycCounterDis();							// Zaehler deaktivieren
+
+  	__disable_fault_irq();
+	__disable_irq();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -257,181 +275,199 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-		// Task wird jede Millisekunde ausgefuehrt
-		if (millisekunden_flag_1 == 1)
-		{
-			count++;													// Zaehler count hochzaehlen
-			millisekunden_flag_1 = 0;									// Setze Millisekunden-Flag zurueck
+	  // Systick-Zaehler benutzen
+		DWT_CycCounterClear();						// Zaehler loeschen
+		DWT_Enable();								// DWT-Einheit aktivieren
+		DWT_CycCounterEn();							// Zaehler aktivieren
 
-			// Setzen des Start Flags,  damit Tasks nur einmal pro ms aufgerufen werden kann
-			start_flag = 1;												// Setze Start Flag
-		}
+		//DWT_count = DWT_CycCounterRead();
 
-		// Task wird alle 500 Millisekunden ausgefuehrt
-		if (((count % 500) == 0) && (start_flag == 1))
-		{
-			if (rising != 0 && falling != 0)
-			{
-				int diff = getDifference(rising, falling);
-				dutyCycle = round((float)(diff * 100) / (float)rising);	// (width / period ) * 100
-				frequency = timerPeriod / rising;						// timer restarts after rising edge so time between two rising edge is whatever is measured
-			}
-			else
-			{
-				dutyCycle = 0;
-				frequency = 0;
-			}
+		HAL_GPIO_WritePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin, SET);
+		HAL_GPIO_WritePin(BLUE_LED_GPIO_Port, BLUE_LED_Pin, SET);
 
-			uartTransmitNumber(dutyCycle, 10);
-			uartTransmitNumber(frequency, 10);
+		DWT_count = DWT_CycCounterRead(); // - DWT_count;
+		test = DWT_count / SYSTICK_CLKSOURCE_HCLK;
 
-			if (sdc_in.IMD_OK_IN == 1)
-			{
-				switch (frequency)
-				{
-					case 0:
-						system_in.IMD_PWM = HAL_GPIO_ReadPin(IMD_PWM_GPIO_Port, IMD_PWM_Pin);						// Eingang IMD PWM
-						if (system_in.IMD_PWM == 1)
-						{
-							system_in.IMD_PWM_STATUS = IMD_KURZSCHLUSS_KL15;
-						}
-						else
-						{
-							system_in.IMD_PWM_STATUS = IMD_KURZSCHLUSS_GND;
-						}
-						break;
-					case 10:
-						system_in.IMD_PWM_STATUS = IMD_NORMAL;
-						if (dutyCycle > 5 && dutyCycle < 95)								// IMD PWM
-						{
-							R_IMD = 90 * 1200 / (dutyCycle - 5) - 1200;
-							uartTransmitNumber(R_IMD, 10);
-						}
-						else																// IMD Invalid
-						{
-							system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;
-						}
-						break;
-					case 20:
-						system_in.IMD_PWM_STATUS = IMD_UNTERSPANNUNG;
-						if (dutyCycle > 5 && dutyCycle < 95)								// IMD PWM
-						{
-							R_IMD = 90 * 1200 / (dutyCycle - 5) - 1200;
-							uartTransmitNumber(R_IMD, 10);
-						}
-						else																// IMD Invalid
-						{
-							system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;
-						}
-						break;
-					case 30:
-						system_in.IMD_PWM_STATUS = IMD_SCHNELLSTART;
-						if (dutyCycle > 5 && dutyCycle < 11)								// IMD Gut
-						{
+		uartTransmitNumber(DWT_count, 10);
+	  	uartTransmit("\n", 1);
+	  	DWT_CycCounterDis();						// Zaehler deaktivieren
 
-						}
-						else if (dutyCycle > 89 && dutyCycle < 95)							// IMD Schlecht
-						{
-
-						}
-						else																// IMD Fehlerhaft
-						{
-							system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;
-						}
-						break;
-					case 40:
-						system_in.IMD_PWM_STATUS = IMD_GERAETEFEHLER;
-						if (dutyCycle > 47 && dutyCycle < 53)								// IMD PWM
-						{
-
-						}
-						else																// IMD Invalid
-						{
-							system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;
-						}
-						break;
-					case 50:
-						system_in.IMD_PWM_STATUS = IMD_ANSCHLUSSFEHLER_ERDE;
-						if (dutyCycle > 47 && dutyCycle < 53)								// IMD PWM
-						{
-
-						}
-						else																// IMD Invalid
-						{
-							system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;
-						}
-						break;																// IMD Error, kein anderes Ereignis zutrefend
-					default:
-						system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;
-						break;
-				}
-			}
-			else
-			{
-				switch (frequency)
-				{
-
-					case 10:
-						system_in.IMD_PWM_STATUS = IMD_NORMAL;
-						if (dutyCycle > 5 && dutyCycle < 95)								// IMD PWM
-						{
-							R_IMD = 90 * 1200 / (dutyCycle - 5) - 1200;
-							uartTransmitNumber(R_IMD, 10);
-						}
-						else																// IMD Invalid
-						{
-							system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;
-						}
-						break;
-					case 20:
-						system_in.IMD_PWM_STATUS = IMD_UNTERSPANNUNG;
-						if (dutyCycle > 5 && dutyCycle < 95)								// IMD PWM
-						{
-							R_IMD = 90 * 1200 / (dutyCycle - 5) - 1200;
-							uartTransmitNumber(R_IMD, 10);
-						}
-						else																// IMD Invalid
-						{
-							system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;
-						}
-						break;																// IMD Error, kein anderes Ereignis zutrefend
-					default:
-						system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;
-						break;
-				}
-			}
-	
-			count = 0;
-		}
 		
-		if ((count % 250) == 0)
-		{
-			// Daten fuer Ausgaenge zusammenfuehren
-			OutData[0] = system_out.systemoutput;
-			OutData[1] = highcurrent_out.high_out;
-			OutData[2] = leuchten_out.ledoutput;
-			OutData[3] = komfort_out.komfortoutput;
-	
-			// Sende Nachricht digitale Ausgaenge
-			status = HAL_CAN_AddTxMessage(&hcan3, &TxOutput, OutData, (uint32_t *)CAN_TX_MAILBOX0);
-			hal_error(status);
-
-			// Daten fuer Eingaenge zusammenfuehren
-			InData[0] = system_in.systeminput;
-			InData[1] = sdc_in.sdcinput;
-			InData[2] = komfort_in.komfortinput;
-	
-			// Sende Nachricht digitale Eingaenge
-			status = HAL_CAN_AddTxMessage(&hcan3, &TxInput, InData, (uint32_t *)CAN_TX_MAILBOX0);
-			hal_error(status);
-	
-			// Sende Nachricht digitale Eingaenge
-			status = HAL_CAN_AddTxMessage(&hcan3, &TxMessage, TxData, (uint32_t *)CAN_TX_MAILBOX0);
-			hal_error(status);
-		}
-
-		// Zuruecksetzen des Start Flags, damit Tasks erst nach einer ms wieder aufgerufen werden kann
-		start_flag = 0;																		// Zuruechsetze Start Flag
+//		// Task wird jede Millisekunde ausgefuehrt
+//		if (millisekunden_flag_1 == 1)
+//		{
+//			count++;													// Zaehler count hochzaehlen
+//			millisekunden_flag_1 = 0;									// Setze Millisekunden-Flag zurueck
+//
+//			// Setzen des Start Flags,  damit Tasks nur einmal pro ms aufgerufen werden kann
+//			start_flag = 1;												// Setze Start Flag
+//		}
+//
+//		// Task wird alle 500 Millisekunden ausgefuehrt
+//		if (((count % 500) == 0) && (start_flag == 1))
+//		{
+//			if (rising != 0 && falling != 0)
+//			{
+//				int diff = getDifference(rising, falling);
+//				dutyCycle = round((float)(diff * 100) / (float)rising);	// (width / period ) * 100
+//				frequency = timerPeriod / rising;						// timer restarts after rising edge so time between two rising edge is whatever is measured
+//			}
+//			else
+//			{
+//				dutyCycle = 0;
+//				frequency = 0;
+//			}
+//
+//			uartTransmitNumber(dutyCycle, 10);
+//			uartTransmitNumber(frequency, 10);
+//
+//			if (sdc_in.IMD_OK_IN == 1)
+//			{
+//				switch (frequency)
+//				{
+//					case 0:
+//						system_in.IMD_PWM = HAL_GPIO_ReadPin(IMD_PWM_GPIO_Port, IMD_PWM_Pin);						// Eingang IMD PWM
+//						if (system_in.IMD_PWM == 1)
+//						{
+//							system_in.IMD_PWM_STATUS = IMD_KURZSCHLUSS_KL15;
+//						}
+//						else
+//						{
+//							system_in.IMD_PWM_STATUS = IMD_KURZSCHLUSS_GND;
+//						}
+//						break;
+//					case 10:
+//						system_in.IMD_PWM_STATUS = IMD_NORMAL;
+//						if (dutyCycle > 5 && dutyCycle < 95)								// IMD PWM
+//						{
+//							R_IMD = 90 * 1200 / (dutyCycle - 5) - 1200;
+//							uartTransmitNumber(R_IMD, 10);
+//						}
+//						else																// IMD Invalid
+//						{
+//							system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;
+//						}
+//						break;
+//					case 20:
+//						system_in.IMD_PWM_STATUS = IMD_UNTERSPANNUNG;
+//						if (dutyCycle > 5 && dutyCycle < 95)								// IMD PWM
+//						{
+//							R_IMD = 90 * 1200 / (dutyCycle - 5) - 1200;
+//							uartTransmitNumber(R_IMD, 10);
+//						}
+//						else																// IMD Invalid
+//						{
+//							system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;
+//						}
+//						break;
+//					case 30:
+//						system_in.IMD_PWM_STATUS = IMD_SCHNELLSTART;
+//						if (dutyCycle > 5 && dutyCycle < 11)								// IMD Gut
+//						{
+//
+//						}
+//						else if (dutyCycle > 89 && dutyCycle < 95)							// IMD Schlecht
+//						{
+//
+//						}
+//						else																// IMD Fehlerhaft
+//						{
+//							system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;
+//						}
+//						break;
+//					case 40:
+//						system_in.IMD_PWM_STATUS = IMD_GERAETEFEHLER;
+//						if (dutyCycle > 47 && dutyCycle < 53)								// IMD PWM
+//						{
+//
+//						}
+//						else																// IMD Invalid
+//						{
+//							system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;
+//						}
+//						break;
+//					case 50:
+//						system_in.IMD_PWM_STATUS = IMD_ANSCHLUSSFEHLER_ERDE;
+//						if (dutyCycle > 47 && dutyCycle < 53)								// IMD PWM
+//						{
+//
+//						}
+//						else																// IMD Invalid
+//						{
+//							system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;
+//						}
+//						break;																// IMD Error, kein anderes Ereignis zutrefend
+//					default:
+//						system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;
+//						break;
+//				}
+//			}
+//			else
+//			{
+//				switch (frequency)
+//				{
+//
+//					case 10:
+//						system_in.IMD_PWM_STATUS = IMD_NORMAL;
+//						if (dutyCycle > 5 && dutyCycle < 95)								// IMD PWM
+//						{
+//							R_IMD = 90 * 1200 / (dutyCycle - 5) - 1200;
+//							uartTransmitNumber(R_IMD, 10);
+//						}
+//						else																// IMD Invalid
+//						{
+//							system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;
+//						}
+//						break;
+//					case 20:
+//						system_in.IMD_PWM_STATUS = IMD_UNTERSPANNUNG;
+//						if (dutyCycle > 5 && dutyCycle < 95)								// IMD PWM
+//						{
+//							R_IMD = 90 * 1200 / (dutyCycle - 5) - 1200;
+//							uartTransmitNumber(R_IMD, 10);
+//						}
+//						else																// IMD Invalid
+//						{
+//							system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;
+//						}
+//						break;																// IMD Error, kein anderes Ereignis zutrefend
+//					default:
+//						system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;
+//						break;
+//				}
+//			}
+//
+//			count = 0;
+//		}
+//
+//		if ((count % 250) == 0)
+//		{
+//			// Daten fuer Ausgaenge zusammenfuehren
+//			OutData[0] = system_out.systemoutput;
+//			OutData[1] = highcurrent_out.high_out;
+//			OutData[2] = leuchten_out.ledoutput;
+//			OutData[3] = komfort_out.komfortoutput;
+//
+//			// Sende Nachricht digitale Ausgaenge
+//			status = HAL_CAN_AddTxMessage(&hcan3, &TxOutput, OutData, (uint32_t *)CAN_TX_MAILBOX0);
+//			hal_error(status);
+//
+//			// Daten fuer Eingaenge zusammenfuehren
+//			InData[0] = system_in.systeminput;
+//			InData[1] = sdc_in.sdcinput;
+//			InData[2] = komfort_in.komfortinput;
+//
+//			// Sende Nachricht digitale Eingaenge
+//			status = HAL_CAN_AddTxMessage(&hcan3, &TxInput, InData, (uint32_t *)CAN_TX_MAILBOX0);
+//			hal_error(status);
+//
+//			// Sende Nachricht digitale Eingaenge
+//			status = HAL_CAN_AddTxMessage(&hcan3, &TxMessage, TxData, (uint32_t *)CAN_TX_MAILBOX0);
+//			hal_error(status);
+//		}
+//
+//		// Zuruecksetzen des Start Flags, damit Tasks erst nach einer ms wieder aufgerufen werden kann
+//		start_flag = 0;																		// Zuruechsetze Start Flag
   }
   /* USER CODE END 3 */
 }
@@ -444,12 +480,12 @@ void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
-  RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
 
   /** Configure the main internal regulator output voltage
   */
   __HAL_RCC_PWR_CLK_ENABLE();
   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
@@ -466,12 +502,14 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+
   /** Activate the Over-Drive mode
   */
   if (HAL_PWREx_EnableOverDrive() != HAL_OK)
   {
     Error_Handler();
   }
+
   /** Initializes the CPU, AHB and APB buses clocks
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
@@ -482,12 +520,6 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
 
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_7) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USART2;
-  PeriphClkInitStruct.Usart2ClockSelection = RCC_USART2CLKSOURCE_PCLK1;
-  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
   {
     Error_Handler();
   }
@@ -554,5 +586,3 @@ void assert_failed(uint8_t *file, uint32_t line)
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

@@ -16,7 +16,7 @@
 
 // Strukturen definieren
 //----------------------------------------------------------------------
-union system_out_tag {
+typedef union __system_out_tag {
 	struct {
 		uint8_t AmsLimit : 1;					// 0
 		uint8_t ImdOK : 1;						// 1
@@ -28,12 +28,12 @@ union system_out_tag {
 		uint8_t Power_On : 1;					// 7
 	};
 
-	uint8_t systemoutput;						// 1 Byte
-} system_out;
+	uint8_t systemoutput;						// Byte
+} system_out_tag;
 //----------------------------------------------------------------------
 
 //----------------------------------------------------------------------
-union highcurrent_out_tag {
+typedef union __highcurrent_out_tag {
 	struct {
 		uint8_t Digital1 : 1;					// 0
 		uint8_t Digital2 : 1;					// 1
@@ -45,12 +45,12 @@ union highcurrent_out_tag {
 		uint8_t Heater2 : 1;					// 7
 	};
 
-	uint8_t high_out;							// 1 Byte
-} highcurrent_out;
+	uint8_t high_out;							// Byte
+} highcurrent_out_tag;
 //----------------------------------------------------------------------
 
 //----------------------------------------------------------------------
-union leuchten_out_tag {
+typedef union __leuchten_out_tag {
 	struct {
 		uint8_t InletRed : 1;					// 0
 		uint8_t InletGreen : 1;					// 1
@@ -63,11 +63,11 @@ union leuchten_out_tag {
 	};
 
 	uint8_t ledoutput;							// 1 Byte
-} leuchten_out;
+} leuchten_out_tag;
 //----------------------------------------------------------------------
 
 //----------------------------------------------------------------------
-union komfort_out_tag {
+typedef union __komfort_out_tag {
 	struct {
 		uint8_t TriggerOut : 1;					// 0
 		uint8_t  : 1;							// 1
@@ -80,7 +80,7 @@ union komfort_out_tag {
 	};
 
 	uint8_t komfortoutput;						// 1 Byte
-} komfort_out;
+} komfort_out_tag;
 //----------------------------------------------------------------------
 
 // Definiere Konstanten
@@ -89,6 +89,14 @@ union komfort_out_tag {
 #define HIGH_OUTPUT					0b00000000								// 8 Bit, 7 Hochstromfaehige Ausgaenge
 #define LED_OUTPUT					0b11100111								// 8 Bit, 6 Leuchtdioden
 #define KOMFORT_OUTPUT				0b00000000								// 8 Bit, 1 Komfortausgaenge
+//----------------------------------------------------------------------
+
+// Definiere globale Variablen
+//----------------------------------------------------------------------
+extern system_out_tag system_out;											// Variable fuer Systemausgaenge definieren
+extern highcurrent_out_tag highcurrent_out;									// Variable fuer Highcurrentausgaenge definieren
+extern leuchten_out_tag leuchten_out;										// Variable fuer Leuchtenausgaenge definieren
+extern komfort_out_tag komfort_out;											// Variable fuer Komfortausgaenge definieren
 //----------------------------------------------------------------------
 
 // Funktionen definieren

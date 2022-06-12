@@ -1,4 +1,5 @@
 "./Application/Src/BasicUart.o"
+"./Application/Src/DWT.o"
 "./Application/Src/LTC1380.o"
 "./Application/Src/LTC6811.o"
 "./Application/Src/SystemInfo.o"
