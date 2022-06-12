@@ -1,4 +1,5 @@
 "./Application/Src/BasicUart.o"
+"./Application/Src/IsoSPI.o"
 "./Application/Src/LTC1380.o"
 "./Application/Src/LTC6811.o"
 "./Application/Src/SystemInfo.o"
@@ -6,7 +7,6 @@
 "./Application/Src/imd.o"
 "./Application/Src/inputs.o"
 "./Application/Src/millis.o"
-"./Application/Src/my_math.o"
 "./Application/Src/outputs.o"
 "./Core/Src/adc.o"
 "./Core/Src/can.o"

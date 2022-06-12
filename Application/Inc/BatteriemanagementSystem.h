@@ -91,6 +91,25 @@ union motor_tag {
 } motor;
 //----------------------------------------------------------------------
 
+// Definiere Statemaschine Typedefines
+//----------------------------------------------------------------------
+// Definiere Batteriemanagement-System States
+//----------------------------------------------------------------------
+typedef enum BMSState_tag
+{
+	BMSStart,																// Batteriemanagement wird gestartet
+	BMSSleep,																// Batteriemanagement liegt im schlafen
+	BMSStandby,																// Batteriemanagement ist im Standby
+	BMSGetReady,															// Precharge wird vorbereitet
+	BMSPrecharge,															// Akkukasten wird vorgeladen
+	BMSActive,																// Akkukasten ist Bereit und Aktiv
+	BMSFreigabe,															// Freigabe zur Leistungsentnahme
+	BMSDisable,																// Akkukasten vorbereiten zum abschalten
+	BMSDischarge,															// Akkukasten abschalten
+	BMSCharge,																// Akkukasten Laden
+} BMSState;
+//----------------------------------------------------------------------
+
 // Funktionen definieren
 //----------------------------------------------------------------------
 

@@ -25,7 +25,6 @@
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
-#include <math.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -39,7 +38,7 @@
 #include "my_math.h"
 #include "BatteriemanagementSystem.h"
 #include "imd.h"
-#include "..\..\Application\Src\my_math.c"
+#include <math.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -206,14 +205,7 @@ int main(void)
 	if (HAL_TIM_Base_Start_IT(&htim1) != HAL_OK);
 	if (HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_1) != HAL_OK);
 	if (HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_2) != HAL_OK);
-  	HAL_TIM_Base_Start(&htim6);
-
-	// Leds Testen
-	testPCB_Leds();
-	testLeds();
-
-	// Lese alle Eingaenge
-	readall_inputs();
+  	HAL_TIM_Base_Start_IT(&htim6);
 
   	// Starte CAN Bus
   	if((status = HAL_CAN_Start(&hcan3)) != HAL_OK)
@@ -322,7 +314,7 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-		ltc6811(ADCVC | MD73 | CELLALL);
+		/*ltc6811(ADCVC | MD73 | CELLALL);
 		HAL_Delay(100);
 
 		ltc6811_read(RDCVA, &data[0]);
@@ -384,7 +376,8 @@ int main(void)
 
 		uartTransmit("\n", 1);
 
-		temp++;
+		temp++;*/
+
 		// Task wird jede Millisekunde ausgefuehrt
 		if (millisekunden_flag_1 == 1)
 		{
@@ -577,6 +570,7 @@ void SystemClock_Config(void)
   */
   __HAL_RCC_PWR_CLK_ENABLE();
   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
@@ -593,12 +587,14 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+
   /** Activate the Over-Drive mode
   */
   if (HAL_PWREx_EnableOverDrive() != HAL_OK)
   {
     Error_Handler();
   }
+
   /** Initializes the CPU, AHB and APB buses clocks
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
@@ -694,4 +690,3 @@ void assert_failed(uint8_t *file, uint32_t line)
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
-

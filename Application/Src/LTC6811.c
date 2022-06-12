@@ -33,6 +33,12 @@ uint8_t CellVolt[LTC6811_DEVICES][12];										// Array fuer gemessene Zellspan
 uint8_t CellTemp[LTC6811_DEVICES][12];										// Array fuer gemessene Zelltemperaturen
 //----------------------------------------------------------------------
 
+// Definiere Globale Variable
+//----------------------------------------------------------------------
+static LTC6811_State Ltc6811State;											// Statusvariable Statemaschine
+uint32_t timeLtc6811State;													// Time Variable fuer State
+//----------------------------------------------------------------------
+
 // Pec Lookuptabelle definieren
 //----------------------------------------------------------------------
 const uint16_t pec15Table[256] = {
@@ -71,47 +77,9 @@ const uint16_t pec15Table[256] = {
 };
 //----------------------------------------------------------------------
 
-// Statemaschine ISOSpi
-//----------------------------------------------------------------------
-/*void set_isospi_state(IsoSpi_State newState)
-{
-	static IsoSpi_State State;
-	State = newState;
-
-#ifdef DEBUG_ISOSPI
-	ITM_SendString("ISOSPI: ");
-
-	ITM_SendString(" Neuer State: ");
-
-	switch (State)
-	{
-		case Idle:
-			ITM_SendString("Idle\n");
-			break;
-
-		case Active:
-			ITM_SendString("Active\n");
-			break;
-
-		case Ready:
-			ITM_SendString("Ready\n");
-			break;
-
-		case GetReady:
-			ITM_SendString("GetReady\n");
-			break;
-
-		default:
-			ITM_SendString("#RED#FEHLER\n");
-			break;
-	}
-#endif
-}*/
-//----------------------------------------------------------------------
-
 // Statemaschine LTC6811
 //----------------------------------------------------------------------
-/*void set_ltc6811_state(LTC6811_State newState)
+void set_ltc6811_state(LTC6811_State newState)
 {
 	static LTC6811_State State;
 	State = newState;
@@ -123,31 +91,31 @@ const uint16_t pec15Table[256] = {
 
 	switch (State)
 	{
-		case Standby:
+		case LTCStandby:
 			ITM_SendString("Standby\n");
 			break;
 
-		case Measure:
+		case LTCMeasure:
 			ITM_SendString("Measure\n");
 			break;
 
-		case Refup:
+		case LTCRefup:
 			ITM_SendString("Refup\n");
 			break;
 
-		case SetRefup:
+		case LTCSetRefup:
 			ITM_SendString("SetRefup\n");
 			break;
 
-		case Wakeup:
+		case LTCWakeup:
 			ITM_SendString("Wakeup\n");
 			break;
 
-		case ExtendedBalancing:
+		case LTCExtendedBalancing:
 			ITM_SendString("Extended Balancing\n");
 			break;
 
-		case Sleep:
+		case LTCSleep:
 			ITM_SendString("Sleep\n");
 			break;
 
@@ -156,31 +124,6 @@ const uint16_t pec15Table[256] = {
 			break;
 	}
 #endif
-}*/
-//----------------------------------------------------------------------
-
-// Wakeup LTC6811 idle
-//----------------------------------------------------------------------
-void wakeup_ltc6811(void)
-{
-	// Debug Nachricht
-#ifdef DEBUG_ISOSPI
-	ITM_SendString("Chip wird geweckt.\n");
-#endif
-
-	for(uint8_t i = 0; i < LTC6811_DEVICES; i++)							// Wiederholen fuer Anzahl Slaves
-	{
-		// ISOCS einschalten
-		ISOCS_ENABLE();														// Chip-Select einschalten
-
-		// Dummy Paket senden
-		HAL_SPI_Transmit(&hspi4, (uint8_t*) 0xAA, 1, 100);					// Chip wecken, isoSPI braucht Zeit bis ready
-
-		//HAL_Delay(2);														// isoSPI braucht Zeit bis ready
-
-		// ISOCS ausschalten
-		ISOCS_DISABLE();													// Chip-Select ausschalten
-	}
 }
 //----------------------------------------------------------------------
 
@@ -189,47 +132,26 @@ void wakeup_ltc6811(void)
 void ltc6811(uint16_t command)
 {
 	// Debug Nachricht
-#ifdef DEBUG_ISOSPI
+#ifdef DEBUG_LTC6811
 	ITM_SendString("Aufruf von Transcreceive LTC6811.\n");
 #endif
 
 	// PEC berechnen, Anhand Command
 	uint16_t pec;															// pec = Zwischenspeicher 16-Bit Command
 	uint8_t cmd[4];															// Zwischenspeicher Command + Pec CRC
-	pec = peccommand(command);
-	
-	// Verzoegerungszeit zum wecken des LTC6811
-	wakeup_ltc6811();
+	pec = peccommand(command);												// CRC berechnen
 
 	// Command in cmd abspeichern
 	cmd[0] = ((command >> 8) & 0x07);
 	cmd[1] = (command & 0xFF);
 	cmd[2] = ((pec >> 8) & 0xFF);
 	cmd[3] = (pec & 0xFE);
-
-	// ISOCS einschalten
-	ISOCS_ENABLE();
-
-	// Command uebertragen
-	HAL_SPI_Transmit(&hspi4, cmd, 4, 100);
-
-	// Wenn Command = STCOMM ist dann muessen noch 72 Takte uebertragen werden
-	if (command == STCOMM)
-	{
-		// 72 = 9 * 8 Bit Daten
-		for (uint8_t i = 0; i < 9; i++)
-		{
-			// Dummy-Byte uebertragen
-			HAL_SPI_Transmit(&hspi4, (uint8_t*) 0xAA, 1, HAL_MAX_DELAY);
-		}
-	}
 	
-	// ISOCS ausschalten
-	ISOCS_DISABLE();
-	// Ende der Uebertragung
+	// Befehl ueber IsoSPI senden
+	IsoSPI_cmd(&cmd[0]);														// Sende Befehl
 
 	// Debug Nachricht
-#ifdef DEBUG_ISOSPI
+#ifdef DEBUG_LTC6811
 	ITM_SendString("Command wurde gesendet.\n");
 	ITM_SendString("Folgendes wurde gesendet:");
 
@@ -244,20 +166,19 @@ void ltc6811(uint16_t command)
 }
 //----------------------------------------------------------------------
 
-
 // Broadcast Write Command
 //----------------------------------------------------------------------
 void ltc6811_write(uint16_t command, uint8_t* data)
 {
 	// Debug Nachricht
-#ifdef DEBUG_ISOSPI
+#ifdef DEBUG_LTC6811
 	ITM_SendString("Aufruf von Transceive LTC6811.\n"); // 31
 #endif
 
 	// PEC berechnen, fuer Data Funktion nur bei einem Device gegeben
 	uint16_t pec_c, pec_d;													// pec_c = Zwischenspeicher 16-Bit Command, pec_d = Zwischenspeicher 16-Bit Data
 	uint8_t cmd[4];															// Zwischenspeicher Command + Pec CRC
-	uint8_t tmp_data[8*LTC6811_DEVICES];									// Zwischenspeicher Daten + Pec CRC
+	uint8_t tmp_data[8 * LTC6811_DEVICES];									// Zwischenspeicher Daten + Pec CRC
 	pec_c = peccommand(command);											// Pec Command berechnen
 
 	// Command in cmd abspeichern
@@ -282,29 +203,12 @@ void ltc6811_write(uint16_t command, uint8_t* data)
 		tmp_data[6] = ((pec_d >> 8) & 0xFF);
 		tmp_data[7] = (pec_d & 0xFE);
 	}
-	
-	// Verzoegerungszeit zum wecken des LTC6811
-	wakeup_ltc6811();
 
-	// ISOCS einschalten
-	ISOCS_ENABLE();
-
-	// Command uebertragen
-	HAL_SPI_Transmit(&hspi4, cmd, 4, 100);
-	
-	// Data senden
-//	for (uint8_t i = 0; i < 6; i++)
-//	{
-		// Sende Daten fuer einen IC
-		HAL_SPI_Transmit(&hspi4, tmp_data, 8, 100);
-//	}
-	
-	// ISOCS ausschalten
-	ISOCS_DISABLE();
-	// Ende der Uebertragung
+	// Befehl ueber IsoSPI senden
+	IsoSPI_transmit(&cmd[0], &tmp_data[0]);									// Sende Daten
 
 	// Debug Nachricht
-#ifdef DEBUG_ISOSPI
+#ifdef DEBUG_LTC6811
 	ITM_SendString("Command wurde gesendet.\n");
 	ITM_SendString("Folgendes wurde gesendet:");
 
@@ -335,18 +239,15 @@ void ltc6811_write(uint16_t command, uint8_t* data)
 uint8_t ltc6811_read(uint16_t command, uint8_t* data)
 {
 	// Debug Nachricht
-#ifdef DEBUG_ISOSPI
+#ifdef DEBUG_LTC6811
 	ITM_SendString("Aufruf von Receive LTC6811.\n");
 #endif
 
 	// PEC berechnen, Anhand Command
 	uint16_t pec;															// pec = Zwischenspeicher 16-Bit Command
-	uint16_t tmp;															// Zwischenspeicher fuer Pruefung CRC
+//	uint16_t tmp;															// Zwischenspeicher fuer Pruefung CRC
 	uint8_t cmd[4];															// Zwischenspeicher Command + Pec CRC
 	pec = peccommand(command);
-	
-	// Verzoegerungszeit zum wecken des LTC6811
-	wakeup_ltc6811();
 
 	// Command in cmd abspeichern
 	cmd[0] = ((command >> 8) & 0x07);
@@ -354,18 +255,8 @@ uint8_t ltc6811_read(uint16_t command, uint8_t* data)
 	cmd[2] = ((pec >> 8) & 0xFF);
 	cmd[3] = (pec & 0xFE);
 
-	// ISOCS einschalten
-	ISOCS_ENABLE();
-
-	// Command uebertragen
-	HAL_SPI_Transmit(&hspi4, cmd, 4, 100);
-	
-	// Data empfangen
-	for (uint8_t i = 0; i < LTC6811_DEVICES; i++)
-	{
-		// Dummy Byte senden
-		HAL_SPI_Receive(&hspi4, &data[i*8], 8, 100);
-	}
+	// Befehl ueber IsoSPI senden
+	IsoSPI_read(&cmd[0], &data[0]);											// Sende Daten
 
 	// Pec zuruecksetzen
 	pec = 0;
@@ -374,8 +265,8 @@ uint8_t ltc6811_read(uint16_t command, uint8_t* data)
 	for (uint8_t i = 0; i < LTC6811_DEVICES; i++)
 	{
 		// Variante 1, Pec berechnen und pruefen, ob richtiger Pec mitgesendet wurde
-		tmp = ((data[i + 6] << 8) + data[i + 7]);
-		pec = peclookup(6, &data[i*8]);
+//		tmp = ((data[i + 6] << 8) + data[i + 7]);
+//		pec = peclookup(6, &data[i*8]);
 
 #ifdef DEBUG_LTC6811
 		if (pec != tmp)
@@ -410,13 +301,8 @@ uint8_t ltc6811_read(uint16_t command, uint8_t* data)
 #endif
 	}
 
-
-	// ISOCS ausschalten
-	ISOCS_DISABLE();
-	// Ende der Uebertragung
-
 	// Debug Nachricht
-#ifdef DEBUG_ISOSPI
+#ifdef DEBUG_LTC6811
 	ITM_SendString("Command wurde empfangen.\n");
 	ITM_SendString("Folgendes wurde empfangen:");
 
@@ -543,9 +429,6 @@ uint8_t ltc6811_check(void)
 
 	// Variablen definieren
 	uint8_t tmp_data[64] = {0}, error = 0;									// Speicher Registerwerte, Fehlerspeicher
-
-	// Verzoegerungszeit zum wecken des LTC6811
-	wakeup_ltc6811();
 
 	// Alle Register zuruecksetzen
 	ltc6811(CLRCELL);														// Register Zellspannung auf default setzen
@@ -809,9 +692,6 @@ uint8_t ltc6811_diagn(void)
 	// Variablen definieren
 	uint8_t tmp_data[8] = {0};												// Speicher Registerwerte
 
-	// Verzoegerungszeit zum wecken des LTC6811
-	wakeup_ltc6811();
-
 	// Command senden
 	ltc6811(DIAGN);															// Multiplexer Check
 
@@ -844,9 +724,6 @@ uint8_t ltc6811_openwire(void)
 	uint8_t pulldown[32] = {0}, pullup[32] = {0};							// Speicher Registerwerte
 	uint16_t cell[1] = {0}, openwire[13] = {0};								// Speicher Zelle, Openwire vergleic Threshold
 
-	// Verzoegerungszeit zum wecken des LTC6811
-	wakeup_ltc6811();
-
 	// Pullup Current, drei Durchgaenge
 	for (uint8_t i = 0; i < 2; i++)
 	{
@@ -861,10 +738,6 @@ uint8_t ltc6811_openwire(void)
 	ltc6811_read(RDCVB, &pullup[8]);
 	ltc6811_read(RDCVC, &pullup[16]);
 	ltc6811_read(RDCVD, &pullup[24]);
-
-
-	// Verzoegerungszeit zum wecken des LTC6811
-	wakeup_ltc6811();
 
 	// Pulldown Current, drei Durchgaenge
 	for (uint8_t i = 0; i < 2; i++)
@@ -968,8 +841,8 @@ uint16_t ltc6811_poll(void)
 	uint8_t cmd[4];															// Zwischenspeicher Command + Pec CRC
 	pec = peccommand(PLADC);
 
-	// Verzoegerungszeit zum wecken des LTC6811
-	wakeup_ltc6811();
+	// Verzoegerungszeit zum wecken des IsoSPI
+	IsoSPI_wakeup();
 
 	// Command in cmd abspeichern
 	cmd[0] = ((PLADC >> 8) & 0x07);

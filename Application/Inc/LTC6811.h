@@ -19,35 +19,36 @@
 #include "inttypes.h"
 //----------------------------------------------------------------------
 
-// Define Debug Symbols
+// Definiere Debug Symbols
 //----------------------------------------------------------------------
 //#define DEBUG_ISOSPI
 //#define DEBUG_LTC6811
 //----------------------------------------------------------------------
 
-// Define Statemaschine Typedefines
+// Definiere Statemaschine Typedefines
 //----------------------------------------------------------------------
-// Define IsoSpi States
+// Definiere IsoSpi States
 //----------------------------------------------------------------------
-typedef enum IsoSpiState
+typedef enum IsoSpiState_tag
 {
-	Idle,																	// Kommunikation unterbrochen
-	Ready,																	// Kommunikation kann durchgefuehrt werden
-	Active,																	// Kommunikation wird durchgefuehrt
-	GetReady,																// Kommunikation wird vorbereitet
+	IsoIdle,																// Kommunikation unterbrochen
+	IsoReady,																// Kommunikation kann durchgefuehrt werden
+	IsoActive,																// Kommunikation wird durchgefuehrt
+	IsoGetReady,															// Kommunikation wird vorbereitet
+	IsoSleep,																// Kommunikation abgeschaltet
 } IsoSpi_State;
 //----------------------------------------------------------------------
-// Define LTC6811 States
+// Definiere LTC6811 States
 //----------------------------------------------------------------------
 typedef enum LTC6811State
 {
-	Standby,																// IC im Standby, Referenzspannung inaktiv, Beide Timer laufen
-	Measure,																// Messung am ADC wird durchgefuehrt
-	Refup,																	// Referenzspannung aktiv
-	SetRefup,																// Referenzspannung wird vorbereitet
-	Wakeup,																	// IC wird geweckt
-	ExtendedBalancing,														// Balancing aktiv, Watchdog Timer ausgeschaltet, Entladetimer läuft
-	Sleep																	// IC im Sleep, keine Aktion, Beide Timer ausgeschaltet
+	LTCStandby,																// IC im Standby, Referenzspannung inaktiv, Beide Timer laufen
+	LTCMeasure,																// Messung am ADC wird durchgefuehrt
+	LTCRefup,																// Referenzspannung aktiv
+	LTCSetRefup,															// Referenzspannung wird vorbereitet
+	LTCWakeup,																// IC wird geweckt
+	LTCExtendedBalancing,													// Balancing aktiv, Watchdog Timer ausgeschaltet, Entladetimer läuft
+	LTCSleep																// IC im Sleep, keine Aktion, Beide Timer ausgeschaltet
 } LTC6811_State;
 //----------------------------------------------------------------------
 
@@ -201,9 +202,19 @@ typedef enum LTC6811State
 
 // Funktionen definieren
 //----------------------------------------------------------------------
-void set_isospi_state(IsoSpi_State newState);								// Setze Statemaschine fuer ISPSpi
+// IsoSPI Funktionen
+//----------------------------------------------------------------------
+void set_IsoSpiState(IsoSpi_State newState);								// Setze neuen State von IsoSPI
+void IsoSPI_statemaschine(void);											// Auswertung State von IsoSPI
+IsoSpi_State get_IsoSpiState(void);											// Bekomme aktuellen State von IsoSPI
+void IsoSPI_wakeup(void);										// Aufwachfunktion fuer IsoSPI
+void IsoSPI_cmd(uint8_t* command);											// Sende Command ueber IsoSPI
+void IsoSPI_transmit(uint8_t* command, uint8_t* data);						// Sende Daten ueber IsoSPI
+void IsoSPI_read(uint8_t* command, uint8_t* data);							// Lese Daten ueber IsoSPI
+//----------------------------------------------------------------------
+// LTC Funktionen
+//----------------------------------------------------------------------
 void set_ltc6811_state(LTC6811_State newState);								// Setze Statemaschine fuer LTC6811
-void wakeup_ltc6811(void);													// Aufwachfunktion LTC6811
 void ltc6811(uint16_t command);												// LTC6811 Commando
 void ltc6811_write(uint16_t command, uint8_t *data);						// Schreibfunktion LTC6811
 uint8_t ltc6811_read(uint16_t command, uint8_t *data);						// Lesefunktion LTC6811
