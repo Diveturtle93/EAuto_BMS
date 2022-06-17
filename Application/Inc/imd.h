@@ -14,9 +14,16 @@
 #define INC_IMD_H_
 //----------------------------------------------------------------------
 
+// Define Debug Symbols
+//----------------------------------------------------------------------
+#ifdef DEBUG
+	#define DEBUG_IMD
+#endif
+//----------------------------------------------------------------------
+
 // Eingangsstrukturen definieren
 //----------------------------------------------------------------------
-union imd_tag {
+typedef union __imd_tag {
 	struct {
 		uint32_t Frequency : 6;					// Frequenz abspeichern		// 0 - 5
 		uint32_t Resistanc : 18;				// Widerstand abspeichern	// 6 - 25
@@ -35,7 +42,7 @@ union imd_tag {
 	};
 
 	uint8_t status[5];							// 5 Byte
-} imd;
+} imd_tag;
 //----------------------------------------------------------------------
 
 // Konstanten definieren
@@ -52,9 +59,9 @@ union imd_tag {
 #define IMD_PLAUS_ERROR						9								// 9 = Plausibilitaetsfehler
 //----------------------------------------------------------------------
 
-// ... definieren
+// Definiere globale Variablen
 //----------------------------------------------------------------------
-
+extern imd_tag imd;															// Variable fuer IMD Eigenschaften definieren
 //----------------------------------------------------------------------
 
 // Funktionen definieren

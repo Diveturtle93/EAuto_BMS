@@ -70,8 +70,8 @@ typedef union __leuchten_out_tag {
 typedef union __komfort_out_tag {
 	struct {
 		uint8_t TriggerOut : 1;					// 0
-		uint8_t  : 1;							// 1
-		uint8_t  : 1;							// 2
+		uint8_t IsoSPI_EN : 1;					// 1
+		uint8_t IsoHV_EN : 1;					// 2
 		uint8_t  : 1;							// 3
 		uint8_t  : 1;							// 4
 		uint8_t  : 1;							// 5

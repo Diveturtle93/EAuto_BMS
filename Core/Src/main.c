@@ -108,7 +108,7 @@ int main(void)
 	uint16_t spannungen[12] = {0}, temperatur[2] = {0}, tmp_mean;
 
 	// Definiere Variablen fuer Main-Funktion
-	uint8_t TxData[8], OutData[4], InData[3], status, task_start = 0;
+	uint8_t TxData[8], OutData[4], InData[3], status;
   	CAN_FilterTypeDef sFilterConfig;
 
   	// Erstelle Can-Nachrichten
