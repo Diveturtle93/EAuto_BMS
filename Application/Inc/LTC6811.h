@@ -21,8 +21,10 @@
 
 // Define Debug Symbols
 //----------------------------------------------------------------------
+#ifdef DEBUG
 //#define DEBUG_ISOSPI
 //#define DEBUG_LTC6811
+#endif
 //----------------------------------------------------------------------
 
 // Define Statemaschine Typedefines
