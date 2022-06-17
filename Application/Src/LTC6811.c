@@ -24,13 +24,14 @@
 #include "error.h"
 #include "my_math.h"
 #include "BasicUart.h"
+#include "millis.h"
 //----------------------------------------------------------------------
 
 // Definiere Zellenarray
 //----------------------------------------------------------------------
-ltc6811_configuration_tag Ltc6811_Conf;										// LTC6811 Configurations Register
-uint8_t CellVolt[LTC6811_DEVICES][12];										// Array fuer gemessene Zellspannungen
-uint8_t CellTemp[LTC6811_DEVICES][12];										// Array fuer gemessene Zelltemperaturen
+ltc6811_configuration_tag ltc6811_Conf;										// LTC6811 Configurations Register
+uint8_t CellVoltage[LTC6811_DEVICES][12];									// Array fuer gemessene Zellspannungen
+uint8_t CellTemperature[LTC6811_DEVICES][12];								// Array fuer gemessene Zelltemperaturen
 //----------------------------------------------------------------------
 
 // Definiere Globale Variable
@@ -77,19 +78,19 @@ const uint16_t pec15Table[256] = {
 };
 //----------------------------------------------------------------------
 
-// Statemaschine LTC6811
+// Setze Statemaschine von LTC6811
 //----------------------------------------------------------------------
 void set_ltc6811_state(LTC6811_State newState)
 {
-	static LTC6811_State State;
-	State = newState;
+	Ltc6811State = newState;												// Neuen Status setzen
+	timeLtc6811State = millis();											// Zeit speichern
 
 #ifdef DEBUG_LTC6811
 	ITM_SendString("LTC6811: ");
 
 	ITM_SendString(" Neuer State: ");
 
-	switch (State)
+	switch (Ltc6811State)
 	{
 		case LTCStandby:
 			ITM_SendString("Standby\n");
@@ -124,6 +125,155 @@ void set_ltc6811_state(LTC6811_State newState)
 			break;
 	}
 #endif
+}
+//----------------------------------------------------------------------
+
+// Statemaschine von LTC6811
+//----------------------------------------------------------------------
+void ltc6811_statemaschine(void)
+{
+	// Messzeit feststellen, Messzeit immer fuer alle Zellen + GPIOs (Das ist eine Abschaetzung zur sicheren Seite)
+	uint32_t measurementDuration; // in us
+	uint16_t samplingMode = MD2714;
+
+	switch (Ltc6811State)
+	{
+		case LTCSleep:
+			break;
+
+		case LTCStandby:
+			if (timeLtc6811State + 1000000 < millis())
+			{
+				// 1s ist in diesem Zustand vergangen, Watchdog koennte ausgeloest haben (t_sleep)
+				set_ltc6811_state(LTCSleep);
+			}
+
+			if (LTCRefup == 0)
+			{
+				set_ltc6811_state(LTCRefup);
+			}
+			break;
+
+		case LTCRefup:
+			if (LTCRefup == 0)
+			{
+				if (timeLtc6811State + 1000000 < millis())
+				{
+					// 1s ist in diesem Zustand vergangen, Watchdog koennte ausgeloest haben (t_sleep)
+					set_ltc6811_state(LTCSleep);
+				}
+				else
+				{
+					set_ltc6811_state(LTCStandby);
+				}
+			}
+			break;
+
+		case LTCMeasure:
+			if (ltc6811_Conf.ADCOPT == 0)
+			{
+				switch (samplingMode)
+				{
+					case MD2714:
+						measurementDuration = 1503;							// us
+						break;
+
+					case MD73:
+						measurementDuration = 3133;							// us
+						break;
+
+					case MD262:
+						measurementDuration = 268442;						// us
+						break;
+
+					case MD1422:
+						measurementDuration = 17096;						// us
+						break;
+
+					default:
+						measurementDuration = 300000;						// us Dummy Wert
+						break;
+				}
+			}
+			else if (ltc6811_Conf.ADCOPT == 1)
+			{
+				switch (samplingMode)
+				{
+					case MD2714:
+						measurementDuration = 1736;							// us
+						break;
+
+					case MD73:
+						measurementDuration = 4064;							// us
+						break;
+
+					case MD262:
+						measurementDuration = 9648;							// us
+						break;
+
+					case MD1422:
+						measurementDuration = 5925;							// us
+						break;
+
+					default:
+						measurementDuration = 300000;						// us Dummy Wert
+						break;
+				}
+			}
+			else
+			{
+
+			}
+
+			// Wenn die Referenz zuerst eingeschaltet werden muss, dauert die Messung 5ms (t_Refup) laenger
+			measurementDuration = measurementDuration + 5000;				// us
+
+			if (timeLtc6811State + measurementDuration < millis())
+			{
+				// Messung ist beendet
+				if (LTCRefup == 0)
+				{
+					set_ltc6811_state(LTCRefup);
+				}
+				else
+				{
+					set_ltc6811_state(LTCStandby);
+				}
+			}
+
+			break;
+
+		case LTCWakeup:
+			// 500us (t_Wakeup) warten bis Chip aufgewacht ist
+			if (timeLtc6811State + 500 < millis())
+			{
+				set_ltc6811_state(LTCStandby);
+			}
+			break;
+
+		case LTCSetRefup:
+			// 5ms (t_Refup) warten bis Referenz eingeschaltet ist
+			if (timeLtc6811State + 5000 < millis())
+			{
+				set_ltc6811_state(LTCRefup);
+			}
+			break;
+
+		default:
+			break;
+	}
+}
+//----------------------------------------------------------------------
+
+// Bekomme aktuellen State LTC6811
+//----------------------------------------------------------------------
+LTC6811_State get_ltc6811_state(void)
+{
+	// Statemaschine abfragen
+	ltc6811_statemaschine();
+
+	// Aktuellen State ausgeben
+	return Ltc6811State;
 }
 //----------------------------------------------------------------------
 
@@ -549,7 +699,7 @@ uint8_t ltc6811_test(uint16_t command)
 	if (command & MD2714)													// Wenn Sampling Frequenz = MD2714
 	{
 		// Wenn ADCOPT gesetzt
-		if (Ltc6811_Conf.ADCOPT == 1)
+		if (ltc6811_Conf.ADCOPT == 1)
 		{
 			// Wenn Selbsttest 1 gewaehlt
 			if (command == ST1)

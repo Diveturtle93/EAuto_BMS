@@ -207,14 +207,16 @@ typedef enum LTC6811State
 void set_IsoSpiState(IsoSpi_State newState);								// Setze neuen State von IsoSPI
 void IsoSPI_statemaschine(void);											// Auswertung State von IsoSPI
 IsoSpi_State get_IsoSpiState(void);											// Bekomme aktuellen State von IsoSPI
-void IsoSPI_wakeup(void);										// Aufwachfunktion fuer IsoSPI
+void IsoSPI_wakeup(void);													// Aufwachfunktion fuer IsoSPI
 void IsoSPI_cmd(uint8_t* command);											// Sende Command ueber IsoSPI
 void IsoSPI_transmit(uint8_t* command, uint8_t* data);						// Sende Daten ueber IsoSPI
 void IsoSPI_read(uint8_t* command, uint8_t* data);							// Lese Daten ueber IsoSPI
 //----------------------------------------------------------------------
 // LTC Funktionen
 //----------------------------------------------------------------------
-void set_ltc6811_state(LTC6811_State newState);								// Setze Statemaschine fuer LTC6811
+void set_ltc6811_state(LTC6811_State newState);								// Setze neuen Stat von LTC6811
+void ltc6811_statemaschine(void);											// Auswertung State von LTC6811
+LTC6811_State get_ltc6811_state(void);										// Bekomme aktuellen State von LTC6811
 void ltc6811(uint16_t command);												// LTC6811 Commando
 void ltc6811_write(uint16_t command, uint8_t *data);						// Schreibfunktion LTC6811
 uint8_t ltc6811_read(uint16_t command, uint8_t *data);						// Lesefunktion LTC6811
@@ -264,7 +266,7 @@ typedef union __ltc6811_configuration_tag {
 //----------------------------------------------------------------------
 
 //----------------------------------------------------------------------
-extern ltc6811_configuration_tag Ltc6811_Conf;								// LTC6811 Configurations Register
+extern ltc6811_configuration_tag ltc6811_Conf;								// LTC6811 Configurations Register
 extern uint8_t CellVolt[LTC6811_DEVICES][12];								// Array fuer gemessene Zellspannungen
 extern uint8_t CellTemp[LTC6811_DEVICES][12];								// Array fuer gemessene Zelltemperaturen
 //----------------------------------------------------------------------

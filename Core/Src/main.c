@@ -96,7 +96,7 @@ int main(void)
   uint32_t tmp;
   uint16_t spannungen[12] = {0}, temperatur[2] = {0}, tmp_mean;
 	// Definiere Variablen fuer Main-Funktion
-	uint16_t dutyCycle, timerPeriod, frequency, count = 0, R_IMD;
+	uint16_t timerPeriod, count = 0;
 	uint8_t start_flag = 0;
 
 	// Definiere Variablen fuer Main-Funktion
@@ -107,6 +107,13 @@ int main(void)
   	CAN_TxHeaderTypeDef TxMessage = {0x123, 0, CAN_RTR_DATA, CAN_ID_STD, 8, DISABLE};
   	CAN_TxHeaderTypeDef TxOutput = {BMS_CAN_DIGITAL_OUT, 0, CAN_RTR_DATA, CAN_ID_STD, 4, DISABLE};
   	CAN_TxHeaderTypeDef TxInput = {BMS_CAN_DIGITAL_IN, 0, CAN_RTR_DATA, CAN_ID_STD, 3, DISABLE};
+  	CAN_TxHeaderTypeDef TxVoltage11 = {BMS_CAN_ZELLEN11, 0, CAN_RTR_DATA, CAN_ID_STD, 8, DISABLE};
+  	CAN_TxHeaderTypeDef TxVoltage12 = {BMS_CAN_ZELLEN12, 0, CAN_RTR_DATA, CAN_ID_STD, 8, DISABLE};
+  	CAN_TxHeaderTypeDef TxVoltage13 = {BMS_CAN_ZELLEN13, 0, CAN_RTR_DATA, CAN_ID_STD, 8, DISABLE};
+  	CAN_TxHeaderTypeDef TxTemperature11 = {BMS_CAN_TEMPERATUR11, 0, CAN_RTR_DATA, CAN_ID_STD, 8, DISABLE};
+  	CAN_TxHeaderTypeDef TxTemperature12 = {BMS_CAN_TEMPERATUR12, 0, CAN_RTR_DATA, CAN_ID_STD, 8, DISABLE};
+  	CAN_TxHeaderTypeDef TxTemperature13 = {BMS_CAN_TEMPERATUR13, 0, CAN_RTR_DATA, CAN_ID_STD, 8, DISABLE};
+  	CAN_TxHeaderTypeDef TxTemperature14 = {BMS_CAN_TEMPERATUR14, 0, CAN_RTR_DATA, CAN_ID_STD, 8, DISABLE};
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -314,218 +321,91 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-		/*ltc6811(ADCVC | MD73 | CELLALL);
-		HAL_Delay(100);
-
-		ltc6811_read(RDCVA, &data[0]);
-		ltc6811_read(RDCVB, &data[6]);
-		ltc6811_read(RDCVC, &data[12]);
-		ltc6811_read(RDCVD, &data[18]);
-
-		uartTransmit("Spannungen\n", 11);
-
-		for (uint8_t i = 0; i < 12; i++)
-		{
-			spannungen[i] = ((data[i*2+1]<<8) | data[i*2]);
-		}
-
-		for (uint8_t i = 0; i < 12; i++)
-		{
-			uartTransmitNumber(spannungen[i], 10);
-			uartTransmit(";", 1);
-		}
-
-		tmp = 0;
-		for (uint8_t i = 0; i < 12; i++)
-		{
-			tmp += spannungen[i];
-		}
-		tmp /= 12;
-		uartTransmitNumber(tmp, 10);
-		uartTransmit(";", 1);
-
-		tmp_mean = calculateMovingAverage(tmp_mean, tmp, 10);
-		uartTransmitNumber(tmp_mean, 10);
-
-		uartTransmit("\n", 1);
-
-		uartTransmit("Temperaturen\n", 13);
-
-		for (uint8_t j = 0; j < 8; j++)
-		{
-			ltc1380_write(LTC1380_MUX0, j);									// Multiplexer 0 einstellen
-			ltc1380_write(LTC1380_MUX2, j);									// Multiplexer 1 einstellen
-			ltc6811(ADAX | MD73 | GPIOALL);									// Initial Command Zellen auslesen
-			ltc6811_read(RDAUXA, &data[0]);
-
-			for (uint8_t i = 0; i < 3; i++)
-			{
-				temperatur[i] = ((data[i*2+1]<<8) | data[i*2]);
-			}
-			uartTransmitNumber(temperatur[0], 10);
-			uartTransmit(";", 1);
-			uartTransmitNumber(temperatur[1], 10);
-			uartTransmit(";", 1);
-
-			if (j == 7)
-			{
-				uartTransmitNumber(temperatur[2], 10);
-				uartTransmit(";", 1);
-			}
-		}
-
-		uartTransmit("\n", 1);
-
-		temp++;*/
-
 		// Task wird jede Millisekunde ausgefuehrt
 		if (millisekunden_flag_1 == 1)
 		{
 			count++;													// Zaehler count hochzaehlen
 			millisekunden_flag_1 = 0;									// Setze Millisekunden-Flag zurueck
 
-			// Setzen des Start Flags,  damit Tasks nur einmal pro ms aufgerufen werden kann
+			// Setzen des Start Flags, damit Tasks nur einmal pro ms aufgerufen werden kann
 			start_flag = 1;												// Setze Start Flag
 		}
 
-		// Task wird alle 500 Millisekunden ausgefuehrt
-		if (((count % 500) == 0) && (start_flag == 1))
+		// Task wird alle 100 Millisekunden ausgefuehrt
+		if (((count % 100) == 0) && (start_flag == 1))
 		{
-			if (rising != 0 && falling != 0)
-			{
-				int diff = getDifference(rising, falling);
-				dutyCycle = round((float)(diff * 100) / (float)rising);	// (width / period ) * 100
-				frequency = timerPeriod / rising;						// timer restarts after rising edge so time between two rising edge is whatever is measured
-			}
-			else
-			{
-				dutyCycle = 0;
-				frequency = 0;
-			}
-
-			uartTransmitNumber(dutyCycle, 10);
-			uartTransmitNumber(frequency, 10);
-
-			if (sdc_in.IMD_OK_IN == 1)
-			{
-				switch (frequency)
-				{
-					case 0:
-						system_in.IMD_PWM = HAL_GPIO_ReadPin(IMD_PWM_GPIO_Port, IMD_PWM_Pin);						// Eingang IMD PWM
-						if (system_in.IMD_PWM == 1)
-						{
-							system_in.IMD_PWM_STATUS = IMD_KURZSCHLUSS_KL15;
-						}
-						else
-						{
-							system_in.IMD_PWM_STATUS = IMD_KURZSCHLUSS_GND;
-						}
-						break;
-					case 10:
-						system_in.IMD_PWM_STATUS = IMD_NORMAL;
-						if (dutyCycle > 5 && dutyCycle < 95)								// IMD PWM
-						{
-							R_IMD = 90 * 1200 / (dutyCycle - 5) - 1200;
-							uartTransmitNumber(R_IMD, 10);
-						}
-						else																// IMD Invalid
-						{
-							system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;
-						}
-						break;
-					case 20:
-						system_in.IMD_PWM_STATUS = IMD_UNTERSPANNUNG;
-						if (dutyCycle > 5 && dutyCycle < 95)								// IMD PWM
-						{
-							R_IMD = 90 * 1200 / (dutyCycle - 5) - 1200;
-							uartTransmitNumber(R_IMD, 10);
-						}
-						else																// IMD Invalid
-						{
-							system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;
-						}
-						break;
-					case 30:
-						system_in.IMD_PWM_STATUS = IMD_SCHNELLSTART;
-						if (dutyCycle > 5 && dutyCycle < 11)								// IMD Gut
-						{
-
-						}
-						else if (dutyCycle > 89 && dutyCycle < 95)							// IMD Schlecht
-						{
-
-						}
-						else																// IMD Fehlerhaft
-						{
-							system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;
-						}
-						break;
-					case 40:
-						system_in.IMD_PWM_STATUS = IMD_GERAETEFEHLER;
-						if (dutyCycle > 47 && dutyCycle < 53)								// IMD PWM
-						{
-
-						}
-						else																// IMD Invalid
-						{
-							system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;
-						}
-						break;
-					case 50:
-						system_in.IMD_PWM_STATUS = IMD_ANSCHLUSSFEHLER_ERDE;
-						if (dutyCycle > 47 && dutyCycle < 53)								// IMD PWM
-						{
-
-						}
-						else																// IMD Invalid
-						{
-							system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;
-						}
-						break;																// IMD Error, kein anderes Ereignis zutrefend
-					default:
-						system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;
-						break;
-				}
-			}
-			else
-			{
-				switch (frequency)
-				{
-
-					case 10:
-						system_in.IMD_PWM_STATUS = IMD_NORMAL;
-						if (dutyCycle > 5 && dutyCycle < 95)								// IMD PWM
-						{
-							R_IMD = 90 * 1200 / (dutyCycle - 5) - 1200;
-							uartTransmitNumber(R_IMD, 10);
-						}
-						else																// IMD Invalid
-						{
-							system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;
-						}
-						break;
-					case 20:
-						system_in.IMD_PWM_STATUS = IMD_UNTERSPANNUNG;
-						if (dutyCycle > 5 && dutyCycle < 95)								// IMD PWM
-						{
-							R_IMD = 90 * 1200 / (dutyCycle - 5) - 1200;
-							uartTransmitNumber(R_IMD, 10);
-						}
-						else																// IMD Invalid
-						{
-							system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;
-						}
-						break;																// IMD Error, kein anderes Ereignis zutrefend
-					default:
-						system_in.IMD_PWM_STATUS = IMD_FREQ_ERROR;
-						break;
-				}
-			}
-	
-			count = 0;
+			// Lese alle Eingaenge
+			readall_inputs();
 		}
-		
-		if ((count % 250) == 0)
+
+		// Task wird alle 200 Millisekunden ausgefuehrt
+		if (((count % 200) == 0) && (start_flag == 1))
+		{
+			ltc6811(ADCVC | MD73 | CELLALL);
+			HAL_Delay(10);
+			ltc6811_read(RDCVA, &data[0]);
+			ltc6811_read(RDCVB, &data[6]);
+			ltc6811_read(RDCVC, &data[12]);
+			ltc6811_read(RDCVD, &data[18]);
+
+			uartTransmit("Spannungen\n", 11);
+
+			for (uint8_t i = 0; i < 12; i++)
+			{
+				spannungen[i] = ((data[i*2+1]<<8) | data[i*2]);
+			}
+
+			for (uint8_t i = 0; i < 12; i++)
+			{
+				uartTransmitNumber(spannungen[i], 10);
+				uartTransmit(";", 1);
+			}
+
+			tmp = 0;
+			for (uint8_t i = 0; i < 12; i++)
+			{
+				tmp += spannungen[i];
+			}
+			tmp /= 12;
+			uartTransmitNumber(tmp, 10);
+			uartTransmit(";", 1);
+
+			tmp_mean = calculateMovingAverage(tmp_mean, tmp, 10);
+			uartTransmitNumber(tmp_mean, 10);
+
+			uartTransmit("\n", 1);
+
+			uartTransmit("Temperaturen\n", 13);
+
+			for (uint8_t j = 0; j < 8; j++)
+			{
+				ltc1380_write(LTC1380_MUX0, j);									// Multiplexer 0 einstellen
+				ltc1380_write(LTC1380_MUX2, j);									// Multiplexer 1 einstellen
+				ltc6811(ADAX | MD73 | GPIOALL);									// Initial Command Zellen auslesen
+				HAL_Delay(10);
+				ltc6811_read(RDAUXA, &data[0]);
+
+				for (uint8_t i = 0; i < 3; i++)
+				{
+					temperatur[i] = ((data[i*2+1]<<8) | data[i*2]);
+				}
+					uartTransmitNumber(temperatur[0], 10);
+					uartTransmit(";", 1);
+					uartTransmitNumber(temperatur[1], 10);
+					uartTransmit(";", 1);
+
+				if (j == 7)
+				{
+					uartTransmitNumber(temperatur[2], 10);
+					uartTransmit(";", 1);
+				}
+			}
+
+			uartTransmit("\n", 1);
+		}
+
+		// Task wird alle 250 Millisekunden ausgefuehrt
+		if (((count % 250) == 0) && (start_flag == 1))
 		{
 			// Daten fuer Ausgaenge zusammenfuehren
 			OutData[0] = system_out.systemoutput;
@@ -546,13 +426,47 @@ int main(void)
 			status = HAL_CAN_AddTxMessage(&hcan3, &TxInput, InData, (uint32_t *)CAN_TX_MAILBOX0);
 			hal_error(status);
 	
-			// Sende Nachricht digitale Eingaenge
+			// Sende Nachricht Dummy
 			status = HAL_CAN_AddTxMessage(&hcan3, &TxMessage, TxData, (uint32_t *)CAN_TX_MAILBOX0);
+			hal_error(status);
+
+			// Sende Nachricht Zellspannung 1 - 4
+			status = HAL_CAN_AddTxMessage(&hcan3, &TxVoltage11, &data[0], (uint32_t *)CAN_TX_MAILBOX1);
+			hal_error(status);
+
+			// Sende Nachricht Zellspannung 5 - 8
+			status = HAL_CAN_AddTxMessage(&hcan3, &TxVoltage12, &data[6], (uint32_t *)CAN_TX_MAILBOX2);
+			hal_error(status);
+
+			// Sende Nachricht Zellspannung 9 - 12
+			status = HAL_CAN_AddTxMessage(&hcan3, &TxVoltage13, &data[12], (uint32_t *)CAN_TX_MAILBOX0);
+			hal_error(status);
+
+			// Sende Nachricht Zelltemperaturen 1 - 4
+			status = HAL_CAN_AddTxMessage(&hcan3, &TxTemperature11, &data[0], (uint32_t *)CAN_TX_MAILBOX1);
+			hal_error(status);
+
+			// Sende Nachricht Zelltemperaturen 5 - 8
+			status = HAL_CAN_AddTxMessage(&hcan3, &TxTemperature12, &data[6], (uint32_t *)CAN_TX_MAILBOX2);
+			hal_error(status);
+
+			// Sende Nachricht Zelltemperaturen 9 - 12
+			status = HAL_CAN_AddTxMessage(&hcan3, &TxTemperature13, &data[12], (uint32_t *)CAN_TX_MAILBOX1);
 			hal_error(status);
 		}
 
+		// Task wird alle 500 Millisekunden ausgefuehrt
+		if (((count % 500) == 0) && (start_flag == 1))
+		{
+			// Sende Nachricht Zelltemperaturen 13 - 16
+			status = HAL_CAN_AddTxMessage(&hcan3, &TxTemperature14, &data[18], (uint32_t *)CAN_TX_MAILBOX2);
+			hal_error(status);
+
+			count = 0;
+		}
+
 		// Zuruecksetzen des Start Flags, damit Tasks erst nach einer ms wieder aufgerufen werden kann
-		start_flag = 0;																		// Zuruechsetze Start Flag
+		start_flag = 0;																		// Zuruecksetzen Start Flag
   }
   /* USER CODE END 3 */
 }
