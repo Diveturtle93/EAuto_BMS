@@ -14,11 +14,16 @@
 #define INC_INPUTS_H_
 //----------------------------------------------------------------------
 
+// Define Debug Symbols
+//----------------------------------------------------------------------
+#define DEBUG_IMD
+//----------------------------------------------------------------------
+
 // Eingangsstrukturen definieren
 //----------------------------------------------------------------------
 typedef union __system_input_tag {
 	struct {
-		uint8_t IMD_PWM_STATUS : 3;				// 0 - 2					// 0 = Kurzschluss gegen Masse, 0Hz
+		uint8_t IMD_PWM_STATUS : 4;				// 0 - 2					// 0 = Kurzschluss gegen Masse, 0Hz
 																			// 1 = Normalzustand, 10Hz
 																			// 2 = bei Unterspannung, 20Hz
 																			// 3 = Schnellstart-Messung, 30Hz

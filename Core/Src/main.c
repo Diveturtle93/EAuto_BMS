@@ -25,7 +25,6 @@
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
-#include <math.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -42,6 +41,7 @@
 #include "AD8403.h"
 #include "SPI_resource.h"
 #include "millis.h"
+#include <math.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -65,7 +65,7 @@ CAN_RxHeaderTypeDef RxMessage;
 uint8_t RxData[8], can_change = 0;
 static volatile uint16_t rising = 0;
 static volatile uint16_t falling = 0;
-volatile uint8_t millisekunden_flag_1 = 0;
+volatile uint8_t millisekunden_flag_1 = 0, pwm_change = 0;
 uint32_t timemillisekunden = 0;
 /* USER CODE END PV */
 
@@ -97,7 +97,9 @@ int main(void)
 
   /* USER CODE BEGIN Init */
 	// Definiere Variablen fuer Main-Funktion
-	uint16_t timerPeriod, count = 0;
+	uint8_t pwm_count = 0;
+	uint16_t count = 0;
+	uint32_t timerPeriod;
 	uint8_t start_flag = 0;
 
 	// Definiere Variablen fuer BMS Zellen
@@ -106,13 +108,14 @@ int main(void)
 	uint16_t spannungen[12] = {0}, temperatur[2] = {0}, tmp_mean;
 
 	// Definiere Variablen fuer Main-Funktion
-	uint8_t TxData[8], OutData[4], InData[3], status;
+	uint8_t TxData[8], OutData[4], InData[3], status, task_start = 0;
   	CAN_FilterTypeDef sFilterConfig;
 
   	// Erstelle Can-Nachrichten
-  	CAN_TxHeaderTypeDef TxMessage = {0x123, 0, CAN_RTR_DATA, CAN_ID_STD, 8, DISABLE};
+  	CAN_TxHeaderTypeDef TxMessage = {0x124, 0, CAN_RTR_DATA, CAN_ID_STD, 8, DISABLE};
   	CAN_TxHeaderTypeDef TxOutput = {BMS_CAN_DIGITAL_OUT, 0, CAN_RTR_DATA, CAN_ID_STD, 4, DISABLE};
   	CAN_TxHeaderTypeDef TxInput = {BMS_CAN_DIGITAL_IN, 0, CAN_RTR_DATA, CAN_ID_STD, 3, DISABLE};
+  	CAN_TxHeaderTypeDef TxIMD = {BMS_CAN_SAFETY, 0, CAN_RTR_DATA, CAN_ID_STD, 5, DISABLE};
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -201,7 +204,7 @@ int main(void)
 	tmp_mean = 65535;
 	timerPeriod = (HAL_RCC_GetPCLK2Freq() / htim1.Init.Prescaler);
   	// Start timer
-	if (HAL_TIM_Base_Start_IT(&htim1) != HAL_OK);
+	if (HAL_TIM_Base_Start(&htim1) != HAL_OK);
 	if (HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_1) != HAL_OK);
 	if (HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_2) != HAL_OK);
   	HAL_TIM_Base_Start_IT(&htim6);
@@ -412,7 +415,7 @@ int main(void)
 	
 			// Sende Nachricht digitale Ausgaenge
 			status = HAL_CAN_AddTxMessage(&hcan3, &TxOutput, OutData, (uint32_t *)CAN_TX_MAILBOX0);
-			hal_error(status);
+			//hal_error(status);
 
 			// Daten fuer Eingaenge zusammenfuehren
 			InData[0] = system_in.systeminput;
@@ -421,17 +424,55 @@ int main(void)
 	
 			// Sende Nachricht digitale Eingaenge
 			status = HAL_CAN_AddTxMessage(&hcan3, &TxInput, InData, (uint32_t *)CAN_TX_MAILBOX0);
-			hal_error(status);
+			//hal_error(status);
 	
 			// Sende Nachricht digitale Eingaenge
 			status = HAL_CAN_AddTxMessage(&hcan3, &TxMessage, TxData, (uint32_t *)CAN_TX_MAILBOX0);
-			hal_error(status);
+			//hal_error(status);
 		}
 
 		// Task wird alle 500 Millisekunden ausgefuehrt
 		if (((millis() - timemillisekunden) > 500) && (start_flag == 1))
 		{
 			timemillisekunden = millis();
+			
+			if (pwm_change == 1)
+			{
+				if (rising != 0 && falling != 0)
+				{
+					int diff = getDifference(rising, falling);
+					imd.DutyCycle = 100 - round((float)(diff * 100) / (float)rising);	// (width / period ) * 100
+					imd.Frequency = timerPeriod / rising;				// timer restarts after rising edge so time between two rising edge is whatever is measured
+				}
+
+				pwm_change = 0;
+			}
+			else
+			{
+				if (pwm_count == 1)
+				{
+					imd.DutyCycle = 0;
+					imd.Frequency = 0;
+					rising = 0;
+					falling = 0;
+					pwm_count = 0;
+				}
+				else
+				{
+					pwm_count++;
+				}
+			}
+
+			uartTransmitNumber(falling, 10);
+			uartTransmit("\n", 1);
+			uartTransmitNumber(rising, 10);
+			uartTransmit("\n", 1);
+			uartTransmitNumber(timerPeriod, 10);
+			uartTransmit("\n", 1);
+
+			imd_status();
+
+			HAL_CAN_AddTxMessage(&hcan3, &TxIMD, imd.status, (uint32_t *)CAN_TX_MAILBOX0);
 
 			count = 0;
 		}
@@ -512,17 +553,21 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	{
 		millisekunden_flag_1 = 1;
 	}
+}
 
+void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
+{
 	// Timer IMD
 	if (htim == &htim1)
 	{
+		pwm_change = 1;
 		if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_1)
 		{
-			rising = calculateMovingAverage(rising, HAL_TIM_ReadCapturedValue(&htim1, TIM_CHANNEL_1), 64);
+			rising = calculateMovingAverage(rising, HAL_TIM_ReadCapturedValue(&htim1, TIM_CHANNEL_1), 10);
 		}
 		else if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_2)
 		{
-			falling = calculateMovingAverage(falling, HAL_TIM_ReadCapturedValue(&htim1, TIM_CHANNEL_2), 64);
+			falling = calculateMovingAverage(falling, HAL_TIM_ReadCapturedValue(&htim1, TIM_CHANNEL_2), 10);
 		}
 	}
 }
