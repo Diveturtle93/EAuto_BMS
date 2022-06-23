@@ -134,7 +134,7 @@ void ltc6811_statemaschine(void)
 {
 	// Messzeit feststellen, Messzeit immer fuer alle Zellen + GPIOs (Das ist eine Abschaetzung zur sicheren Seite)
 	uint32_t measurementDuration; // in us
-	uint16_t samplingMode = MD2714;
+	uint16_t samplingMode = MD73;
 
 	switch (Ltc6811State)
 	{
@@ -142,30 +142,31 @@ void ltc6811_statemaschine(void)
 			break;
 
 		case LTCStandby:
-			if (timeLtc6811State + 1000000 < millis())
+			if (timeLtc6811State + 1800 < millis())							// ms
 			{
-				// 1s ist in diesem Zustand vergangen, Watchdog koennte ausgeloest haben (t_sleep)
+				// 1.8s ist in diesem Zustand vergangen, Watchdog koennte ausgeloest haben (t_sleep)
 				set_ltc6811_state(LTCSleep);
+				break;
 			}
 
-			if (LTCRefup == 0)
+			if (ltc6811_Conf.REFON == 1)
 			{
 				set_ltc6811_state(LTCRefup);
 			}
 			break;
 
 		case LTCRefup:
-			if (LTCRefup == 0)
+			if (ltc6811_Conf.REFON == 1)
 			{
-				if (timeLtc6811State + 1000000 < millis())
+				if (timeLtc6811State + 1800 < millis())						// ms
 				{
-					// 1s ist in diesem Zustand vergangen, Watchdog koennte ausgeloest haben (t_sleep)
+					// 1.8s ist in diesem Zustand vergangen, Watchdog koennte ausgeloest haben (t_sleep)
 					set_ltc6811_state(LTCSleep);
 				}
-				else
-				{
-					set_ltc6811_state(LTCStandby);
-				}
+			}
+			else
+			{
+				set_ltc6811_state(LTCStandby);
 			}
 			break;
 
@@ -175,23 +176,28 @@ void ltc6811_statemaschine(void)
 				switch (samplingMode)
 				{
 					case MD2714:
-						measurementDuration = 1503;							// us
+						//measurementDuration = 1503;							// us
+						measurementDuration = 2;							// ms
 						break;
 
 					case MD73:
-						measurementDuration = 3133;							// us
+						//measurementDuration = 3133;							// us
+						measurementDuration = 4;							// ms
 						break;
 
 					case MD262:
-						measurementDuration = 268442;						// us
+						//measurementDuration = 268442;						// us
+						measurementDuration = 269;							// ms
 						break;
 
 					case MD1422:
-						measurementDuration = 17096;						// us
+						//measurementDuration = 17096;						// us
+						measurementDuration = 17;							// ms
 						break;
 
 					default:
-						measurementDuration = 300000;						// us Dummy Wert
+						//measurementDuration = 300000;						// us Dummy Wert
+						measurementDuration = 300;							// ms
 						break;
 				}
 			}
@@ -200,23 +206,28 @@ void ltc6811_statemaschine(void)
 				switch (samplingMode)
 				{
 					case MD2714:
-						measurementDuration = 1736;							// us
+						//measurementDuration = 1736;							// us
+						measurementDuration = 2;							// ms
 						break;
 
 					case MD73:
-						measurementDuration = 4064;							// us
+						//measurementDuration = 4064;							// us
+						measurementDuration = 4;							// ms
 						break;
 
 					case MD262:
-						measurementDuration = 9648;							// us
+						//measurementDuration = 9648;							// us
+						measurementDuration = 10;							// ms
 						break;
 
 					case MD1422:
-						measurementDuration = 5925;							// us
+						//measurementDuration = 5925;							// us
+						measurementDuration = 6;							// ms
 						break;
 
 					default:
-						measurementDuration = 300000;						// us Dummy Wert
+						//measurementDuration = 300000;						// us Dummy Wert
+						measurementDuration = 300;							// ms
 						break;
 				}
 			}
@@ -226,12 +237,12 @@ void ltc6811_statemaschine(void)
 			}
 
 			// Wenn die Referenz zuerst eingeschaltet werden muss, dauert die Messung 5ms (t_Refup) laenger
-			measurementDuration = measurementDuration + 5000;				// us
+			measurementDuration = measurementDuration + 5;					// ms
 
-			if (timeLtc6811State + measurementDuration < millis())
+			if (timeLtc6811State + measurementDuration < millis())			// ms
 			{
 				// Messung ist beendet
-				if (LTCRefup == 0)
+				if (ltc6811_Conf.REFON == 1)
 				{
 					set_ltc6811_state(LTCRefup);
 				}
@@ -245,7 +256,7 @@ void ltc6811_statemaschine(void)
 
 		case LTCWakeup:
 			// 500us (t_Wakeup) warten bis Chip aufgewacht ist
-			if (timeLtc6811State + 500 < millis())
+			if (timeLtc6811State + 1 < millis())							// ms
 			{
 				set_ltc6811_state(LTCStandby);
 			}
@@ -253,7 +264,7 @@ void ltc6811_statemaschine(void)
 
 		case LTCSetRefup:
 			// 5ms (t_Refup) warten bis Referenz eingeschaltet ist
-			if (timeLtc6811State + 5000 < millis())
+			if (timeLtc6811State + 5 < millis())							// ms
 			{
 				set_ltc6811_state(LTCRefup);
 			}
@@ -296,9 +307,21 @@ void ltc6811(uint16_t command)
 	cmd[1] = (command & 0xFF);
 	cmd[2] = ((pec >> 8) & 0xFF);
 	cmd[3] = (pec & 0xFE);
-	
+
+	if (get_ltc6811_state() == LTCStandby)
+	{
+		set_ltc6811_state(LTCSetRefup);
+		while (get_ltc6811_state() == LTCSetRefup);
+	}
+
 	// Befehl ueber IsoSPI senden
-	IsoSPI_cmd(&cmd[0]);														// Sende Befehl
+	IsoSPI_cmd(&cmd[0]);													// Sende Befehl
+
+	// Setze Statemaschine auf Messen
+	if ((command & ADAX) || (command & ADCVC) || (command & ADCVAX) || (command & ADSTAT))
+	{
+		set_ltc6811_state(LTCMeasure);
+	}
 
 	// Debug Nachricht
 #ifdef DEBUG_LTC6811
@@ -395,7 +418,9 @@ uint8_t ltc6811_read(uint16_t command, uint8_t* data)
 
 	// PEC berechnen, Anhand Command
 	uint16_t pec;															// pec = Zwischenspeicher 16-Bit Command
-//	uint16_t tmp;															// Zwischenspeicher fuer Pruefung CRC
+#ifdef DEBUG_LTC6811
+	uint16_t tmp;															// Zwischenspeicher fuer Pruefung CRC
+#endif
 	uint8_t cmd[4];															// Zwischenspeicher Command + Pec CRC
 	pec = peccommand(command);
 
@@ -404,6 +429,8 @@ uint8_t ltc6811_read(uint16_t command, uint8_t* data)
 	cmd[1] = (command & 0xFF);
 	cmd[2] = ((pec >> 8) & 0xFF);
 	cmd[3] = (pec & 0xFE);
+
+	while (get_ltc6811_state() == LTCMeasure);								// Warten solange bis LTC fertig mit Messen ist
 
 	// Befehl ueber IsoSPI senden
 	IsoSPI_read(&cmd[0], &data[0]);											// Sende Daten
@@ -415,10 +442,9 @@ uint8_t ltc6811_read(uint16_t command, uint8_t* data)
 	for (uint8_t i = 0; i < LTC6811_DEVICES; i++)
 	{
 		// Variante 1, Pec berechnen und pruefen, ob richtiger Pec mitgesendet wurde
-//		tmp = ((data[i + 6] << 8) + data[i + 7]);
-//		pec = peclookup(6, &data[i*8]);
-
 #ifdef DEBUG_LTC6811
+		tmp = ((data[i + 6] << 8) + data[i + 7]);
+		pec = peclookup(6, &data[i*8]);
 		if (pec != tmp)
 		{
 			uartTransmit("Pec Error1: ", 11);
@@ -565,6 +591,43 @@ uint8_t peccheck(uint8_t len, uint8_t *data)
 	{
 		return 1;
 	}
+}
+//----------------------------------------------------------------------
+
+// Initialisiere LTC6811, Schreibe Config in Konfigurationsregister
+//----------------------------------------------------------------------
+void ltc6811_init(void)
+{
+	// Setze Konfiguration
+	ltc6811_Conf.ADCOPT = 0;												// Setze ADC Mode option, 0 = default
+	ltc6811_Conf.REFON = 0;													// Setze Referenzspannung, 0 = default, 0 = Shutdown after Conversion, 1 = Shutdown after Watchdog timeout
+	ltc6811_Conf.LTC_GPIO1 = 1;												// Setze GPIO Pulldown, 1 = default, 0 = On, 1 = Off
+	ltc6811_Conf.LTC_GPIO2 = 1;												// Setze GPIO Pulldown, 1 = default, 0 = On, 1 = Off
+	ltc6811_Conf.LTC_GPIO3 = 1;												// Setze GPIO Pulldown, 1 = default, 0 = On, 1 = Off
+	ltc6811_Conf.LTC_GPIO4 = 1;												// Setze GPIO Pulldown, 1 = default, 0 = On, 1 = Off
+	ltc6811_Conf.LTC_GPIO5 = 1;												// Setze GPIO Pulldown, 1 = default, 0 = On, 1 = Off
+
+	// Setze Vergleichsspannungen
+	ltc6811_Conf.VUV = LTC6811_UVOLT;										// Setze Vergleichsspannung fuer Unterspannung
+	ltc6811_Conf.VOV = LTC6811_OVOLT;										// Setze Vergleichsspannung fuer Ueberspannung
+
+	// Balancing
+	ltc6811_Conf.DCC1 = 0;													// Balancing von Zelle 1 ausschalten
+	ltc6811_Conf.DCC2 = 0;													// Balancing von Zelle 2 ausschalten
+	ltc6811_Conf.DCC3 = 0;													// Balancing von Zelle 3 ausschalten
+	ltc6811_Conf.DCC4 = 0;													// Balancing von Zelle 4 ausschalten
+	ltc6811_Conf.DCC5 = 0;													// Balancing von Zelle 5 ausschalten
+	ltc6811_Conf.DCC6 = 0;													// Balancing von Zelle 6 ausschalten
+	ltc6811_Conf.DCC7 = 0;													// Balancing von Zelle 7 ausschalten
+	ltc6811_Conf.DCC8 = 0;													// Balancing von Zelle 8 ausschalten
+	ltc6811_Conf.DCC9 = 0;													// Balancing von Zelle 9 ausschalten
+	ltc6811_Conf.DCC10 = 0;													// Balancing von Zelle 10 ausschalten
+	ltc6811_Conf.DCC11 = 0;													// Balancing von Zelle 11 ausschalten
+	ltc6811_Conf.DCC12 = 0;													// Balancing von Zelle 12 ausschalten
+	ltc6811_Conf.DCTO = 0;													// Balancing Timer zuruecksetzen
+
+	// Schreibe Konfiguration in Register am LTC6811
+	//ltc6811_write(WRCFG, &ltc6811_Conf.ltc6811_configuration[0]);
 }
 //----------------------------------------------------------------------
 

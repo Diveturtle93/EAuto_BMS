@@ -14,6 +14,25 @@
 #define INC_BATTERIEMANAGEMENTSYSTEM_H_
 //----------------------------------------------------------------------
 
+// Definiere Statemaschine Typedefines
+//----------------------------------------------------------------------
+// Definiere Batteriemanagement-System States
+//----------------------------------------------------------------------
+typedef enum BMSState_tag
+{
+	BMSStart,																// Batteriemanagement wird gestartet
+	BMSSleep,																// Batteriemanagement liegt im schlafen
+	BMSStandby,																// Batteriemanagement ist im Standby
+	BMSGetReady,															// Precharge wird vorbereitet
+	BMSPrecharge,															// Akkukasten wird vorgeladen
+	BMSActive,																// Akkukasten ist Bereit und Aktiv
+	BMSFreigabe,															// Freigabe zur Leistungsentnahme
+	BMSDisable,																// Akkukasten vorbereiten zum abschalten
+	BMSDischarge,															// Akkukasten abschalten
+	BMSCharge,																// Akkukasten Laden
+} BMSState;
+//----------------------------------------------------------------------
+
 // CAN-IDs definieren
 //----------------------------------------------------------------------
 // Batteriemanagement-System neu
@@ -113,25 +132,6 @@
 #define xx_CAN										0x5DE					// Immer aktive, außer im Sleep
 #define x_CAN										0x010					// Einmalig gesendet wenn Schlüssel auf Stufe 2
 #define xy_CAN										0x011					// EInmalig gesendet wenn Schlüssel auf Stufe 2
-//----------------------------------------------------------------------
-
-// Definiere Statemaschine Typedefines
-//----------------------------------------------------------------------
-// Definiere Batteriemanagement-System States
-//----------------------------------------------------------------------
-typedef enum BMSState_tag
-{
-	BMSStart,																// Batteriemanagement wird gestartet
-	BMSSleep,																// Batteriemanagement liegt im schlafen
-	BMSStandby,																// Batteriemanagement ist im Standby
-	BMSGetReady,															// Precharge wird vorbereitet
-	BMSPrecharge,															// Akkukasten wird vorgeladen
-	BMSActive,																// Akkukasten ist Bereit und Aktiv
-	BMSFreigabe,															// Freigabe zur Leistungsentnahme
-	BMSDisable,																// Akkukasten vorbereiten zum abschalten
-	BMSDischarge,															// Akkukasten abschalten
-	BMSCharge,																// Akkukasten Laden
-} BMSState;
 //----------------------------------------------------------------------
 
 // Funktionen definieren

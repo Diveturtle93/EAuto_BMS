@@ -21,16 +21,17 @@
 
 // Definiere Debug Symbols
 //----------------------------------------------------------------------
-//#define DEBUG_ISOSPI
-//#define DEBUG_LTC6811
+#ifdef DEBUG
+//	#define DEBUG_ISOSPI
+//	#define DEBUG_LTC6811
+#endif
 //----------------------------------------------------------------------
 
 // Definiere Statemaschine Typedefines
 //----------------------------------------------------------------------
 // Definiere IsoSpi States
 //----------------------------------------------------------------------
-typedef enum IsoSpiState_tag
-{
+typedef enum IsoSpiState_tag {
 	IsoIdle,																// Kommunikation unterbrochen
 	IsoReady,																// Kommunikation kann durchgefuehrt werden
 	IsoActive,																// Kommunikation wird durchgefuehrt
@@ -40,8 +41,7 @@ typedef enum IsoSpiState_tag
 //----------------------------------------------------------------------
 // Definiere LTC6811 States
 //----------------------------------------------------------------------
-typedef enum LTC6811State
-{
+typedef enum LTC6811State_tag {
 	LTCStandby,																// IC im Standby, Referenzspannung inaktiv, Beide Timer laufen
 	LTCMeasure,																// Messung am ADC wird durchgefuehrt
 	LTCRefup,																// Referenzspannung aktiv
@@ -54,7 +54,7 @@ typedef enum LTC6811State
 
 // Allgemeine Einstellungen
 //----------------------------------------------------------------------
-#define LTC6811_DEVICES				1										// Number of devices in daisy chain
+#define LTC6811_DEVICES				1										// Anzahl Chips im Daisy-Chain
 #define LTC6811_UVOLT				2000									// Unterspannung einer Zelle		3.2 = 2000 * 16 * 100µV, Spannung = VUV * 16 * 100µV, VUV muss im Register stehen
 #define LTC6811_OVOLT				2625									// Ueberspannung einer Zelle		4.2 = 2625 * 16 * 100µV, Spannung = VOV * 16 * 100µV, VOV muss im Register stehen
 #define LTC6811_SOC					25200									// Summe der Zellspannungen an einem LTC6811	50.4 = 25200 * 20 * 100µV, Spannung = SC * 20 * 100µV, SC muss im Register stehen
@@ -223,6 +223,7 @@ uint8_t ltc6811_read(uint16_t command, uint8_t *data);						// Lesefunktion LTC6
 uint16_t peccommand(uint16_t command);										// CRC Berechnung Command, 16 Bit
 uint16_t peclookup(uint8_t len,	uint8_t *data);								// CRC Berechnung Daten Array, 8 Bit
 uint8_t peccheck(uint8_t len, uint8_t *data);								// CRC Validieren und pruefen
+void ltc6811_init(void);													// Initialisiere LTC6811, Konfigurierung
 uint8_t ltc6811_check(void);												// Diagnose LTC6811, fuehrt alle Tests durch
 uint8_t ltc6811_test(uint16_t command);										// Diagnose Selbsttest Test 1 und 2
 uint8_t ltc6811_diagn(void);												// Diagnose Multiplexer
@@ -236,16 +237,16 @@ uint16_t ltc6811_poll(void);												// Poll Data nach Conversion
 //----------------------------------------------------------------------
 typedef union __ltc6811_configuration_tag {
 	struct {
-		uint8_t LTC_GPIO5 : 1;												// GPIO 5
-		uint8_t LTC_GPIO4 : 1;												// GPIO 4
-		uint8_t LTC_GPIO3 : 1;												// GPIO 3
-		uint8_t LTC_GPIO2 : 1;												// GPIO 2
-		uint8_t LTC_GPIO1 : 1;												// GPIO 1
-		uint8_t REFON : 1;													// Reference voltage shutdown
-		uint8_t SWTRD : 1;													// SWT Pin
 		uint8_t ADCOPT : 1;													// ADC Mode Option
-		uint16_t VUV : 12;													// Undervoltage Treshold
-		uint16_t VOV : 12;													// Overvoltage Treshold
+		uint8_t SWTRD : 1;													// SWT Pin
+		uint8_t REFON : 1;													// Reference voltage shutdown
+		uint8_t LTC_GPIO1 : 1;												// GPIO 1
+		uint8_t LTC_GPIO2 : 1;												// GPIO 2
+		uint8_t LTC_GPIO3 : 1;												// GPIO 3
+		uint8_t LTC_GPIO4 : 1;												// GPIO 4
+		uint8_t LTC_GPIO5 : 1;												// GPIO 5
+		uint32_t VUV : 12;													// Undervoltage Treshold
+		uint32_t VOV : 12;													// Overvoltage Treshold
 		uint8_t DCC1 : 1;													// Zelle 1 Balancing
 		uint8_t DCC2 : 1;													// Zelle 2 Balancing
 		uint8_t DCC3 : 1;													// Zelle 3 Balancing

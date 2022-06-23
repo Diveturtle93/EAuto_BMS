@@ -83,7 +83,7 @@ void IsoSPI_statemaschine(void)
 			break;
 
 		case IsoGetReady:
-			if (millis() - timeIsoSpiState > 2)
+			if (millis() - timeIsoSpiState > 1)
 			{
 				IsoSpiState = IsoReady;
 			}

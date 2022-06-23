@@ -38,6 +38,7 @@
 #include "my_math.h"
 #include "BatteriemanagementSystem.h"
 #include "imd.h"
+#include "millis.h"
 #include <math.h>
 /* USER CODE END Includes */
 
@@ -86,18 +87,23 @@ int main(void)
 
   /* USER CODE END 1 */
 
+  /* Enable I-Cache---------------------------------------------------------*/
+  SCB_EnableICache();
+
+  /* Enable D-Cache---------------------------------------------------------*/
+  SCB_EnableDCache();
+
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-  uint8_t data[36] = {0}, temp, CFG[6] = {0};
+  uint8_t data[36] = {0}, temp;
   uint32_t tmp;
   uint16_t spannungen[12] = {0}, temperatur[2] = {0}, tmp_mean;
 	// Definiere Variablen fuer Main-Funktion
 	uint16_t timerPeriod, count = 0;
-	uint8_t start_flag = 0;
 
 	// Definiere Variablen fuer Main-Funktion
 	uint8_t TxData[8], OutData[4], InData[3], status;
@@ -183,13 +189,7 @@ int main(void)
 	}
 
     // LTC6811 initialisieren
-	CFG[0] = 0xF8;
-	CFG[1] = 0xCF;
-	CFG[2] = 0x17;
-	CFG[3] = 0xA4;
-	CFG[4] = 0x00;
-	CFG[5] = 0x00;
-	ltc6811_write(WRCFG, &CFG[0]);
+	ltc6811_init();
 
 	/*ltc6811_read(RDCFG, &data[10]);
 	for (uint8_t i = 0; i < 8; i++)
@@ -312,6 +312,11 @@ int main(void)
 		uartTransmit(SDC_STRING_OK, sizeof(SDC_STRING_OK));
 	}
 
+	uint32_t lasttime100ms = millis();
+	uint32_t lasttime200ms = millis();
+	uint32_t lasttime500ms = millis();
+	uint32_t lasttime1s = millis();
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -321,91 +326,87 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-		// Task wird jede Millisekunde ausgefuehrt
-		if (millisekunden_flag_1 == 1)
-		{
-			count++;													// Zaehler count hochzaehlen
-			millisekunden_flag_1 = 0;									// Setze Millisekunden-Flag zurueck
-
-			// Setzen des Start Flags, damit Tasks nur einmal pro ms aufgerufen werden kann
-			start_flag = 1;												// Setze Start Flag
-		}
-
 		// Task wird alle 100 Millisekunden ausgefuehrt
-		if (((count % 100) == 0) && (start_flag == 1))
+		if (millis() - 100 > lasttime100ms)
 		{
 			// Lese alle Eingaenge
 			readall_inputs();
+
+			lasttime100ms = millis();
 		}
 
 		// Task wird alle 200 Millisekunden ausgefuehrt
-		if (((count % 200) == 0) && (start_flag == 1))
+//		if (((count % 300) == 0) && (start_flag == 1))
+		if (millis() - 250 > lasttime200ms)
 		{
+			// Lese IMD ein
+			imd_status();
+
 			ltc6811(ADCVC | MD73 | CELLALL);
-			HAL_Delay(10);
 			ltc6811_read(RDCVA, &data[0]);
 			ltc6811_read(RDCVB, &data[6]);
 			ltc6811_read(RDCVC, &data[12]);
 			ltc6811_read(RDCVD, &data[18]);
 
-			uartTransmit("Spannungen\n", 11);
+//			uartTransmit("Spannungen\n", 11);
 
-			for (uint8_t i = 0; i < 12; i++)
-			{
-				spannungen[i] = ((data[i*2+1]<<8) | data[i*2]);
-			}
+//			for (uint8_t i = 0; i < 12; i++)
+//			{
+//				spannungen[i] = ((data[i*2+1]<<8) | data[i*2]);
+//			}
+//
+//			for (uint8_t i = 0; i < 12; i++)
+//			{
+//				uartTransmitNumber(spannungen[i], 10);
+//				uartTransmit(";", 1);
+//			}
 
-			for (uint8_t i = 0; i < 12; i++)
-			{
-				uartTransmitNumber(spannungen[i], 10);
-				uartTransmit(";", 1);
-			}
+//			tmp = 0;
+//			for (uint8_t i = 0; i < 12; i++)
+//			{
+//				tmp += spannungen[i];
+//			}
+//			tmp /= 12;
+//			uartTransmitNumber(tmp, 10);
+//			uartTransmit(";", 1);
 
-			tmp = 0;
-			for (uint8_t i = 0; i < 12; i++)
-			{
-				tmp += spannungen[i];
-			}
-			tmp /= 12;
-			uartTransmitNumber(tmp, 10);
-			uartTransmit(";", 1);
-
-			tmp_mean = calculateMovingAverage(tmp_mean, tmp, 10);
-			uartTransmitNumber(tmp_mean, 10);
-
-			uartTransmit("\n", 1);
-
-			uartTransmit("Temperaturen\n", 13);
+//			tmp_mean = calculateMovingAverage(tmp_mean, tmp, 10);
+//			uartTransmitNumber(tmp_mean, 10);
+//
+//			uartTransmit("\n", 1);
+//
+//			uartTransmit("Temperaturen\n", 13);
 
 			for (uint8_t j = 0; j < 8; j++)
 			{
 				ltc1380_write(LTC1380_MUX0, j);									// Multiplexer 0 einstellen
 				ltc1380_write(LTC1380_MUX2, j);									// Multiplexer 1 einstellen
 				ltc6811(ADAX | MD73 | GPIOALL);									// Initial Command Zellen auslesen
-				HAL_Delay(10);
 				ltc6811_read(RDAUXA, &data[0]);
 
 				for (uint8_t i = 0; i < 3; i++)
 				{
 					temperatur[i] = ((data[i*2+1]<<8) | data[i*2]);
 				}
-					uartTransmitNumber(temperatur[0], 10);
-					uartTransmit(";", 1);
-					uartTransmitNumber(temperatur[1], 10);
-					uartTransmit(";", 1);
+//					uartTransmitNumber(temperatur[0], 10);
+//					uartTransmit(";", 1);
+//					uartTransmitNumber(temperatur[1], 10);
+//					uartTransmit(";", 1);
 
 				if (j == 7)
 				{
-					uartTransmitNumber(temperatur[2], 10);
-					uartTransmit(";", 1);
+//					uartTransmitNumber(temperatur[2], 10);
+//					uartTransmit(";", 1);
 				}
 			}
 
-			uartTransmit("\n", 1);
+			lasttime200ms = millis();
+
+//			uartTransmit("\n", 1);
 		}
 
 		// Task wird alle 250 Millisekunden ausgefuehrt
-		if (((count % 250) == 0) && (start_flag == 1))
+		if (millis() - 500 > lasttime500ms)
 		{
 			// Daten fuer Ausgaenge zusammenfuehren
 			OutData[0] = system_out.systemoutput;
@@ -423,50 +424,59 @@ int main(void)
 			InData[2] = komfort_in.komfortinput;
 	
 			// Sende Nachricht digitale Eingaenge
-			status = HAL_CAN_AddTxMessage(&hcan3, &TxInput, InData, (uint32_t *)CAN_TX_MAILBOX0);
+			status = HAL_CAN_AddTxMessage(&hcan3, &TxInput, InData, (uint32_t *)CAN_TX_MAILBOX1);
 			hal_error(status);
 	
 			// Sende Nachricht Dummy
-			status = HAL_CAN_AddTxMessage(&hcan3, &TxMessage, TxData, (uint32_t *)CAN_TX_MAILBOX0);
+			status = HAL_CAN_AddTxMessage(&hcan3, &TxMessage, TxData, (uint32_t *)CAN_TX_MAILBOX2);
 			hal_error(status);
 
+			HAL_Delay(1);
+
 			// Sende Nachricht Zellspannung 1 - 4
-			status = HAL_CAN_AddTxMessage(&hcan3, &TxVoltage11, &data[0], (uint32_t *)CAN_TX_MAILBOX1);
+			status = HAL_CAN_AddTxMessage(&hcan3, &TxVoltage11, &data[0], (uint32_t *)CAN_TX_MAILBOX0);
 			hal_error(status);
 
 			// Sende Nachricht Zellspannung 5 - 8
-			status = HAL_CAN_AddTxMessage(&hcan3, &TxVoltage12, &data[6], (uint32_t *)CAN_TX_MAILBOX2);
+			status = HAL_CAN_AddTxMessage(&hcan3, &TxVoltage12, &data[6], (uint32_t *)CAN_TX_MAILBOX1);
 			hal_error(status);
 
 			// Sende Nachricht Zellspannung 9 - 12
-			status = HAL_CAN_AddTxMessage(&hcan3, &TxVoltage13, &data[12], (uint32_t *)CAN_TX_MAILBOX0);
+			status = HAL_CAN_AddTxMessage(&hcan3, &TxVoltage13, &data[12], (uint32_t *)CAN_TX_MAILBOX2);
 			hal_error(status);
 
+			HAL_Delay(1);
+
 			// Sende Nachricht Zelltemperaturen 1 - 4
-			status = HAL_CAN_AddTxMessage(&hcan3, &TxTemperature11, &data[0], (uint32_t *)CAN_TX_MAILBOX1);
+			status = HAL_CAN_AddTxMessage(&hcan3, &TxTemperature11, &data[0], (uint32_t *)CAN_TX_MAILBOX0);
 			hal_error(status);
 
 			// Sende Nachricht Zelltemperaturen 5 - 8
-			status = HAL_CAN_AddTxMessage(&hcan3, &TxTemperature12, &data[6], (uint32_t *)CAN_TX_MAILBOX2);
+			status = HAL_CAN_AddTxMessage(&hcan3, &TxTemperature12, &data[6], (uint32_t *)CAN_TX_MAILBOX1);
 			hal_error(status);
 
 			// Sende Nachricht Zelltemperaturen 9 - 12
-			status = HAL_CAN_AddTxMessage(&hcan3, &TxTemperature13, &data[12], (uint32_t *)CAN_TX_MAILBOX1);
+			status = HAL_CAN_AddTxMessage(&hcan3, &TxTemperature13, &data[12], (uint32_t *)CAN_TX_MAILBOX2);
 			hal_error(status);
+
+			HAL_Delay(1);
+
+			lasttime500ms = millis();
 		}
 
 		// Task wird alle 500 Millisekunden ausgefuehrt
-		if (((count % 500) == 0) && (start_flag == 1))
+		if (millis() - 1000 > lasttime1s)
 		{
 			// Sende Nachricht Zelltemperaturen 13 - 16
 			status = HAL_CAN_AddTxMessage(&hcan3, &TxTemperature14, &data[18], (uint32_t *)CAN_TX_MAILBOX2);
 			hal_error(status);
 
 			count = 0;
-		}
 
-		// Zuruecksetzen des Start Flags, damit Tasks erst nach einer ms wieder aufgerufen werden kann
-		start_flag = 0;																		// Zuruecksetzen Start Flag
+			HAL_GPIO_TogglePin(BLUE_LED_GPIO_Port, BLUE_LED_Pin);
+
+			lasttime1s = millis();
+		}
   }
   /* USER CODE END 3 */
 }
