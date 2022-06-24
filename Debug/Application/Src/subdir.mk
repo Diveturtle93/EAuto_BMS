@@ -10,6 +10,7 @@ C_SRCS += \
 ../Application/Src/LTC1380.c \
 ../Application/Src/LTC6811.c \
 ../Application/Src/SystemInfo.c \
+../Application/Src/batteriemanagement.c \
 ../Application/Src/error.c \
 ../Application/Src/imd.c \
 ../Application/Src/inputs.c \
@@ -22,6 +23,7 @@ OBJS += \
 ./Application/Src/LTC1380.o \
 ./Application/Src/LTC6811.o \
 ./Application/Src/SystemInfo.o \
+./Application/Src/batteriemanagement.o \
 ./Application/Src/error.o \
 ./Application/Src/imd.o \
 ./Application/Src/inputs.o \
@@ -34,6 +36,7 @@ C_DEPS += \
 ./Application/Src/LTC1380.d \
 ./Application/Src/LTC6811.d \
 ./Application/Src/SystemInfo.d \
+./Application/Src/batteriemanagement.d \
 ./Application/Src/error.d \
 ./Application/Src/imd.d \
 ./Application/Src/inputs.d \
@@ -48,7 +51,7 @@ Application/Src/%.o Application/Src/%.su: ../Application/Src/%.c Application/Src
 clean: clean-Application-2f-Src
 
 clean-Application-2f-Src:
-	-$(RM) ./Application/Src/BasicUart.d ./Application/Src/BasicUart.o ./Application/Src/BasicUart.su ./Application/Src/IsoSPI.d ./Application/Src/IsoSPI.o ./Application/Src/IsoSPI.su ./Application/Src/LTC1380.d ./Application/Src/LTC1380.o ./Application/Src/LTC1380.su ./Application/Src/LTC6811.d ./Application/Src/LTC6811.o ./Application/Src/LTC6811.su ./Application/Src/SystemInfo.d ./Application/Src/SystemInfo.o ./Application/Src/SystemInfo.su ./Application/Src/error.d ./Application/Src/error.o ./Application/Src/error.su ./Application/Src/imd.d ./Application/Src/imd.o ./Application/Src/imd.su ./Application/Src/inputs.d ./Application/Src/inputs.o ./Application/Src/inputs.su ./Application/Src/millis.d ./Application/Src/millis.o ./Application/Src/millis.su ./Application/Src/outputs.d ./Application/Src/outputs.o ./Application/Src/outputs.su
+	-$(RM) ./Application/Src/BasicUart.d ./Application/Src/BasicUart.o ./Application/Src/BasicUart.su ./Application/Src/IsoSPI.d ./Application/Src/IsoSPI.o ./Application/Src/IsoSPI.su ./Application/Src/LTC1380.d ./Application/Src/LTC1380.o ./Application/Src/LTC1380.su ./Application/Src/LTC6811.d ./Application/Src/LTC6811.o ./Application/Src/LTC6811.su ./Application/Src/SystemInfo.d ./Application/Src/SystemInfo.o ./Application/Src/SystemInfo.su ./Application/Src/batteriemanagement.d ./Application/Src/batteriemanagement.o ./Application/Src/batteriemanagement.su ./Application/Src/error.d ./Application/Src/error.o ./Application/Src/error.su ./Application/Src/imd.d ./Application/Src/imd.o ./Application/Src/imd.su ./Application/Src/inputs.d ./Application/Src/inputs.o ./Application/Src/inputs.su ./Application/Src/millis.d ./Application/Src/millis.o ./Application/Src/millis.su ./Application/Src/outputs.d ./Application/Src/outputs.o ./Application/Src/outputs.su
 
 .PHONY: clean-Application-2f-Src
 

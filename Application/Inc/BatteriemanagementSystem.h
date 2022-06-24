@@ -40,7 +40,7 @@ typedef enum BMSState_tag
 #define BMS_CAN_SAFETY								0x138					// Shutdown Circuit Batteriemanagement-System, Sicherheitsrelevante Daten
 #define BMS_CAN_DIGITAL_OUT							0x237					// Digitale Ausgaenge Batteriemanagement-System, Alle digitalen Ausgaenge
 #define BMS_CAN_DIGITAL_IN							0x238					// Digitale Eingaenge Batteriemanagement-System, Alle digitalen Eingaenge
-#define BMS_CAN_ANALOG_IN							0x239					// Analogwerte Batteriemanagement-System, KL30 Relais, PCB
+#define BMS_CAN_ANALOG_IN							0x239					// Analogwerte Batteriemanagement-System, KL30 Relais, PCB, STM32
 #define BMS_CAN_TEMPERATUR							0x538					// Temperature Batteriemanagement-System, Temperaturen Heizung 4x
 #define BMS_CAN_ZELLEN11							0x610					// Batterie-Zellen 1-4 Modul 1
 #define BMS_CAN_ZELLEN12							0x611					// Batterie-Zellen 5-8 Modul 1
@@ -98,6 +98,11 @@ typedef enum BMSState_tag
 #define BMS_CAN_TEMPERATUR82						0x669					// Batterie-Temperatur 5-8 Modul 8
 #define BMS_CAN_TEMPERATUR83						0x670					// Batterie-Temperatur 9-12 Modul 8
 #define BMS_CAN_TEMPERATUR84						0x671					// Batterie-Temperatur 13-16 Modul 8
+#define BMS_CAN_INT_TEMPERATUR1						0x672					// Temperatur LTC6811 ICs 1 - 4
+#define BMS_CAN_INT_TEMPERATUR2						0x673					// Temperatur LTC6811 ICs 5 - 8
+#define BMS_CAN_INT_TEMPERATUR3						0x674					// Temperatur Passiv Discharge 1 - 4
+#define BMS_CAN_INT_TEMPERATUR4						0x675					// Temperatur Passiv Discharge 5 - 8
+
 //----------------------------------------------------------------------
 // Motorsteuergeraet neu
 //----------------------------------------------------------------------

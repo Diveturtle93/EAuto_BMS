@@ -30,12 +30,11 @@
 /* USER CODE BEGIN Includes */
 #include "BasicUart.h"
 #include "SystemInfo.h"
-#include "LTC6811.h"
-#include "LTC1380.h"
 #include "outputs.h"
 #include "error.h"
 #include "inputs.h"
 #include "my_math.h"
+#include "batteriemanagement.h"
 #include "BatteriemanagementSystem.h"
 #include "imd.h"
 #include "millis.h"
@@ -87,23 +86,13 @@ int main(void)
 
   /* USER CODE END 1 */
 
-  /* Enable I-Cache---------------------------------------------------------*/
-  SCB_EnableICache();
-
-  /* Enable D-Cache---------------------------------------------------------*/
-  SCB_EnableDCache();
-
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-  uint8_t data[36] = {0}, temp;
-  uint32_t tmp;
-  uint16_t spannungen[12] = {0}, temperatur[2] = {0}, tmp_mean;
-	// Definiere Variablen fuer Main-Funktion
-	uint16_t timerPeriod, count = 0;
+  uint8_t data[36] = {0};
 
 	// Definiere Variablen fuer Main-Funktion
 	uint8_t TxData[8], OutData[4], InData[3], status;
@@ -139,7 +128,6 @@ int main(void)
   MX_TIM4_Init();
   MX_SPI1_Init();
   MX_CAN3_Init();
-  MX_TIM6_Init();
   /* USER CODE BEGIN 2 */
 
 	/* Schreibe Resetquelle auf die Konsole */
@@ -160,59 +148,13 @@ int main(void)
   	// Lese alle Eingaenge
   	readall_inputs();
 
-  	// IsoSPI einschalten, Isolierte Spannungsversorgung IsoSPI und HV-Precharge Messung einschalten
-  	ISOSPI_ENABLE();
+  	// BMS initialisieren
+  	bms_init();
 
-  	// Warten fuer eine kurze Zeit
-  	HAL_Delay(20);
-
-    uartTransmit("\n", 1);
-#define TEST_LTC6811	"Starte Batteriemanagement-System\n"
-    uartTransmit(TEST_LTC6811, sizeof(TEST_LTC6811));
-
-	if ((temp = ltc6811_check()) != 0)									// LTC6804 Selftest durchfuehren
-	{
-#define LTC6811_FAILED	"Selbsttest LTC6811 fehlerhaft\n"
-		uartTransmit(LTC6811_FAILED, sizeof(LTC6811_FAILED));			// Ausgabe bei Fehlerhaftem Selbsttest
-		leuchten_out.RedLed = 1;										// Variable setzen
-	    HAL_GPIO_WritePin(RED_LED_GPIO_Port, RED_LED_Pin, leuchten_out.RedLed);// Ausgabe auf LEDs
-
-	    uartTransmitNumber(temp, 10);
-		uartTransmit("\n", 1);
-
-		return 0;														// Programm abbrechen
-	}
-	else
-	{
-#define LTC6811_PASSED	"Selbsttest LTC6811 erfolgreich\n"
-		uartTransmit(LTC6811_PASSED, sizeof(LTC6811_PASSED));			// Ausgabe bei Erfolgreichem Selbsttest
-	}
-
-    // LTC6811 initialisieren
-	ltc6811_init();
-
-	/*ltc6811_read(RDCFG, &data[10]);
-	for (uint8_t i = 0; i < 8; i++)
-	{
-		uartTransmitNumber(data[10+i], 10);
-	}
-	uartTransmit(";", 1);*/
-
-	// Alle Register zuruecksetzen
-	ltc6811(CLRCELL);
-	ltc6811(CLRSTAT);
-	ltc6811(CLRAUX);
-
-	// Erster ADC Vorgang ist ungueltig
-	ltc6811(ADCVAX | MD73 | CELLALL);									// Initial Command Zellen auslesen
-
-	tmp_mean = 65535;
-	timerPeriod = (HAL_RCC_GetPCLK2Freq() / htim1.Init.Prescaler);
   	// Start timer
 	if (HAL_TIM_Base_Start_IT(&htim1) != HAL_OK);
 	if (HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_1) != HAL_OK);
 	if (HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_2) != HAL_OK);
-  	HAL_TIM_Base_Start_IT(&htim6);
 
   	// Starte CAN Bus
   	if((status = HAL_CAN_Start(&hcan3)) != HAL_OK)
@@ -336,73 +278,12 @@ int main(void)
 		}
 
 		// Task wird alle 200 Millisekunden ausgefuehrt
-//		if (((count % 300) == 0) && (start_flag == 1))
 		if (millis() - 250 > lasttime200ms)
 		{
 			// Lese IMD ein
-			imd_status();
-
-			ltc6811(ADCVC | MD73 | CELLALL);
-			ltc6811_read(RDCVA, &data[0]);
-			ltc6811_read(RDCVB, &data[6]);
-			ltc6811_read(RDCVC, &data[12]);
-			ltc6811_read(RDCVD, &data[18]);
-
-//			uartTransmit("Spannungen\n", 11);
-
-//			for (uint8_t i = 0; i < 12; i++)
-//			{
-//				spannungen[i] = ((data[i*2+1]<<8) | data[i*2]);
-//			}
-//
-//			for (uint8_t i = 0; i < 12; i++)
-//			{
-//				uartTransmitNumber(spannungen[i], 10);
-//				uartTransmit(";", 1);
-//			}
-
-//			tmp = 0;
-//			for (uint8_t i = 0; i < 12; i++)
-//			{
-//				tmp += spannungen[i];
-//			}
-//			tmp /= 12;
-//			uartTransmitNumber(tmp, 10);
-//			uartTransmit(";", 1);
-
-//			tmp_mean = calculateMovingAverage(tmp_mean, tmp, 10);
-//			uartTransmitNumber(tmp_mean, 10);
-//
-//			uartTransmit("\n", 1);
-//
-//			uartTransmit("Temperaturen\n", 13);
-
-			for (uint8_t j = 0; j < 8; j++)
-			{
-				ltc1380_write(LTC1380_MUX0, j);									// Multiplexer 0 einstellen
-				ltc1380_write(LTC1380_MUX2, j);									// Multiplexer 1 einstellen
-				ltc6811(ADAX | MD73 | GPIOALL);									// Initial Command Zellen auslesen
-				ltc6811_read(RDAUXA, &data[0]);
-
-				for (uint8_t i = 0; i < 3; i++)
-				{
-					temperatur[i] = ((data[i*2+1]<<8) | data[i*2]);
-				}
-//					uartTransmitNumber(temperatur[0], 10);
-//					uartTransmit(";", 1);
-//					uartTransmitNumber(temperatur[1], 10);
-//					uartTransmit(";", 1);
-
-				if (j == 7)
-				{
-//					uartTransmitNumber(temperatur[2], 10);
-//					uartTransmit(";", 1);
-				}
-			}
+			//imd_status();
 
 			lasttime200ms = millis();
-
-//			uartTransmit("\n", 1);
 		}
 
 		// Task wird alle 250 Millisekunden ausgefuehrt
@@ -426,16 +307,12 @@ int main(void)
 			// Sende Nachricht digitale Eingaenge
 			status = HAL_CAN_AddTxMessage(&hcan3, &TxInput, InData, (uint32_t *)CAN_TX_MAILBOX1);
 			hal_error(status);
-	
-			// Sende Nachricht Dummy
-			status = HAL_CAN_AddTxMessage(&hcan3, &TxMessage, TxData, (uint32_t *)CAN_TX_MAILBOX2);
-			hal_error(status);
-
-			HAL_Delay(1);
 
 			// Sende Nachricht Zellspannung 1 - 4
 			status = HAL_CAN_AddTxMessage(&hcan3, &TxVoltage11, &data[0], (uint32_t *)CAN_TX_MAILBOX0);
 			hal_error(status);
+
+			HAL_Delay(1);
 
 			// Sende Nachricht Zellspannung 5 - 8
 			status = HAL_CAN_AddTxMessage(&hcan3, &TxVoltage12, &data[6], (uint32_t *)CAN_TX_MAILBOX1);
@@ -445,11 +322,11 @@ int main(void)
 			status = HAL_CAN_AddTxMessage(&hcan3, &TxVoltage13, &data[12], (uint32_t *)CAN_TX_MAILBOX2);
 			hal_error(status);
 
-			HAL_Delay(1);
-
 			// Sende Nachricht Zelltemperaturen 1 - 4
 			status = HAL_CAN_AddTxMessage(&hcan3, &TxTemperature11, &data[0], (uint32_t *)CAN_TX_MAILBOX0);
 			hal_error(status);
+
+			HAL_Delay(1);
 
 			// Sende Nachricht Zelltemperaturen 5 - 8
 			status = HAL_CAN_AddTxMessage(&hcan3, &TxTemperature12, &data[6], (uint32_t *)CAN_TX_MAILBOX1);
@@ -457,6 +334,10 @@ int main(void)
 
 			// Sende Nachricht Zelltemperaturen 9 - 12
 			status = HAL_CAN_AddTxMessage(&hcan3, &TxTemperature13, &data[12], (uint32_t *)CAN_TX_MAILBOX2);
+			hal_error(status);
+
+			// Sende Nachricht Zelltemperaturen 13 - 16
+			status = HAL_CAN_AddTxMessage(&hcan3, &TxTemperature14, &data[18], (uint32_t *)CAN_TX_MAILBOX2);
 			hal_error(status);
 
 			HAL_Delay(1);
@@ -467,11 +348,9 @@ int main(void)
 		// Task wird alle 500 Millisekunden ausgefuehrt
 		if (millis() - 1000 > lasttime1s)
 		{
-			// Sende Nachricht Zelltemperaturen 13 - 16
-			status = HAL_CAN_AddTxMessage(&hcan3, &TxTemperature14, &data[18], (uint32_t *)CAN_TX_MAILBOX2);
+			// Sende Nachricht Dummy
+			status = HAL_CAN_AddTxMessage(&hcan3, &TxMessage, TxData, (uint32_t *)CAN_TX_MAILBOX2);
 			hal_error(status);
-
-			count = 0;
 
 			HAL_GPIO_TogglePin(BLUE_LED_GPIO_Port, BLUE_LED_Pin);
 
@@ -546,12 +425,6 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 // Timer-Interrupt: Timer ist uebergelaufen
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-	// Kontrolliere welcher Timer den Ueberlauf ausgeloest hat
-	if (htim == &htim6)
-	{
-		millisekunden_flag_1 = 1;
-	}
-
 	// Timer IMD
 	if (htim == &htim1)
 	{

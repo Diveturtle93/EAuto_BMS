@@ -3,6 +3,7 @@
 "./Application/Src/LTC1380.o"
 "./Application/Src/LTC6811.o"
 "./Application/Src/SystemInfo.o"
+"./Application/Src/batteriemanagement.o"
 "./Application/Src/error.o"
 "./Application/Src/imd.o"
 "./Application/Src/inputs.o"

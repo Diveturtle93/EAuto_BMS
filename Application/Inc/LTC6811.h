@@ -226,6 +226,7 @@ uint8_t peccheck(uint8_t len, uint8_t *data);								// CRC Validieren und pruef
 void ltc6811_init(void);													// Initialisiere LTC6811, Konfigurierung
 uint8_t ltc6811_check(void);												// Diagnose LTC6811, fuehrt alle Tests durch
 uint8_t ltc6811_test(uint16_t command);										// Diagnose Selbsttest Test 1 und 2
+uint8_t ltc6811_thermal(void);												// Diagnose Thermal Shutdown
 uint8_t ltc6811_diagn(void);												// Diagnose Multiplexer
 uint8_t ltc6811_openwire(void);												// Leitungscheck offene Leitung
 uint16_t ltc6811_poll(void);												// Poll Data nach Conversion
@@ -268,8 +269,6 @@ typedef union __ltc6811_configuration_tag {
 
 //----------------------------------------------------------------------
 extern ltc6811_configuration_tag ltc6811_Conf;								// LTC6811 Configurations Register
-extern uint8_t CellVolt[LTC6811_DEVICES][12];								// Array fuer gemessene Zellspannungen
-extern uint8_t CellTemp[LTC6811_DEVICES][12];								// Array fuer gemessene Zelltemperaturen
 //----------------------------------------------------------------------
 
 #endif /* INC_LTC6811_H_ */

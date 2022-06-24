@@ -1,52 +1,43 @@
 //----------------------------------------------------------------------
-// Titel	:	Error.h
+// Titel	:	batteriemanagement.h
 //----------------------------------------------------------------------
 // Sprache	:	C
-// Datum	:	16.01.2021
+// Datum	:	Jun 23, 2022
 // Version	:	1.0
 // Autor	:	Diveturtle93
-// Projekt	:	Batteriemanagement-System
+// Projekt	:	BatteriemanagementSystem
 //----------------------------------------------------------------------
 
 // Dateiheader definieren
 //----------------------------------------------------------------------
-#ifndef ERROR_H_
-#define ERROR_H_
+#ifndef INC_BATTERIEMANAGEMENT_H_
+#define INC_BATTERIEMANAGEMENT_H_
 //----------------------------------------------------------------------
 
-// Definiere Debug Symbols
-//----------------------------------------------------------------------
-#ifdef DEBUG
-//#define DEBUG_ERROR
-#endif
+// ... definieren
 //----------------------------------------------------------------------
 
-// Festlegen der Fehlercodes
 //----------------------------------------------------------------------
-#define ERROR_NONE								0
-#define ERROR_LTC6811_THERMAL					1
-#define ERROR_LTC6811_TEST1						2
-#define ERROR_LTC6811_TEST2						3
-#define ERROR_LTC6811_DIAGN						4
-#define ERROR_LTC6811_OPENWIRE					5
-#define ERROR_LTC6811_OVERVOLT					6
-#define ERROR_LTC6811_UNDERVOLT					7
-#define ERROR_LTC6811_INITIALTEST				8
-#define ERROR_SDC_BTB							10
-#define ERROR_SDC_MOTOR							11
-#define ERROR_SDC_HVIL							12
-#define ERROR_IMD								13
-#define ERROR_AMS								14
+
+// ... definieren
+//----------------------------------------------------------------------
+
 //----------------------------------------------------------------------
 
 // Funktionen definieren
 //----------------------------------------------------------------------
-void hal_error(uint8_t status);
-void software_error(uint8_t errorcode);
-void ITM_SendString(char *text);
-void ITM_SendNumber(long number);
-void ITM_SendFloat(double number, int digits);
+void bms_init(void);														// Initialisier BMS
+void bms_cellspannungen(void);												// Lese alle Zellspannungen ein
+void bms_celltemperaturen(void);											// Lese Zelltemperaturen ein
+void bms_ltc_status(void);													// Lese IC Status ein
+void bms_measure(void);														// Messe Zellspannungen und zwei Temperaturen
+void bms_ok(void);															// Pruefe ob BMS OK ist
 //----------------------------------------------------------------------
 
-#endif /* INC_ERROR_H_ */
+//----------------------------------------------------------------------
+extern uint8_t CellVolt[LTC6811_DEVICES][12];								// Array fuer gemessene Zellspannungen
+extern uint8_t CellTemp[LTC6811_DEVICES][12];								// Array fuer gemessene Zelltemperaturen
+//----------------------------------------------------------------------
+
+#endif /* INC_BATTERIEMANAGEMENT_H_ */
 //----------------------------------------------------------------------

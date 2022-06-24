@@ -24,7 +24,7 @@
 //----------------------------------------------------------------------
 void hal_error(uint8_t status)
 {
-#ifdef DEBUG
+#ifdef DEBUG_ERROR
 	if (status == HAL_OK) {													// HAL OK
 		uartTransmit("HAL OK\n", 7);
 	}

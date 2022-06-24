@@ -641,18 +641,10 @@ uint8_t ltc6811_check(void)
 #endif
 
 	// Variablen definieren
-	uint8_t tmp_data[64] = {0}, error = 0;									// Speicher Registerwerte, Fehlerspeicher
-
-	// Alle Register zuruecksetzen
-	ltc6811(CLRCELL);														// Register Zellspannung auf default setzen
-	ltc6811(CLRAUX);														// Register GPIO-Spannung auf default setzen
-	ltc6811(CLRSTAT);														// Register Interne Messungen auf default setzen
-
-	// Lese Register Status B aus
-	ltc6811_read(RDSTATB, &tmp_data[0]);
+	uint8_t error = 0;														// Speicher fuer Error
 
 	// Thermal Shutdown pruefen
-	if (tmp_data[5] & !(1 << 0))
+	if (ltc6811_thermal() == 1)
 	{
 		error |= (1 << 0);													// Thermal Shutdown nicht Ok
 
@@ -731,7 +723,7 @@ uint8_t ltc6811_test(uint16_t command)
 #endif
 
 	// Variablen definieren
-	uint8_t tmp_data[64] = {0};												// Speicher Registerwerte
+	uint8_t tmp_data[64 * LTC6811_DEVICES] = {0};							// Speicher Registerwerte
 	uint16_t tmp = 0, test_pattern = 0;										// Zwischenspeicher, Kontrollvariable Selbsttest
 
 	// Commands fuer Status senden  Test 1
@@ -745,17 +737,17 @@ uint8_t ltc6811_test(uint16_t command)
 	// Register auslesen Test 1
 	// Spannungsregister
 	ltc6811_read(RDCVA, &tmp_data[0]);										// Lese Register CVA zurueck
-	ltc6811_read(RDCVB, &tmp_data[8]);										// Lese Register CVB zurueck
-	ltc6811_read(RDCVC, &tmp_data[16]);										// Lese Register CVC zurueck
-	ltc6811_read(RDCVD, &tmp_data[24]);										// Lese Register CVD zurueck
+	ltc6811_read(RDCVB, &tmp_data[8 * LTC6811_DEVICES]);					// Lese Register CVB zurueck
+	ltc6811_read(RDCVC, &tmp_data[16 * LTC6811_DEVICES]);					// Lese Register CVC zurueck
+	ltc6811_read(RDCVD, &tmp_data[24 * LTC6811_DEVICES]);					// Lese Register CVD zurueck
 
 	// GPIO-Register
-	ltc6811_read(RDAUXA, &tmp_data[32]);									// Lese Register AUXA zurueck
-	ltc6811_read(RDAUXB, &tmp_data[40]);									// Lese Register AUXB zurueck
+	ltc6811_read(RDAUXA, &tmp_data[32 * LTC6811_DEVICES]);					// Lese Register AUXA zurueck
+	ltc6811_read(RDAUXB, &tmp_data[40 * LTC6811_DEVICES]);					// Lese Register AUXB zurueck
 
 	// Statusregister
-	ltc6811_read(RDSTATA, &tmp_data[48]);									// Lese Register STATA zurueck
-	ltc6811_read(RDSTATB, &tmp_data[56]);									// Lese Register STATB zurueck
+	ltc6811_read(RDSTATA, &tmp_data[48 * LTC6811_DEVICES]);					// Lese Register STATA zurueck
+	ltc6811_read(RDSTATB, &tmp_data[56 * LTC6811_DEVICES]);					// Lese Register STATB zurueck
 
 	// Lookup fuer Selbstest digitaler Filter
 	// Kontrollvariable heraussuchen
@@ -819,77 +811,116 @@ uint8_t ltc6811_test(uint16_t command)
 	}
 
 	// Daten pruefen Test 1
-	for (uint8_t i=0; i<22; i++)
+	for (uint8_t j = 0; j < LTC6811_DEVICES; j++)
 	{
-		// Auswaehlen welches Register im Array steht
-		switch (i)
+		for (uint8_t i = 0; i < 22; i++)
 		{
-			// Register CVA
-			case 0:
-			case 1:
-			case 2:
-				tmp = ((tmp_data[i*2+1]<<8)|tmp_data[i*2]);					// Register CVA umwandeln
-				break;
-			// Register CVB
-			case 3:
-			case 4:
-			case 5:
-				tmp = ((tmp_data[i*2+3] << 8)|tmp_data[i*2+2]);				// Register CVB umwandeln
-				break;
-			// Register CVC
-			case 6:
-			case 7:
-			case 8:
-				tmp = ((tmp_data[(i+2)*2+1] << 8)|tmp_data[(i+2)*2]);		// Register CVC umwandeln
-				break;
-			// Register CVD
-			case 9:
-			case 10:
-			case 11:
-				tmp = ((tmp_data[(i+2)*2+3] << 8)|tmp_data[(i+2)*2+2]);		// Register CVD umwandeln
-				break;
-			// Register AUXA
-			case 12:
-			case 13:
-			case 14:
-				tmp = ((tmp_data[(i+4)*2+1] << 8)|tmp_data[(i+4)*2]);		// Register AUXA umwandeln
-				break;
-			// Register AUXB
-			case 15:
-			case 16:
-			case 17:
-				tmp = ((tmp_data[(i+4)*2+3] << 8)|tmp_data[(i+4)*2+2]);		// Register AUXB umwandeln
-				break;
-			// Register STATA
-			case 18:
-			case 29:
-			case 20:
-				tmp = ((tmp_data[(i+6)*2+1] << 8)|tmp_data[(i+6)*2]);		// Register STATA umwandeln
-				break;
-			// Register STATB
-			case 21:
-				tmp = ((tmp_data[(i+6)*2+3] << 8)|tmp_data[(i+6)*2+2]);		// Register STATB umwandeln
-				break;
-			// Kein Register
-			default:
-				break;
-		}
+			// Auswaehlen welches Register im Array steht
+			switch (i)
+			{
+				// Register CVA
+				case 0:
+				case 1:
+				case 2:
+					tmp = ((tmp_data[j*64 + i*2 + 1] << 8) | tmp_data[j*64 + i*2]);		// Register CVA umwandeln
+					break;
+				// Register CVB
+				case 3:
+				case 4:
+				case 5:
+					tmp = ((tmp_data[j*64 + i*2 + 3] << 8) | tmp_data[j*64 + i*2 + 2]);	// Register CVB umwandeln
+					break;
+				// Register CVC
+				case 6:
+				case 7:
+				case 8:
+					tmp = ((tmp_data[j*64 + (i + 2)*2 + 1] << 8) | tmp_data[j*64 + (i + 2)*2]);// Register CVC umwandeln
+					break;
+				// Register CVD
+				case 9:
+				case 10:
+				case 11:
+					tmp = ((tmp_data[j*64 + (i + 2)*2 + 3] << 8) | tmp_data[j*64 + (i + 2)*2 + 2]);// Register CVD umwandeln
+					break;
+				// Register AUXA
+				case 12:
+				case 13:
+				case 14:
+					tmp = ((tmp_data[j*64 + (i + 4)*2 + 1] << 8) | tmp_data[j*64 + (i + 4)*2]);// Register AUXA umwandeln
+					break;
+				// Register AUXB
+				case 15:
+				case 16:
+				case 17:
+					tmp = ((tmp_data[j*64 + (i + 4)*2 + 3] << 8) | tmp_data[j*64 + (i + 4)*2 + 2]);// Register AUXB umwandeln
+					break;
+				// Register STATA
+				case 18:
+				case 29:
+				case 20:
+					tmp = ((tmp_data[j*64 + (i + 6)*2 + 1] << 8) | tmp_data[j*64 + (i + 6)*2]);// Register STATA umwandeln
+					break;
+				// Register STATB
+				case 21:
+					tmp = ((tmp_data[j*64 + (i + 6)*2 + 3] << 8) | tmp_data[j*64 + (i + 6)*2 + 2]);// Register STATB umwandeln
+					break;
+				// Kein Register
+				default:
+					break;
+			}
 
-		// Vergleiche Registerwert mit Vorgabewert aus Datenblatt
-		if (tmp != test_pattern)
-		{
-#ifdef DEBUG_LTC6811
-			ITM_SendString("Test failed: ");
-			ITM_SendNumber(i);
-			ITM_SendChar('\n');
-#endif
-			return 1;														// Selbsttest 1 nicht OK
+			// Vergleiche Registerwert mit Vorgabewert aus Datenblatt
+			if (tmp != test_pattern)
+			{
+	#ifdef DEBUG_LTC6811
+				ITM_SendString("Test failed: ");
+				ITM_SendNumber(i);
+				ITM_SendChar('\n');
+	#endif
+				return 1;													// Selbsttest 1 nicht OK
+			}
 		}
 	}
 #ifdef DEBUG_LTC6811
 	ITM_SendString("Test passed\n");
 #endif
 	return 0;																// Selbsttest 1 OK
+}
+//----------------------------------------------------------------------
+
+// Selbstdiagnose Thermal Shutdown Test (Datasheet ltc6811 Page 30)
+//----------------------------------------------------------------------
+uint8_t ltc6811_thermal(void)
+{
+	// Debug Nachricht
+#ifdef DEBUG_LTC6811
+	ITM_SendString("Aufruf von Thermal LTC6811.\n");
+#endif
+
+	// Variablen definieren
+	uint8_t tmp_data[8 * LTC6811_DEVICES] = {0};							// Speicher Registerwerte
+
+	// Alle Register zuruecksetzen
+	ltc6811(CLRCELL);														// Register Zellspannung auf default setzen
+	ltc6811(CLRAUX);														// Register GPIO-Spannung auf default setzen
+	ltc6811(CLRSTAT);														// Register Interne Messungen auf default setzen
+
+	// Wartezeit um Register zurueck zu setzen
+	HAL_Delay(5);
+
+	// Lese Register
+	ltc6811_read(RDSTATB, &tmp_data[0]);									// Lese Status B Register fuer Thermal Shutdown Test
+
+	// Multiplexer pruefen
+	for (uint8_t i = 0; i < LTC6811_DEVICES; i++)
+	{
+		if (tmp_data[i*8 + 5] & (1 << 0))
+		{
+			return 1;														// Thermal Shutdown Test nicht OK
+		}
+	}
+
+	return 0;																// Thermal Shutdown Test OK
 }
 //----------------------------------------------------------------------
 
@@ -903,28 +934,31 @@ uint8_t ltc6811_diagn(void)
 #endif
 
 	// Variablen definieren
-	uint8_t tmp_data[8] = {0};												// Speicher Registerwerte
+	uint8_t tmp_data[8 * LTC6811_DEVICES] = {0};							// Speicher Registerwerte
 
 	// Command senden
 	ltc6811(DIAGN);															// Multiplexer Check
 
 	// Verzoegerungszeit 10ms, DIAG Befehl braucht ca. 400µs bis 4ms
-	HAL_Delay(10);
+	HAL_Delay(5);
 
 	// Lese Register
 	ltc6811_read(RDSTATB, &tmp_data[0]);									// Lese Status B Register fuer Multiplexer Check
 
 	// Multiplexer pruefen
-	if (tmp_data[5] & (1 << 1))
+	for (uint8_t i = 0; i < LTC6811_DEVICES; i++)
 	{
-		return 1;															// Multiplexertest nicht OK
+		if (tmp_data[i*8 + 5] & (1 << 1))
+		{
+			return 1;														// Multiplexertest nicht OK
+		}
 	}
 
 	return 0;																// Multiplexertest OK
 }
 //----------------------------------------------------------------------
 
-// LTC6811 Openwire check
+// LTC6811 Openwire check (Datasheet ltc6811 Page 29)
 //----------------------------------------------------------------------
 uint8_t ltc6811_openwire(void)
 {
@@ -934,8 +968,10 @@ uint8_t ltc6811_openwire(void)
 #endif
 
 	// Arrays definieren
-	uint8_t pulldown[32] = {0}, pullup[32] = {0};							// Speicher Registerwerte
-	uint16_t cell[1] = {0}, openwire[13] = {0};								// Speicher Zelle, Openwire vergleic Threshold
+	uint8_t pulldown[32 * LTC6811_DEVICES] = {0};							// Speicher Registerwerte Pulldown
+	uint8_t pullup[32 * LTC6811_DEVICES] = {0};								// Speicher Registerwerte Pullup
+	uint16_t cell[1 * LTC6811_DEVICES] = {0};								// Speicher Zelle
+	uint16_t openwire[13 * LTC6811_DEVICES] = {0};							// Speicher Openwire vergleich Threshold
 
 	// Pullup Current, drei Durchgaenge
 	for (uint8_t i = 0; i < 2; i++)
@@ -948,91 +984,106 @@ uint8_t ltc6811_openwire(void)
 
 	// Register auslesen OpenWire
 	ltc6811_read(RDCVA, &pullup[0]);
-	ltc6811_read(RDCVB, &pullup[8]);
-	ltc6811_read(RDCVC, &pullup[16]);
-	ltc6811_read(RDCVD, &pullup[24]);
+	ltc6811_read(RDCVB, &pullup[8 * LTC6811_DEVICES]);
+	ltc6811_read(RDCVC, &pullup[16 * LTC6811_DEVICES]);
+	ltc6811_read(RDCVD, &pullup[24 * LTC6811_DEVICES]);
 
 	// Pulldown Current, drei Durchgaenge
 	for (uint8_t i = 0; i < 2; i++)
 	{
 
 		// Commands fuer Openwire Test
-		ltc6811(ADOW | MD262 | PUP);											// Pulldown Current
+		ltc6811(ADOW | MD262 | PUP);										// Pulldown Current
 		HAL_Delay(300);
 	}
 
 	// Register auslesen OpenWire
 	ltc6811_read(RDCVA, &pulldown[0]);
-	ltc6811_read(RDCVB, &pulldown[8]);
-	ltc6811_read(RDCVC, &pulldown[16]);
-	ltc6811_read(RDCVD, &pulldown[24]);
+	ltc6811_read(RDCVB, &pulldown[8 * LTC6811_DEVICES]);
+	ltc6811_read(RDCVC, &pulldown[16 * LTC6811_DEVICES]);
+	ltc6811_read(RDCVD, &pulldown[24 * LTC6811_DEVICES]);
 
 	// Schleife zum umformatieren der Daten
-	for (uint8_t i = 0; i < 13; i++)
+	for (uint8_t j = 0; j < LTC6811_DEVICES; j++)
 	{
-		// Auswahl welche Leitung
-		switch (i)
+		for (uint8_t i = 0; i < 13; i++)
 		{
-			// Leitungen Zelle 1/2 bis 3/4
-			case 0:
-				openwire[i] = ((pulldown[1] << 8) + pulldown[0]);
-				break;
-			case 1:
-			case 2:
-				openwire[i] = getDifference(((pullup[i*2+1] << 8) + pullup[i*2]), ((pulldown[i*2+1] << 8) + pulldown[i*2]));
-				break;
-			// Leitungen Zelle 4/5 bis 6/7
-			case 3:
-			case 4:
-			case 5:
-				openwire[i] = getDifference(((pullup[i*2+3] << 8) + pullup[i*2+2]), ((pulldown[i*2+3] << 8) + pulldown[i*2+2]));
-				break;
-			// Leitungen Zelle 7/8 bis 9/10
-			case 6:
-			case 7:
-			case 8:
-				openwire[i] = getDifference(((pullup[i*2+5] << 8) + pullup[i*2+4]), ((pulldown[i*2+5] << 8) + pulldown[i*2+4]));
-				break;
-			// Leitungen Zelle 10/11 und 11/12
-			case 9:
-			case 10:
-			case 11:
-				openwire[i] = getDifference(((pullup[i*2+7] << 8) + pullup[i*2+6]), ((pulldown[i*2+7] << 8) + pulldown[i*2+6]));
-				break;
-			case 12:
-				openwire[i] = ((pullup[29] << 8) + pullup[28]);
-				break;
-			default:
-				break;
+			// Auswahl welche Leitung
+			switch (i)
+			{
+				// Leitungen Zelle 1/2 bis 3/4
+				case 0:
+					openwire[j*13 + i] = ((pulldown[j*13 + 1] << 8) + pulldown[j*13 + 0]);
+					break;
+				case 1:
+				case 2:
+					openwire[j*13 + i] = getDifference(((pullup[j*13 + i*2+1] << 8) + pullup[j*13 + i*2]), ((pulldown[j*13 + i*2+1] << 8) + pulldown[j*13 + i*2]));
+					break;
+				// Leitungen Zelle 4/5 bis 6/7
+				case 3:
+				case 4:
+				case 5:
+					openwire[j*13 + i] = getDifference(((pullup[j*13 + i*2+3] << 8) + pullup[j*13 + i*2+2]), ((pulldown[j*13 + i*2+3] << 8) + pulldown[j*13 + i*2+2]));
+					break;
+				// Leitungen Zelle 7/8 bis 9/10
+				case 6:
+				case 7:
+				case 8:
+					openwire[j*13 + i] = getDifference(((pullup[j*13 + i*2+5] << 8) + pullup[j*13 + i*2+4]), ((pulldown[j*13 + i*2+5] << 8) + pulldown[j*13 + i*2+4]));
+					break;
+				// Leitungen Zelle 10/11 und 11/12
+				case 9:
+				case 10:
+				case 11:
+					openwire[j*13 + i] = getDifference(((pullup[j*13 + i*2+7] << 8) + pullup[j*13 + i*2+6]), ((pulldown[j*13 + i*2+7] << 8) + pulldown[j*13 + i*2+6]));
+					break;
+				case 12:
+					openwire[j*13 + i] = ((pullup[j*13 + 29] << 8) + pullup[j*13 + 28]);
+					break;
+				default:
+					break;
+			}
 		}
 	}
 
 	// Schleife zum Pruefen der Daten
-	for (uint8_t i = 1; i < 12; i++)
+	for (uint8_t j = 0; j < LTC6811_DEVICES; j++)
 	{
-		// Vergleiche Messdaten mit Threshold
-		if (openwire[i] > OPENWIRE_THRESHOLD)
+		for (uint8_t i = 1; i < 12; i++)
 		{
-			cell[0] |= (1 << i);											// Wenn Threshold ueberschritten, Offene Leitung
+			// Vergleiche Messdaten mit Threshold
+			if (openwire[j*13 + i] > OPENWIRE_THRESHOLD)
+			{
+				cell[j] |= (1 << i);										// Wenn Threshold ueberschritten, Offene Leitung
+			}
 		}
 	}
 
 	// Offene Leitung erste Zelle messen
-	if (openwire[0] == 0)
+	for (uint8_t j = 0; j < LTC6811_DEVICES; j++)
 	{
-		cell[0] |= (1 << 0);												// Unterste Leitung Offen
+		if (openwire[j*13] == 0)
+		{
+			cell[j] |= (1 << 0);											// Unterste Leitung Offen
+		}
 	}
 
 	// Offene Leitung letzte Zelle messen
-	if (openwire[12] == 0)
+	for (uint8_t j = 0; j < LTC6811_DEVICES; j++)
 	{
-		cell[0] |= (1 << 12);												// Oberste Leitung offen
+		if (openwire[j*13 + 12] == 0)
+		{
+			cell[j] |= (1 << 12);											// Oberste Leitung offen
+		}
 	}
 
 	// Wenn offene Leitung vorhanden
-	if (cell[0] != 0)
+	for (uint8_t j = 0; j < LTC6811_DEVICES; j++)
 	{
-		return 1;															// Open Wire nicht OK
+		if (cell[j] != 0)
+		{
+			return 1;														// Open Wire nicht OK
+		}
 	}
 
 	return 0;																// Open Wire OK
