@@ -97,6 +97,10 @@ int main(void)
 	// Definiere Variablen fuer Main-Funktion
 	uint8_t TxData[8], OutData[4], InData[3], status;
   	CAN_FilterTypeDef sFilterConfig;
+	uint32_t lasttime100ms = millis();
+	uint32_t lasttime200ms = millis();
+	uint32_t lasttime500ms = millis();
+	uint32_t lasttime1s = millis();
 
   	// Erstelle Can-Nachrichten
   	CAN_TxHeaderTypeDef TxMessage = {0x123, 0, CAN_RTR_DATA, CAN_ID_STD, 8, DISABLE};
@@ -105,6 +109,8 @@ int main(void)
   	CAN_TxHeaderTypeDef TxVoltage11 = {BMS_CAN_ZELLEN11, 0, CAN_RTR_DATA, CAN_ID_STD, 8, DISABLE};
   	CAN_TxHeaderTypeDef TxVoltage12 = {BMS_CAN_ZELLEN12, 0, CAN_RTR_DATA, CAN_ID_STD, 8, DISABLE};
   	CAN_TxHeaderTypeDef TxVoltage13 = {BMS_CAN_ZELLEN13, 0, CAN_RTR_DATA, CAN_ID_STD, 8, DISABLE};
+  	CAN_TxHeaderTypeDef TxAnaloge = {BMS_CAN_ANALOG_IN, 0, CAN_RTR_DATA, CAN_ID_STD, 8, DISABLE};
+  	CAN_TxHeaderTypeDef TxTemperature = {BMS_CAN_TEMPERATUR, 0, CAN_RTR_DATA, CAN_ID_STD, 8, DISABLE};
   	CAN_TxHeaderTypeDef TxTemperature11 = {BMS_CAN_TEMPERATUR11, 0, CAN_RTR_DATA, CAN_ID_STD, 8, DISABLE};
   	CAN_TxHeaderTypeDef TxTemperature12 = {BMS_CAN_TEMPERATUR12, 0, CAN_RTR_DATA, CAN_ID_STD, 8, DISABLE};
   	CAN_TxHeaderTypeDef TxTemperature13 = {BMS_CAN_TEMPERATUR13, 0, CAN_RTR_DATA, CAN_ID_STD, 8, DISABLE};
@@ -254,11 +260,6 @@ int main(void)
 		uartTransmit(SDC_STRING_OK, sizeof(SDC_STRING_OK));
 	}
 
-	uint32_t lasttime100ms = millis();
-	uint32_t lasttime200ms = millis();
-	uint32_t lasttime500ms = millis();
-	uint32_t lasttime1s = millis();
-
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -281,7 +282,9 @@ int main(void)
 		if (millis() - 250 > lasttime200ms)
 		{
 			// Lese IMD ein
-			//imd_status();
+			imd_status();
+
+			bms_ok();
 
 			lasttime200ms = millis();
 		}
@@ -298,6 +301,10 @@ int main(void)
 			// Sende Nachricht digitale Ausgaenge
 			status = HAL_CAN_AddTxMessage(&hcan3, &TxOutput, OutData, (uint32_t *)CAN_TX_MAILBOX0);
 			hal_error(status);
+			while(HAL_CAN_IsTxMessagePending(&hcan2, CAN_TX_MAILBOX0) == 1)
+			{
+
+			}
 
 			// Daten fuer Eingaenge zusammenfuehren
 			InData[0] = system_in.systeminput;
@@ -305,42 +312,68 @@ int main(void)
 			InData[2] = komfort_in.komfortinput;
 	
 			// Sende Nachricht digitale Eingaenge
-			status = HAL_CAN_AddTxMessage(&hcan3, &TxInput, InData, (uint32_t *)CAN_TX_MAILBOX1);
+			status = HAL_CAN_AddTxMessage(&hcan3, &TxInput, InData, (uint32_t *)CAN_TX_MAILBOX0);
 			hal_error(status);
+			while(HAL_CAN_IsTxMessagePending(&hcan2, CAN_TX_MAILBOX0) == 1)
+			{
+
+			}
 
 			// Sende Nachricht Zellspannung 1 - 4
 			status = HAL_CAN_AddTxMessage(&hcan3, &TxVoltage11, &data[0], (uint32_t *)CAN_TX_MAILBOX0);
 			hal_error(status);
+			while(HAL_CAN_IsTxMessagePending(&hcan2, CAN_TX_MAILBOX0) == 1)
+			{
 
-			HAL_Delay(1);
+			}
 
 			// Sende Nachricht Zellspannung 5 - 8
-			status = HAL_CAN_AddTxMessage(&hcan3, &TxVoltage12, &data[6], (uint32_t *)CAN_TX_MAILBOX1);
+			status = HAL_CAN_AddTxMessage(&hcan3, &TxVoltage12, &data[6], (uint32_t *)CAN_TX_MAILBOX0);
 			hal_error(status);
+			while(HAL_CAN_IsTxMessagePending(&hcan2, CAN_TX_MAILBOX0) == 1)
+			{
+
+			}
 
 			// Sende Nachricht Zellspannung 9 - 12
-			status = HAL_CAN_AddTxMessage(&hcan3, &TxVoltage13, &data[12], (uint32_t *)CAN_TX_MAILBOX2);
+			status = HAL_CAN_AddTxMessage(&hcan3, &TxVoltage13, &data[12], (uint32_t *)CAN_TX_MAILBOX0);
 			hal_error(status);
+			while(HAL_CAN_IsTxMessagePending(&hcan2, CAN_TX_MAILBOX0) == 1)
+			{
+
+			}
 
 			// Sende Nachricht Zelltemperaturen 1 - 4
 			status = HAL_CAN_AddTxMessage(&hcan3, &TxTemperature11, &data[0], (uint32_t *)CAN_TX_MAILBOX0);
 			hal_error(status);
+			while(HAL_CAN_IsTxMessagePending(&hcan2, CAN_TX_MAILBOX0) == 1)
+			{
 
-			HAL_Delay(1);
+			}
 
 			// Sende Nachricht Zelltemperaturen 5 - 8
-			status = HAL_CAN_AddTxMessage(&hcan3, &TxTemperature12, &data[6], (uint32_t *)CAN_TX_MAILBOX1);
+			status = HAL_CAN_AddTxMessage(&hcan3, &TxTemperature12, &data[6], (uint32_t *)CAN_TX_MAILBOX0);
 			hal_error(status);
+			while(HAL_CAN_IsTxMessagePending(&hcan2, CAN_TX_MAILBOX0) == 1)
+			{
+
+			}
 
 			// Sende Nachricht Zelltemperaturen 9 - 12
-			status = HAL_CAN_AddTxMessage(&hcan3, &TxTemperature13, &data[12], (uint32_t *)CAN_TX_MAILBOX2);
+			status = HAL_CAN_AddTxMessage(&hcan3, &TxTemperature13, &data[12], (uint32_t *)CAN_TX_MAILBOX0);
 			hal_error(status);
+			while(HAL_CAN_IsTxMessagePending(&hcan2, CAN_TX_MAILBOX0) == 1)
+			{
+
+			}
 
 			// Sende Nachricht Zelltemperaturen 13 - 16
-			status = HAL_CAN_AddTxMessage(&hcan3, &TxTemperature14, &data[18], (uint32_t *)CAN_TX_MAILBOX2);
+			status = HAL_CAN_AddTxMessage(&hcan3, &TxTemperature14, &data[18], (uint32_t *)CAN_TX_MAILBOX0);
 			hal_error(status);
+			while(HAL_CAN_IsTxMessagePending(&hcan2, CAN_TX_MAILBOX0) == 1)
+			{
 
-			HAL_Delay(1);
+			}
 
 			lasttime500ms = millis();
 		}
@@ -349,10 +382,34 @@ int main(void)
 		if (millis() - 1000 > lasttime1s)
 		{
 			// Sende Nachricht Dummy
-			status = HAL_CAN_AddTxMessage(&hcan3, &TxMessage, TxData, (uint32_t *)CAN_TX_MAILBOX2);
+			status = HAL_CAN_AddTxMessage(&hcan3, &TxMessage, TxData, (uint32_t *)CAN_TX_MAILBOX0);
 			hal_error(status);
+			while(HAL_CAN_IsTxMessagePending(&hcan2, CAN_TX_MAILBOX0) == 1)
+			{
+
+			}
 
 			HAL_GPIO_TogglePin(BLUE_LED_GPIO_Port, BLUE_LED_Pin);
+
+			for (uint8_t j = 0; j < LTC6811_DEVICES; j++)
+			{
+				for (uint8_t i = 0; i < 12; i++)
+				{
+					uartTransmitNumber(cellvoltage[j][i], 10);
+					uartTransmit(";", 1);
+				}
+				uartTransmit("\n", 1);
+			}
+
+			for (uint8_t j = 0; j < LTC6811_DEVICES; j++)
+			{
+				for (uint8_t i = 0; i < 16; i++)
+				{
+					uartTransmitNumber(celltemperature[j][i], 10);
+					uartTransmit(";", 1);
+				}
+				uartTransmit("\n", 1);
+			}
 
 			lasttime1s = millis();
 		}

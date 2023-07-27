@@ -30,8 +30,6 @@
 // Definiere Zellenarray
 //----------------------------------------------------------------------
 ltc6811_configuration_tag ltc6811_Conf;										// LTC6811 Configurations Register
-uint8_t CellVoltage[LTC6811_DEVICES][12];									// Array fuer gemessene Zellspannungen
-uint8_t CellTemperature[LTC6811_DEVICES][12];								// Array fuer gemessene Zelltemperaturen
 //----------------------------------------------------------------------
 
 // Definiere Globale Variable
@@ -899,14 +897,12 @@ uint8_t ltc6811_thermal(void)
 
 	// Variablen definieren
 	uint8_t tmp_data[8 * LTC6811_DEVICES] = {0};							// Speicher Registerwerte
+	uint8_t temp = 0;
 
 	// Alle Register zuruecksetzen
 	ltc6811(CLRCELL);														// Register Zellspannung auf default setzen
 	ltc6811(CLRAUX);														// Register GPIO-Spannung auf default setzen
 	ltc6811(CLRSTAT);														// Register Interne Messungen auf default setzen
-
-	// Wartezeit um Register zurueck zu setzen
-	HAL_Delay(5);
 
 	// Lese Register
 	ltc6811_read(RDSTATB, &tmp_data[0]);									// Lese Status B Register fuer Thermal Shutdown Test
@@ -916,11 +912,22 @@ uint8_t ltc6811_thermal(void)
 	{
 		if (tmp_data[i*8 + 5] & (1 << 0))
 		{
-			return 1;														// Thermal Shutdown Test nicht OK
+			temp &= ~(1 << i);
+		}
+		else
+		{
+			temp |= (1 << i);
 		}
 	}
 
-	return 0;																// Thermal Shutdown Test OK
+	if (temp != 0)
+	{
+		return 1;															// Thermal Shutdown Test nicht OK
+	}
+	else
+	{
+		return 0;															// Thermal Shutdown Test OK
+	}
 }
 //----------------------------------------------------------------------
 
