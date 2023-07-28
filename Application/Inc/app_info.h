@@ -1,8 +1,8 @@
 //----------------------------------------------------------------------
-// Titel	:	my_math.h
+// Titel	:	app_info.h
 //----------------------------------------------------------------------
 // Sprache	:	C
-// Datum	:	30.01.2022
+// Datum	:	Jul 16, 2023
 // Version	:	1.0
 // Autor	:	Diveturtle93
 // Projekt	:	BatteriemanagementSystem
@@ -10,25 +10,24 @@
 
 // Dateiheader definieren
 //----------------------------------------------------------------------
-#ifndef INC_MATH_H_
-#define INC_MATH_H_
+#ifndef INC_APP_INFO_H_
+#define INC_APP_INFO_H_
 //----------------------------------------------------------------------
 
-// Include-Dateien einfuegen
-//----------------------------------------------------------------------
-#include "main.h"
+// ... definieren
 //----------------------------------------------------------------------
 
-// Define Debug Symbols
 //----------------------------------------------------------------------
-#define DEBUG_MATH
+
+// ... definieren
+//----------------------------------------------------------------------
+
 //----------------------------------------------------------------------
 
 // Funktionen definieren
 //----------------------------------------------------------------------
-static int32_t calculateMovingAverage(uint16_t oldValue, uint16_t newValue, uint16_t n);		// Gleitenden Mittelwert berechnen
-static uint16_t getDifference(uint16_t a, uint16_t b);						// Differenzberechnung
+void app_info(void);
 //----------------------------------------------------------------------
 
-#endif /* INC_MATH_H_ */
+#endif /* INC_APP_INFO_H_ */
 //----------------------------------------------------------------------

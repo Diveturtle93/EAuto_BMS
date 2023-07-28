@@ -14,16 +14,71 @@
 #define INC_BATTERIEMANAGEMENTSYSTEM_H_
 //----------------------------------------------------------------------
 
+// Programmversion definieren
+//----------------------------------------------------------------------
+#define MAJOR 0																// Batteriemanagement Major Version Number
+#define MINOR 1																// Batteriemanagement Minor Version Number
+//----------------------------------------------------------------------
+
+// Include Project Header
+//----------------------------------------------------------------------
+#include "BasicUart.h"
+#include "AD8403.h"
+//#include "adc_input.h"
+#include "app_info.h"
+#include "CAN_Bus.h"
+#include "error.h"
+#include "imd.h"
+#include "inputs.h"
+#include "LTC1380.h"
+#include "LTC6811.h"
+#include "millis.h"
+#include "my_math.h"
+#include "outputs.h"
+#include "SPI_resource.h"
+#include "statemaschine.h"
+#include "SystemInfo.h"
+//----------------------------------------------------------------------
+
+// Definiere Revision of Batteriemanagement HW PCB
+//----------------------------------------------------------------------
+//#if REVISION == 255
+//#error "Revision ist nicht definiert"
+//#elif REVISION == 1
+//#warning "PCB Revision 1.0 definert"
+//#elif REVISION == 2
+//#warning "PCB Revision 1.1 definert"
+//#endif
+//----------------------------------------------------------------------
+
+// Tischaufbau
+//----------------------------------------------------------------------
+#define TISCHAUFBAU									1						// 0 = Auto, 1 = Tischaufbau
+
+//----------------------------------------------------------------------
+#if TISCHAUFBAU == 1
+#warning "Programm ist fuer Tischaufbau kompiliert!!"
+#elif
+#warning "Programm ist fuer Auto kompiliert!!"
+#endif
+//----------------------------------------------------------------------
+
+//----------------------------------------------------------------------
+// TODO:
+
+//----------------------------------------------------------------------
+
 // CAN-IDs definieren
 //----------------------------------------------------------------------
 // Batteriemanagement-System neu
 //----------------------------------------------------------------------
-#define BMS_CAN_SAFETY								0x138					// Shutdown Circuit Motorsteuergeraet, Sicherheitsrelevante Daten
-#define BMS_CAN_DIGITAL_OUT							0x237					// Digitale Ausgaenge Motorsteuergeraet, Alle digitalen Ausgaenge
-#define BMS_CAN_DIGITAL_IN							0x238					// Digitale Eingaenge Motorsteuergeraet, Alle digitalen Eingaenge
-#define BMS_CAN_ANALOG_IN							0x239					// Analogwerte Motorsteuergerat, Gaspedal, Bremsdruck, Info, Return, KlimaFlap, KL15
-#define BMS_CAN_TEMPERATUR							0x538					// Temperatur Motorsteuergeraet, PCB, Bremsdrucktemperatur, Kuehlwassertemperatur
-#define BMS_CAN_ERROR								0x560					// Error BMS
+#define BMS_CAN_SAFETY								0x138					// Shutdown Circuit Batteriemanagement, Sicherheitsrelevante Daten
+#define BMS_CAN_DIGITAL_OUT							0x237					// Digitale Ausgaenge Batteriemanagement, Alle digitalen Ausgaenge
+#define BMS_CAN_DIGITAL_IN							0x238					// Digitale Eingaenge Batteriemanagement, Alle digitalen Eingaenge
+#define BMS_CAN_ANALOG_IN							0x239					// Analogwerte Batteriemanagement, Spannung Relais, PCB
+#define BMS_CAN_TEMPERATUR							0x538					// Temperatur Batteriemanagement, Temperatursensor 1 bis 4
+#define BMS_CAN_STATUS								0x560					// Status BMS
+#define BMS_CAN_IMD									0x505					// Status IMD
 #define BMS_CAN_Zellen11							0x640					// Batterie-Zellen 1-4 Modul 1
 #define BMS_CAN_Zellen12							0x641					// Batterie-Zellen 5-8 Modul 1
 #define BMS_CAN_Zellen13							0x642					// Batterie-Zellen 9-12 Modul 1
@@ -72,9 +127,34 @@
 #define xy_CAN										0x011					// Einmalig gesendet wenn Schlüssel auf Stufe 2
 //----------------------------------------------------------------------
 
-// Funktionen definieren
+//
+//----------------------------------------------------------------------
+#define CAN_TIMEOUT									3000					// Zeit bis CAN Timeout auftritt
 //----------------------------------------------------------------------
 
+// Definiere Statemaschine Typedefines
+//----------------------------------------------------------------------
+typedef enum
+{
+	Start,																	// 0 Starte Batteriemanagement
+	Ready,																	// 1 Batteriemanagement gestartet
+	KL15,																	// 2 KL15 aktiv
+	Anlassen,																// 3 Anlasser betaetigt
+	Precharge,																// 4 Precharge Fahrzeug
+	ReadyToDrive,															// 5 Batteriemanagement bereit fuer Fahrmodus
+	Drive,																	// 6 Fahrzeug im Fahrmodus
+	Standby,																// 7 Auto wird abgeschaltet, Zeitverzoegerung bis Batteriemanagement ausgeht
+	Ausschalten,															// 8 Batteriemanagement ausschalten
+} states;
+//----------------------------------------------------------------------
+typedef struct
+{
+	uint8_t States : 4;														// State der Statemaschine
+	uint8_t Normal : 1;														// Statemaschine Normal
+	uint8_t Warning : 1;													// Statemaschine Warning
+	uint8_t Error : 1;														// Statemaschine Error
+	uint8_t CriticalError : 1;												// Statemaschine kritischer Error
+} BMS_states;
 //----------------------------------------------------------------------
 
 #endif /* INC_BATTERIEMANAGEMENTSYSTEM_H_ */

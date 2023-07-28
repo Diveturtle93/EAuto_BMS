@@ -21,9 +21,7 @@
 // Einfuegen der eigenen Include Dateien
 //----------------------------------------------------------------------
 #include "imd.h"
-#include "BasicUart.h"
-#include "inputs.h"
-#include "outputs.h"
+#include "BatteriemanagementSystem.h"
 //----------------------------------------------------------------------
 
 // Variablen einbinden

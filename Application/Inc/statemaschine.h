@@ -1,8 +1,8 @@
 //----------------------------------------------------------------------
-// Titel	:	my_math.h
+// Titel	:	statemaschine.h
 //----------------------------------------------------------------------
 // Sprache	:	C
-// Datum	:	30.01.2022
+// Datum	:	Jul 27, 2023
 // Version	:	1.0
 // Autor	:	Diveturtle93
 // Projekt	:	BatteriemanagementSystem
@@ -10,25 +10,24 @@
 
 // Dateiheader definieren
 //----------------------------------------------------------------------
-#ifndef INC_MATH_H_
-#define INC_MATH_H_
+#ifndef INC_STATEMASCHINE_H_
+#define INC_STATEMASCHINE_H_
 //----------------------------------------------------------------------
 
-// Include-Dateien einfuegen
+// Konstanten definieren
 //----------------------------------------------------------------------
-#include "main.h"
+#define BMSTIME									300000						// Standby Zeit nach ausschalten KL15, 5min
 //----------------------------------------------------------------------
 
-// Define Debug Symbols
+// ... definieren
 //----------------------------------------------------------------------
-#define DEBUG_MATH
+
 //----------------------------------------------------------------------
 
 // Funktionen definieren
 //----------------------------------------------------------------------
-static int32_t calculateMovingAverage(uint16_t oldValue, uint16_t newValue, uint16_t n);		// Gleitenden Mittelwert berechnen
-static uint16_t getDifference(uint16_t a, uint16_t b);						// Differenzberechnung
+
 //----------------------------------------------------------------------
 
-#endif /* INC_MATH_H_ */
+#endif /* INC_STATEMASCHINE_H_ */
 //----------------------------------------------------------------------

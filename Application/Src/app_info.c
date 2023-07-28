@@ -1,34 +1,42 @@
 //----------------------------------------------------------------------
-// Titel	:	my_math.h
+// Titel	:	app_info.c
 //----------------------------------------------------------------------
 // Sprache	:	C
-// Datum	:	30.01.2022
+// Datum	:	Jul 16, 2023
 // Version	:	1.0
 // Autor	:	Diveturtle93
 // Projekt	:	BatteriemanagementSystem
 //----------------------------------------------------------------------
 
-// Dateiheader definieren
-//----------------------------------------------------------------------
-#ifndef INC_MATH_H_
-#define INC_MATH_H_
+// Einfuegen der standard Include-Dateien
 //----------------------------------------------------------------------
 
-// Include-Dateien einfuegen
-//----------------------------------------------------------------------
-#include "main.h"
 //----------------------------------------------------------------------
 
-// Define Debug Symbols
-//----------------------------------------------------------------------
-#define DEBUG_MATH
+// Einfuegen der STM Include-Dateien
 //----------------------------------------------------------------------
 
-// Funktionen definieren
-//----------------------------------------------------------------------
-static int32_t calculateMovingAverage(uint16_t oldValue, uint16_t newValue, uint16_t n);		// Gleitenden Mittelwert berechnen
-static uint16_t getDifference(uint16_t a, uint16_t b);						// Differenzberechnung
 //----------------------------------------------------------------------
 
-#endif /* INC_MATH_H_ */
+// Einfuegen der eigenen Include Dateien
 //----------------------------------------------------------------------
+#include "app_info.h"
+#include "BatteriemanagementSystem.h"
+//----------------------------------------------------------------------
+
+void app_info(void)
+{
+  	// Teste serielle Schnittstelle
+	#define START_STRING_UART		"!--- Batteriemanagement-System ---!\n"
+	uartTransmit(START_STRING_UART, sizeof(START_STRING_UART));
+	#define VERSION_STRING_UART		"Application Version: "
+	uartTransmit(VERSION_STRING_UART, sizeof(VERSION_STRING_UART));
+	uartTransmitNumber(MAJOR, 10);
+	uartTransmit(".", 1);
+	uartTransmitNumber(MINOR, 10);
+	uartTransmit("\n", 1);
+
+  	// Sammel Systeminformationen
+  	collectSystemInfo();
+	printResetSource(readResetSource());
+}

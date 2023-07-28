@@ -21,6 +21,7 @@
 // Einfuegen der eigenen Include Dateien
 //----------------------------------------------------------------------
 #include "inputs.h"
+#include "BatteriemanagementSystem.h"
 //----------------------------------------------------------------------
 
 // Variablen einbinden

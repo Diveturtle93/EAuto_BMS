@@ -202,8 +202,21 @@ void Error_Handler(void);
 #define FREIGABE_GPIO_Port GPIOE
 #define INLET_GREEN_Pin GPIO_PIN_1
 #define INLET_GREEN_GPIO_Port GPIOE
-/* USER CODE BEGIN Private defines */
 
+/* USER CODE BEGIN Private defines */
+// Anzahl der CAN Output Pakete defineren
+//----------------------------------------------------------------------
+#define ANZAHL_OUTPUT_PAKETE			7									// Anzahl Sende Nachrichten
+//----------------------------------------------------------------------
+
+// Typedefine Boolean definieren
+//----------------------------------------------------------------------
+typedef enum
+{
+	false,
+	true,
+} bool;
+//----------------------------------------------------------------------
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

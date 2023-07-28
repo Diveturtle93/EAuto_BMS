@@ -9,6 +9,7 @@ git.h
 *.ko
 *.obj
 *.elf
+*.cyclo
 
 # Linker output
 *.ilk

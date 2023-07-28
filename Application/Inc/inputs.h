@@ -16,8 +16,10 @@
 
 // Eingangsstrukturen definieren
 //----------------------------------------------------------------------
-typedef union __system_input_tag {
-	struct {
+typedef union
+{
+	struct
+	{
 		uint8_t IMD_PWM_STATUS : 4;				// 0 - 2					// 0 = Kurzschluss gegen Masse, 0Hz
 																			// 1 = Normalzustand, 10Hz
 																			// 2 = bei Unterspannung, 20Hz
@@ -38,14 +40,16 @@ typedef union __system_input_tag {
 //----------------------------------------------------------------------
 
 //----------------------------------------------------------------------
-typedef union __sdc_in_tag {
-	struct {
+typedef union
+{
+	struct
+	{
 		uint8_t IMD_OK_IN : 1;					// 0
 		uint8_t HVIL : 1;						// 1
 		uint8_t MotorSDC : 1;					// 2
 		uint8_t BTB_SDC : 1;					// 3
 		uint8_t PrechargeIn : 1;				// 4
-		uint8_t  : 1;							// 5
+		uint8_t Anlassen : 1;					// 5
 		uint8_t  : 1;							// 6
 		uint8_t  : 1;							// 7
 	};
@@ -55,8 +59,10 @@ typedef union __sdc_in_tag {
 //----------------------------------------------------------------------
 
 //----------------------------------------------------------------------
-typedef union __komfort_in_tag {
-	struct {
+typedef union
+{
+	struct
+	{
 		uint8_t OVC : 1;						// 0
 		uint8_t Button1 : 1;					// 1
 		uint8_t Button2 : 1;					// 2

@@ -21,7 +21,7 @@
 // Einfuegen der eigenen Include Dateien
 //----------------------------------------------------------------------
 #include "AD8403.h"
-#include "SPI_resource.h"
+#include "BatteriemanagementSystem.h"
 //----------------------------------------------------------------------
 
 // Initialisiere AD8403

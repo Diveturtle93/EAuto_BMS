@@ -21,8 +21,7 @@
 // Einfuegen der eigenen Include Dateien
 //----------------------------------------------------------------------
 #include "ltc1380.h"
-#include "ltc6811.h"
-#include "error.h"
+#include "BatteriemanagementSystem.h"
 //----------------------------------------------------------------------
 
 // Kanal auswaehlen

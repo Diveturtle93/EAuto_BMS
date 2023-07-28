@@ -16,8 +16,10 @@
 
 // Strukturen definieren
 //----------------------------------------------------------------------
-typedef union __system_out_tag {
-	struct {
+typedef union
+{
+	struct
+	{
 		uint8_t AmsLimit : 1;					// 0
 		uint8_t ImdOK : 1;						// 1
 		uint8_t AmsOK : 1;						// 2
@@ -33,8 +35,10 @@ typedef union __system_out_tag {
 //----------------------------------------------------------------------
 
 //----------------------------------------------------------------------
-typedef union __highcurrent_out_tag {
-	struct {
+typedef union
+{
+	struct
+	{
 		uint8_t Digital1 : 1;					// 0
 		uint8_t Digital2 : 1;					// 1
 		uint8_t PrechargeOut : 1;				// 2
@@ -50,8 +54,10 @@ typedef union __highcurrent_out_tag {
 //----------------------------------------------------------------------
 
 //----------------------------------------------------------------------
-typedef union __leuchten_out_tag {
-	struct {
+typedef union
+{
+	struct
+	{
 		uint8_t InletRed : 1;					// 0
 		uint8_t InletGreen : 1;					// 1
 		uint8_t AkkuErrorLed : 1;				// 2
@@ -67,8 +73,10 @@ typedef union __leuchten_out_tag {
 //----------------------------------------------------------------------
 
 //----------------------------------------------------------------------
-typedef union __komfort_out_tag {
-	struct {
+typedef union
+{
+	struct
+	{
 		uint8_t TriggerOut : 1;					// 0
 		uint8_t IsoSPI_EN : 1;					// 1
 		uint8_t IsoHV_EN : 1;					// 2

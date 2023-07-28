@@ -31,25 +31,25 @@
 //----------------------------------------------------------------------
 // Define IsoSpi States
 //----------------------------------------------------------------------
-typedef enum IsoSpiState
+typedef enum
 {
-	Idle,																	// Kommunikation unterbrochen
-	Ready,																	// Kommunikation kann durchgefuehrt werden
-	Active,																	// Kommunikation wird durchgefuehrt
-	GetReady,																// Kommunikation wird vorbereitet
+	ISOIdle,																// Kommunikation unterbrochen
+	ISOReady,																// Kommunikation kann durchgefuehrt werden
+	ISOActive,																// Kommunikation wird durchgefuehrt
+	ISOGetReady,															// Kommunikation wird vorbereitet
 } IsoSpi_State;
 //----------------------------------------------------------------------
 // Define LTC6811 States
 //----------------------------------------------------------------------
-typedef enum LTC6811State
+typedef enum
 {
-	Standby,																// IC im Standby, Referenzspannung inaktiv, Beide Timer laufen
-	Measure,																// Messung am ADC wird durchgefuehrt
-	Refup,																	// Referenzspannung aktiv
-	SetRefup,																// Referenzspannung wird vorbereitet
-	Wakeup,																	// IC wird geweckt
-	ExtendedBalancing,														// Balancing aktiv, Watchdog Timer ausgeschaltet, Entladetimer läuft
-	Sleep																	// IC im Sleep, keine Aktion, Beide Timer ausgeschaltet
+	LTCStandby,																// IC im Standby, Referenzspannung inaktiv, Beide Timer laufen
+	LTCMeasure,																// Messung am ADC wird durchgefuehrt
+	LTCRefup,																// Referenzspannung aktiv
+	LTCSetRefup,															// Referenzspannung wird vorbereitet
+	LTCWakeup,																// IC wird geweckt
+	LTCExtendedBalancing,													// Balancing aktiv, Watchdog Timer ausgeschaltet, Entladetimer läuft
+	LTCSleep																// IC im Sleep, keine Aktion, Beide Timer ausgeschaltet
 } LTC6811_State;
 //----------------------------------------------------------------------
 
@@ -217,8 +217,10 @@ uint16_t ltc6811_poll(void);												// Poll Data nach Conversion
 
 // Definiere Zellenarray
 //----------------------------------------------------------------------
-typedef union __ltc6811_configuration_tag {
-	struct {
+typedef union
+{
+	struct
+	{
 		uint8_t LTC_GPIO5 : 1;												// GPIO 5
 		uint8_t LTC_GPIO4 : 1;												// GPIO 4
 		uint8_t LTC_GPIO3 : 1;												// GPIO 3

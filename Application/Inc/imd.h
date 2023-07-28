@@ -23,8 +23,10 @@
 
 // Eingangsstrukturen definieren
 //----------------------------------------------------------------------
-typedef union __imd_tag {
-	struct {
+typedef union
+{
+	struct
+	{
 		uint32_t Frequency : 6;					// Frequenz abspeichern		// 0 - 5
 		uint32_t Resistanc : 18;				// Widerstand abspeichern	// 6 - 25
 		uint32_t PWM_STATUS : 4;				// 26 - 29					// 0 = Kurzschluss gegen Masse, 0Hz

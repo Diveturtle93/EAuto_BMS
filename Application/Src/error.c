@@ -16,15 +16,14 @@
 // Einfuegen der eigenen Include Dateien
 //----------------------------------------------------------------------
 #include "error.h"
-#include "BasicUart.h"
-#include "outputs.h"
+#include "BatteriemanagementSystem.h"
 //----------------------------------------------------------------------
 
 // Hal Error auswerten und ausgeben
 //----------------------------------------------------------------------
 void hal_error(uint8_t status)
 {
-#ifdef DEBUG
+#ifdef DEBUG_HAL
 	if (status == HAL_OK) {													// HAL OK
 		uartTransmit("HAL OK\n", 7);
 	}
@@ -55,6 +54,10 @@ void software_error(uint8_t errorcode)
 	leuchten_out.GreenLed = 0;												// Zuruechsetzen Variable
 	HAL_GPIO_WritePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin, leuchten_out.GreenLed);// Fehler LED ausschalten
 
+	// Wenn Fehler, dann AMS Limit zuruecknehmen, Emergency Run wird ausgefuehrt
+	system_out.AmsLimit = 0;												// Zuruecksetzen Variable
+	HAL_GPIO_WritePin(AMS_LIMIT_GPIO_Port, AMS_LIMIT_Pin, system_out.AmsLimit);// Fehler AMS Limit
+
 #ifdef DEBUG																// Serielle Kommunukation nur waehrend Debugging
 #define SOFTERRORMESSAGE			"\nSoftware Error Handler ausgeloest\n"	// Ausgabe das Fehler aufgetreten ist
 	uartTransmit(SOFTERRORMESSAGE,sizeof(SOFTERRORMESSAGE));
@@ -67,6 +70,33 @@ void software_error(uint8_t errorcode)
 }
 //----------------------------------------------------------------------
 
+// Diagnose Funktion falls ein Fehler auftritt (Nur Debugzwecke)
+//----------------------------------------------------------------------
+void software_error_debug(uint8_t errorcode)
+{
+	// Schalte Fehler LED ein
+	leuchten_out.RedLed = 1;												// Setze Variable
+	HAL_GPIO_WritePin(RED_LED_GPIO_Port, RED_LED_Pin, leuchten_out.RedLed);	// Fehler LED einschalten
+
+	// Schalte Ok LED aus
+	leuchten_out.GreenLed = 0;												// Zuruechsetzen Variable
+	HAL_GPIO_WritePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin, leuchten_out.GreenLed);// OK LED ausschalten
+
+	// Wenn Fehler, dann AMS Limit zuruecknehmen, Emergency Run wird ausgefuehrt
+	system_out.AmsLimit = 0;												// Zuruecksetzen Variable
+	HAL_GPIO_WritePin(AMS_LIMIT_GPIO_Port, AMS_LIMIT_Pin, system_out.AmsLimit);// Fehler AMS Limit
+
+#ifdef DEBUG																// Serielle Kommunukation nur waehrend Debugging
+#define SOFTERRORMESSAGE			"\nSoftware Error Handler ausgeloest\n"	// Ausgabe das Fehler aufgetreten ist
+	uartTransmit(SOFTERRORMESSAGE,sizeof(SOFTERRORMESSAGE));
+
+#define ERRORCODE					"Error Code:\t"							// Ausgabe des Fehlers anhand von Fehlercode
+	uartTransmit(ERRORCODE,sizeof(ERRORCODE));
+	uartTransmitNumber(errorcode, 10);										// Fehlercode ausgeben
+#endif
+}
+//----------------------------------------------------------------------
+
 // Debug Nachricht ueber SWO senden
 // Nachricht SWO ITM Data Console
 // Core Clock := Maximalfrequenz
@@ -74,7 +104,7 @@ void software_error(uint8_t errorcode)
 //----------------------------------------------------------------------
 void ITM_SendString(char *text)
 {
-#ifdef DEBUG
+#ifdef DEBUG_SWO
 	// So lange *text != '\0', also ungleich dem "String-Endezeichen(Terminator)"
 	while(*text)															// Starte Pointerschleife
 	{
@@ -89,7 +119,7 @@ void ITM_SendString(char *text)
 //----------------------------------------------------------------------
 void ITM_SendNumber(long number)
 {
-#ifdef DEBUG
+#ifdef DEBUG_SWO
 	// Variablen definieren
 	unsigned char buf[8 * sizeof(long)];
 	unsigned int i = 0;
@@ -129,7 +159,7 @@ void ITM_SendNumber(long number)
 //----------------------------------------------------------------------
 void ITM_SendFloat(double number, int digits)
 {
-#ifdef DEBUG
+#ifdef DEBUG_SWO
 	int i = 0;
 
 	// Wenn Zahl negativ ist

@@ -28,25 +28,14 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "BasicUart.h"
-#include "SystemInfo.h"
-#include "LTC6811.h"
-#include "LTC1380.h"
-#include "outputs.h"
-#include "error.h"
-#include "inputs.h"
-#include "my_math.h"
 #include "BatteriemanagementSystem.h"
-#include "imd.h"
-#include "AD8403.h"
-#include "SPI_resource.h"
-#include "millis.h"
-#include <math.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-
+// TODO:
+// FIXME: CAN Bus (CAN-Bus braucht Ablaufprogramm)
+// xxx: Schlechte Performance
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -61,12 +50,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-CAN_RxHeaderTypeDef RxMessage;
-uint8_t RxData[8], can_change = 0;
-static volatile uint16_t rising = 0;
-static volatile uint16_t falling = 0;
-volatile uint8_t millisekunden_flag_1 = 0, pwm_change = 0;
-uint32_t timemillisekunden = 0;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -87,7 +71,12 @@ void SystemClock_Config(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
+	BMS_states BMS_state = {Start, true, false, false, false};
 
+	uint32_t timeStandby = 0, timeError = 0;
+
+	uint8_t can_online = 0;
+	uint32_t timeBAMO = 0, timeMOTOR = 0;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -96,40 +85,27 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-	// Definiere Variablen fuer Main-Funktion
-	uint8_t pwm_count = 0;
-	uint16_t count = 0;
-	uint32_t timerPeriod;
-	uint8_t start_flag = 0;
 
-	// Definiere Variablen fuer BMS Zellen
-	uint8_t data[36] = {0}, temp, CFG[6] = {0};
-	uint32_t tmp;
-	uint16_t spannungen[12] = {0}, temperatur[2] = {0}, tmp_mean;
-
-	// Definiere Variablen fuer Main-Funktion
-	uint8_t TxData[8], OutData[4], InData[3], status;
-  	CAN_FilterTypeDef sFilterConfig;
-
-  	// Erstelle Can-Nachrichten
-  	CAN_TxHeaderTypeDef TxMessage = {0x124, 0, CAN_RTR_DATA, CAN_ID_STD, 8, DISABLE};
-  	CAN_TxHeaderTypeDef TxOutput = {BMS_CAN_DIGITAL_OUT, 0, CAN_RTR_DATA, CAN_ID_STD, 4, DISABLE};
-  	CAN_TxHeaderTypeDef TxInput = {BMS_CAN_DIGITAL_IN, 0, CAN_RTR_DATA, CAN_ID_STD, 3, DISABLE};
-  	CAN_TxHeaderTypeDef TxIMD = {BMS_CAN_SAFETY, 0, CAN_RTR_DATA, CAN_ID_STD, 5, DISABLE};
   /* USER CODE END Init */
 
   /* Configure the system clock */
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
+  MX_USART2_UART_Init();
 
+	uartTransmit("Start\n", 6);
+
+#ifdef DEBUG
+	app_info();
+	HAL_Delay(3000);
+#endif
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_CAN1_Init();
   MX_SPI4_Init();
-  MX_USART2_UART_Init();
   MX_ADC1_Init();
   MX_TIM1_Init();
   MX_TIM4_Init();
@@ -138,179 +114,18 @@ int main(void)
   MX_TIM6_Init();
   /* USER CODE BEGIN 2 */
 
-	/* Schreibe Resetquelle auf die Konsole */
 #ifdef DEBUG
-	printResetSource(readResetSource());
+	#define MAINWHILE			"\nStarte While Schleife\n"
+	uartTransmit(MAINWHILE, sizeof(MAINWHILE));
 
-	/* Teste serielle Schnittstelle*/
-	#define TEST_STRING_UART		"\nUART2 Transmitting in polling mode, Hello Diveturtle93!\n"
-	uartTransmit(TEST_STRING_UART, sizeof(TEST_STRING_UART));
-
-  	// Sammel Systeminformationen
-  	collectSystemInfo();
+	uartTransmit("Ready\n", 6);
 #endif
 
-	// Leds Testen
-	testPCB_Leds();
+	CANinit(RX_SIZE_16, TX_SIZE_16);
+	CAN_config();
+	system_out.Power_On = true;
+	BMS_state.States = Ready;
 
-  	// Lese alle Eingaenge
-  	readall_inputs();
-
-  	// IsoSPI einschalten, Isolierte Spannungsversorgung IsoSPI und HV-Precharge Messung einschalten
-  	ISOSPI_ENABLE();
-
-  	// Warten fuer eine kurze Zeit
-  	HAL_Delay(20);
-
-    uartTransmit("\n", 1);
-#define TEST_LTC6811	"Starte Batteriemanagement-System\n"
-    uartTransmit(TEST_LTC6811, sizeof(TEST_LTC6811));
-
-	if ((temp = ltc6811_check()) != 0)									// LTC6804 Selftest durchfuehren
-	{
-#define LTC6811_FAILED	"Selbsttest LTC6811 fehlerhaft\n"
-		uartTransmit(LTC6811_FAILED, sizeof(LTC6811_FAILED));			// Ausgabe bei Fehlerhaftem Selbsttest
-		leuchten_out.RedLed = 1;										// Variable setzen
-	    HAL_GPIO_WritePin(RED_LED_GPIO_Port, RED_LED_Pin, leuchten_out.RedLed);// Ausgabe auf LEDs
-
-	    uartTransmitNumber(temp, 10);
-		uartTransmit("\n", 1);
-
-		return 0;														// Programm abbrechen
-	}
-	else
-	{
-#define LTC6811_PASSED	"Selbsttest LTC6811 erfolgreich\n"
-		uartTransmit(LTC6811_PASSED, sizeof(LTC6811_PASSED));			// Ausgabe bei Erfolgreichem Selbsttest
-	}
-
-    // LTC6811 initialisieren
-	CFG[0] = 0xF8;
-	CFG[1] = 0xCF;
-	CFG[2] = 0x17;
-	CFG[3] = 0xA4;
-	CFG[4] = 0x00;
-	CFG[5] = 0x00;
-	ltc6811_write(WRCFG, &CFG[0]);
-
-	// Alle Register zuruecksetzen
-	ltc6811(CLRCELL);
-	ltc6811(CLRSTAT);
-	ltc6811(CLRAUX);
-
-	// Erster ADC Vorgang ist ungueltig
-	ltc6811(ADCVAX | MD73 | CELLALL);									// Initial Command Zellen auslesen
-
-	tmp_mean = 65535;
-	timerPeriod = (HAL_RCC_GetPCLK2Freq() / htim1.Init.Prescaler);
-  	// Start timer
-	if (HAL_TIM_Base_Start(&htim1) != HAL_OK);
-	if (HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_1) != HAL_OK);
-	if (HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_2) != HAL_OK);
-  	HAL_TIM_Base_Start_IT(&htim6);
-
-  	// Starte CAN Bus
-  	if((status = HAL_CAN_Start(&hcan3)) != HAL_OK)
-  	{
-  		// Start Error
-  		hal_error(status);
-  		Error_Handler();
-  	}
-  	uartTransmit("CAN START\n", 10);
-
-  	// Aktiviere Interrupts fuer CAN Bus
-  	if((status = HAL_CAN_ActivateNotification(&hcan3, CAN_IT_RX_FIFO0_MSG_PENDING)) != HAL_OK)
-  	{
-  		/* Notification Error */
-  		hal_error(status);
-  		Error_Handler();
-  	}
-  	uartTransmit("Send Message\n", 13);
-
-  	// Filter Bank initialisieren um Daten zu empfangen
-    sFilterConfig.FilterBank = 0;
-    sFilterConfig.FilterMode = CAN_FILTERMODE_IDMASK;
-    sFilterConfig.FilterScale = CAN_FILTERSCALE_32BIT;
-    sFilterConfig.FilterIdHigh = 0x0000;
-    sFilterConfig.FilterIdLow = 0x0000;
-    sFilterConfig.FilterMaskIdHigh = 0x0000;
-    sFilterConfig.FilterMaskIdLow = 0x0000;
-    sFilterConfig.FilterFIFOAssignment = 0;
-    sFilterConfig.FilterActivation = ENABLE;
-
-    // Filter Bank schreiben
-    if((status = HAL_CAN_ConfigFilter(&hcan3, &sFilterConfig)) != HAL_OK)
-    {
-    	/* Filter configuration Error */
-  		hal_error(status);
-  		Error_Handler();
-    }
-
-    // Test CAN Nachricht beschreiben
-    for (uint8_t j = 0; j < 8; j++)
-    {
-    	TxData[j] = (j + 1);
-    }
-
-	if ((sdc_in.sdcinput & 0x0E) && (sdc_in.IMD_OK_IN != 1))					// SDC OK; Motor, BTB, IMD und HVIL OK
-	{
-		#define SDC_STRING_ERROR			"\nSDC ist nicht geschlossen"
-		uartTransmit(SDC_STRING_ERROR, sizeof(SDC_STRING_ERROR));
-
-		// LEDs setzen bei SDC Fehler
-		leuchten_out.GreenLed = 0;
-		leuchten_out.RedLed = 1;
-		leuchten_out.AkkuErrorLed = 0;
-		HAL_GPIO_WritePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin, leuchten_out.GreenLed);
-		HAL_GPIO_WritePin(RED_LED_GPIO_Port, RED_LED_Pin, leuchten_out.RedLed);
-		HAL_GPIO_WritePin(AKKU_LED_GPIO_Port, AKKU_LED_Pin, leuchten_out.AkkuErrorLed);
-
-		// Ausgabe welcher Fehler vorhanden
-		// Motorsteuergeraet Fehler
-		if(sdc_in.MotorSDC == 1)
-		{
-			#define SDC_STRING_MOTOR		"\nSDC Motor hat einen Fehler und ist offen"
-			uartTransmit(SDC_STRING_MOTOR, sizeof(SDC_STRING_MOTOR));
-		}
-
-		// BamoCar Fehler
-		if (sdc_in.BTB_SDC == 1)
-		{
-			#define SDC_STRING_BTB			"\nSDC BTB hat einen Fehler und ist offen"
-			uartTransmit(SDC_STRING_BTB, sizeof(SDC_STRING_BTB));
-		}
-
-		// HVIL Fehler
-		if (sdc_in.HVIL == 1)
-		{
-			#define SDC_STRING_HVIL			"\nSDC HVIL ist nicht geschlossen"
-			uartTransmit(SDC_STRING_HVIL, sizeof(SDC_STRING_HVIL));
-		}
-
-		// IMD Fehler
-		if (sdc_in.IMD_OK_IN != 1)
-		{
-			#define SDC_STRING_IMD			"\nSDC IMD hat einen Fehler"
-			uartTransmit(SDC_STRING_IMD, sizeof(SDC_STRING_IMD));
-		}
-	}
-	else
-	{
-		// Keine Fehler, LEDs fuer OK setzen
-		system_out.AmsOK = 1;
-		HAL_GPIO_WritePin(AMS_OK_GPIO_Port, AMS_OK_Pin, system_out.AmsOK);
-		leuchten_out.GreenLed = 1;
-		HAL_GPIO_WritePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin, leuchten_out.GreenLed);
-
-		// Ausgabe SDC geschlossen
-		#define SDC_STRING_OK				"\nSDC ist geschlossen"
-		uartTransmit(SDC_STRING_OK, sizeof(SDC_STRING_OK));
-	}
-
-	// Digitales Poti initialisieren
-	initAD8403();
-
-	timemillisekunden = millis();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -320,165 +135,222 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-		// Task wird jede Millisekunde ausgefuehrt
-		if (millisekunden_flag_1 == 1)
-		{
-			count++;													// Zaehler count hochzaehlen
-			millisekunden_flag_1 = 0;									// Setze Millisekunden-Flag zurueck
+	  // Alle Eingaenge einlesen
+	  readall_inputs();
 
-			// Setzen des Start Flags,  damit Tasks nur einmal pro ms aufgerufen werden kann
-			start_flag = 1;												// Setze Start Flag
-		}
+	  // Alle ADC einlesen
+	  // TODO: ADCs
 
-		// Task wird alle 100 Millisekunden ausgefuehrt
-		if (((millis() - timemillisekunden) > 100) && (start_flag == 1))
-		{
-			// Lese alle Eingaenge
-			readall_inputs();
-		}
+	  // Shutdown-Circuit checken
+	  // checkSDC();
 
-		// Task wird alle 200 Millisekunden ausgefuehrt
-		if (((millis() - timemillisekunden) > 200) && (start_flag == 1))
-		{
-			ltc6811(ADCVC | MD73 | CELLALL);
-			HAL_Delay(5);
+	  if (millis() > (timeBAMO + CAN_TIMEOUT))
+	  {
+		  can_online &= ~(1 << 0);
+	  }
+	  if (millis() > (timeMOTOR + CAN_TIMEOUT))
+	  {
+		  can_online &= ~(1 << 1);
+	  }
 
-			ltc6811_read(RDCVA, &data[0]);
-			ltc6811_read(RDCVB, &data[6]);
-			ltc6811_read(RDCVC, &data[12]);
-			ltc6811_read(RDCVD, &data[18]);
+	  // Crash Ausgeloest
+	  if (system_in.Crash != 1)
+	  {
+		  BMS_state.CriticalError = true;
+		  BMS_state.Normal = false;
+	  }
 
-			uartTransmit("Spannungen\n", 11);
+	  // Wenn Statemaschine nicht im Standby ist
+	  if (BMS_state.States != Standby)
+	  {
+		  // Schreibe alle CAN-Nachrichten auf BUS, wenn nicht im Standby
+		  CANwork();
+	  }
 
-			for (uint8_t i = 0; i < 12; i++)
-			{
-				spannungen[i] = ((data[i*2+1]<<8) | data[i*2]);
-			}
+	  // Statemaschine keine Fehler
+	  if (BMS_state.Normal)
+	  {
+		  leuchten_out.RedLed = false;
+		  leuchten_out.GreenLed = true;
+	  }
 
-			for (uint8_t i = 0; i < 12; i++)
-			{
-				uartTransmitNumber(spannungen[i], 10);
-				uartTransmit(";", 1);
-			}
+	  // Statemaschine hat Warnungen
+	  if (BMS_state.Warning)
+	  {
+		  if (millis() -timeError > 1000)
+		  {
+			  leuchten_out.RedLed = !leuchten_out.RedLed;
+			  timeError = millis();
+		  }
 
-			tmp = 0;
-			for (uint8_t i = 0; i < 12; i++)
-			{
-				tmp += spannungen[i];
-			}
-			tmp /= 12;
-			uartTransmitNumber(tmp, 10);
-			uartTransmit(";", 1);
+		  leuchten_out.GreenLed = true;
+	  }
 
-			tmp_mean = calculateMovingAverage(tmp_mean, tmp, 10);
-			uartTransmitNumber(tmp_mean, 10);
+	  // Statemaschine hat Error
+	  if (BMS_state.Error)
+	  {
+		  if (millis() -timeError > 1000)
+		  {
+			  leuchten_out.RedLed = !leuchten_out.RedLed;
+			  timeError = millis();
+		  }
 
-			uartTransmit("\n", 1);
+		  leuchten_out.GreenLed = false;
+	  }
 
-			uartTransmit("Temperaturen\n", 13);
+	  // Statemaschine hat Kritische Fehler
+	  if (BMS_state.CriticalError)
+	  {
+		  leuchten_out.RedLed = true;
+		  leuchten_out.GreenLed = false;
+	  }
 
-			for (uint8_t j = 0; j < 8; j++)
-			{
-				ltc1380_write(LTC1380_MUX0, j);									// Multiplexer 0 einstellen
-				ltc1380_write(LTC1380_MUX2, j);									// Multiplexer 1 einstellen
-				ltc6811(ADAX | MD73 | GPIOALL);									// Initial Command Zellen auslesen
-				HAL_Delay(5);
-				ltc6811_read(RDAUXA, &data[0]);
+	  // Statemaschine vom Batteriemanagement-System
+	  switch(BMS_state.States)
+	  {
+		  // State Ready, Vorbereiten des Batteriemanagement
+		  case Ready:
+		  {
+			  uartTransmit("KL15\n", 5);
+			  BMS_state.States = KL15;
 
-				for (uint8_t i = 0; i < 3; i++)
-				{
-					temperatur[i] = ((data[i*2+1]<<8) | data[i*2]);
-				}
-				uartTransmitNumber(temperatur[0], 10);
-				uartTransmit(";", 1);
-				uartTransmitNumber(temperatur[1], 10);
-				uartTransmit(";", 1);
+			  break;
+		  }
 
-				if (j == 7)
-				{
-					uartTransmitNumber(temperatur[2], 10);
-					uartTransmit(";", 1);
-				}
-			}
+		  // State KL15, wenn Schluessel auf Position 2, KL15 eingeschaltet
+		  case KL15:
+		  {
+			  if (!(BMS_state.CriticalError))
+			  {
+				  uartTransmit("Anlassen\n", 9);
+				  BMS_state.States = Anlassen;
 
-			uartTransmit("\n", 1);
-		}
+				  sdc_in.Anlassen = true;
 
-		// Task wird alle 250 Millisekunden ausgefuehrt
-		if (((millis() - timemillisekunden) > 250) && (start_flag == 1))
-		{
-			// Daten fuer Ausgaenge zusammenfuehren
-			OutData[0] = system_out.systemoutput;
-			OutData[1] = highcurrent_out.high_out;
-			OutData[2] = leuchten_out.ledoutput;
-			OutData[3] = komfort_out.komfortoutput;
-	
-			// Sende Nachricht digitale Ausgaenge
-			status = HAL_CAN_AddTxMessage(&hcan3, &TxOutput, OutData, (uint32_t *)CAN_TX_MAILBOX0);
-			//hal_error(status);
+				  system_out.AmsOK = true;
+			  }
 
-			// Daten fuer Eingaenge zusammenfuehren
-			InData[0] = system_in.systeminput;
-			InData[1] = sdc_in.sdcinput;
-			InData[2] = komfort_in.komfortinput;
-	
-			// Sende Nachricht digitale Eingaenge
-			status = HAL_CAN_AddTxMessage(&hcan3, &TxInput, InData, (uint32_t *)CAN_TX_MAILBOX0);
-			//hal_error(status);
-	
-			// Sende Nachricht digitale Eingaenge
-			status = HAL_CAN_AddTxMessage(&hcan3, &TxMessage, TxData, (uint32_t *)CAN_TX_MAILBOX0);
-			//hal_error(status);
-		}
+			  if (system_in.KL15 == 1)
+			  {
+				  uartTransmit("Standby\n", 8);
+				  BMS_state.States = Standby;
+				  timeStandby = millis();
+			  }
 
-		// Task wird alle 500 Millisekunden ausgefuehrt
-		if (((millis() - timemillisekunden) > 500) && (start_flag == 1))
-		{
-			timemillisekunden = millis();
-			
-			if (pwm_change == 1)
-			{
-				if (rising != 0 && falling != 0)
-				{
-					int diff = getDifference(rising, falling);
-					imd.DutyCycle = 100 - round((float)(diff * 100) / (float)rising);	// (width / period ) * 100
-					imd.Frequency = timerPeriod / rising;				// timer restarts after rising edge so time between two rising edge is whatever is measured
-				}
+			  break;
+		  }
 
-				pwm_change = 0;
-			}
-			else
-			{
-				if (pwm_count == 1)
-				{
-					imd.DutyCycle = 0;
-					imd.Frequency = 0;
-					rising = 0;
-					falling = 0;
-					pwm_count = 0;
-				}
-				else
-				{
-					pwm_count++;
-				}
-			}
+		  // State Anlassen, wenn Schluessel auf Position 3 und keine kritischen Fehler, Anlasser einschalten
+		  case Anlassen:
+		  {
+			  if (1)
+			  {
+				  uartTransmit("Precharge\n", 10);
+				  BMS_state.States = Precharge;
+			  }
 
-			uartTransmitNumber(falling, 10);
-			uartTransmit("\n", 1);
-			uartTransmitNumber(rising, 10);
-			uartTransmit("\n", 1);
-			uartTransmitNumber(timerPeriod, 10);
-			uartTransmit("\n", 1);
+			  if (system_in.KL15 == 1)
+			  {
+				  uartTransmit("Standby\n", 8);
+				  BMS_state.States = Standby;
+				  timeStandby = millis();
+			  }
 
-			imd_status();
+			  break;
+		  }
 
-			HAL_CAN_AddTxMessage(&hcan3, &TxIMD, imd.status, (uint32_t *)CAN_TX_MAILBOX0);
+		  // State Precharge,
+		  case Precharge:
+		  {
+			  if (1)
+			  {
+				  uartTransmit("ReadyToDrive\n", 13);
+				  BMS_state.States = ReadyToDrive;
+			  }
 
-			count = 0;
-		}
+			  if (system_in.KL15 == 1)
+			  {
+				  uartTransmit("Standby\n", 8);
+				  BMS_state.States = Standby;
+				  timeStandby = millis();
+			  }
 
-		// Zuruecksetzen des Start Flags, damit Tasks erst nach einer ms wieder aufgerufen werden kann
-		start_flag = 0;																		// Zuruecksetzen Start Flag
+			  break;
+		  }
+
+		  // State ReadyToDrive, wenn SDC OK ist
+		  case ReadyToDrive:
+		  {
+			  if (1)
+			  {
+				  uartTransmit("Drive\n", 6);
+				  BMS_state.States = Drive;
+			  }
+
+			  if (system_in.KL15 == 1)
+			  {
+				  uartTransmit("Standby\n", 8);
+				  BMS_state.States = Standby;
+				  timeStandby = millis();
+			  }
+
+			  break;
+		  }
+
+		  // State Drive, wenn Fahrmodus manuell aktiviert wird
+		  case Drive:
+		  {
+			  if (system_in.KL15 == 1)
+			  {
+				  uartTransmit("Standby\n", 8);
+				  BMS_state.States = Standby;
+				  timeStandby = millis();
+			  }
+
+			  break;
+		  }
+
+		  // State Standby, wenn Schluessel gezogen wird, KL15 ausgeschaltet
+		  case Standby:
+		  {
+			  if (millis() - timeStandby > BMSTIME)
+			  {
+				  uartTransmit("Ausschalten\n", 12);
+				  BMS_state.States = Ausschalten;
+			  }
+			  else if (system_in.KL15 != 1)
+			  {
+				  uartTransmit("Ready\n", 6);
+				  BMS_state.States = Ready;
+			  }
+
+			  break;
+		  }
+
+		  // State Ausschalten, wenn Standby State laenger als 5min dauert
+		  case Ausschalten:
+		  {
+			  system_out.systemoutput = 0;
+			  highcurrent_out.high_out = 0;
+			  leuchten_out.ledoutput = 0;
+			  sdc_in.sdcinput = 0;
+
+			  break;
+		  }
+
+		  // Falls kein State zutrifft, dann kritischer Fehler
+		  default:
+		  {
+			  uartTransmit("BMS Kritischer Fehler\n!", 24);
+			  BMS_state.CriticalError = true;
+			  BMS_state.Normal = false;
+
+			  break;
+		  }
+	  }
+
+	  // Alle Ausgaenge schreiben
+	  writeall_outputs();
   }
   /* USER CODE END 3 */
 }
@@ -537,40 +409,7 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-// Interrupts
-// Can-Interrupt: Nachricht wartet
-void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
-{
-	HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &RxMessage, RxData);
-	can_change = 1;
-}
 
-// Timer-Interrupt: Timer ist uebergelaufen
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-{
-	// Kontrolliere welcher Timer den Ueberlauf ausgeloest hat
-	if (htim == &htim6)
-	{
-		millisekunden_flag_1 = 1;
-	}
-}
-
-void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
-{
-	// Timer IMD
-	if (htim == &htim1)
-	{
-		pwm_change = 1;
-		if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_1)
-		{
-			rising = calculateMovingAverage(rising, HAL_TIM_ReadCapturedValue(&htim1, TIM_CHANNEL_1), 10);
-		}
-		else if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_2)
-		{
-			falling = calculateMovingAverage(falling, HAL_TIM_ReadCapturedValue(&htim1, TIM_CHANNEL_2), 10);
-		}
-	}
-}
 /* USER CODE END 4 */
 
 /**
