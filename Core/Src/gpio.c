@@ -61,9 +61,6 @@ void MX_GPIO_Init(void)
                           |INLET_GREEN_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(POWER_ON_GPIO_Port, POWER_ON_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOF, TRIGGER_CURRENT_Pin|PRECHARGE_OUT_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
@@ -104,25 +101,6 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PtPin */
-  GPIO_InitStruct.Pin = POWER_ON_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(POWER_ON_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : PC14 PC15 PC0 PC1
-                           PC2 PC3 PC4 PC5
-                           PCPin PC7 PCPin PCPin
-                           PCPin PCPin PCPin */
-  GPIO_InitStruct.Pin = GPIO_PIN_14|GPIO_PIN_15|GPIO_PIN_0|GPIO_PIN_1
-                          |GPIO_PIN_2|GPIO_PIN_3|GPIO_PIN_4|GPIO_PIN_5
-                          |SD_SW_Pin|GPIO_PIN_7|SD_D0_Pin|SD_D1_Pin
-                          |SD_D2_Pin|SD_D3_Pin|SD_SCK_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-
   /*Configure GPIO pins : PF0 PF3 PF4 PF5
                            PFPin PFPin PFPin PFPin
                            PF10 PF11 PF12 PF14 */
@@ -145,6 +123,18 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PC0 PC1 PC2 PC3
+                           PC4 PC5 PCPin PC7
+                           PCPin PCPin PCPin PCPin
+                           PCPin */
+  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3
+                          |GPIO_PIN_4|GPIO_PIN_5|SD_SW_Pin|GPIO_PIN_7
+                          |SD_D0_Pin|SD_D1_Pin|SD_D2_Pin|SD_D3_Pin
+                          |SD_SCK_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PAPin PAPin PAPin PAPin */
   GPIO_InitStruct.Pin = CRASH_Pin|HW_WAKE_Pin|BUTTON2_Pin|BUTTON1_Pin;

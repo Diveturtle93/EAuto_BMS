@@ -21,6 +21,7 @@
 #include "main.h"
 #include "adc.h"
 #include "can.h"
+#include "rtc.h"
 #include "spi.h"
 #include "tim.h"
 #include "usart.h"
@@ -71,12 +72,21 @@ void SystemClock_Config(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
+	// BMS Statevariable
 	BMS_states BMS_state = {Start, true, false, false, false};
 
+	// BMS Statemaschine Zeitvariablen
 	uint32_t timeStandby = 0, timeError = 0;
 
+	// BMS CAN-Bus Zeitvariable, Errorvariable
 	uint8_t can_online = 0;
 	uint32_t timeBAMO = 0, timeMOTOR = 0;
+
+	// CAN-Bus Receive Message
+	CAN_message_t RxMessage;
+
+	// Backup Data, stored in RTC_Backup Register
+	uint32_t Backup = 0xFFFF;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -94,24 +104,26 @@ int main(void)
   /* USER CODE BEGIN SysInit */
   MX_USART2_UART_Init();
 
-	uartTransmit("Start\n", 6);
-
 #ifdef DEBUG
 	app_info();
 	HAL_Delay(3000);
 #endif
+
+	uartTransmit("Start\n", 6);
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_CAN1_Init();
   MX_SPI4_Init();
+  MX_USART2_UART_Init();
   MX_ADC1_Init();
   MX_TIM1_Init();
   MX_TIM4_Init();
   MX_SPI1_Init();
   MX_CAN3_Init();
   MX_TIM6_Init();
+  MX_RTC_Init();
   /* USER CODE BEGIN 2 */
 
 #ifdef DEBUG
@@ -121,9 +133,12 @@ int main(void)
 	uartTransmit("Ready\n", 6);
 #endif
 
+	HAL_PWR_EnableBkUpAccess();
+	Backup = HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR0);
+
 	CANinit(RX_SIZE_16, TX_SIZE_16);
 	CAN_config();
-	system_out.Power_On = true;
+	// system_out.Power_On = true;
 	BMS_state.States = Ready;
 
   /* USER CODE END 2 */
@@ -143,6 +158,29 @@ int main(void)
 
 	  // Shutdown-Circuit checken
 	  // checkSDC();
+
+	  if (CAN_available() >= 1)
+	  {
+		  CANread(&RxMessage);
+
+		  switch (RxMessage.id)
+		  {
+			  // Bamocar ID
+			  case 0x210:
+			  {
+				  can_online |= (1 << 0);
+				  timeBAMO = millis();
+				  break;
+			  }
+
+			  // Motorsteuergeraet Safety ID
+			  case MOTOR_CAN_SAFETY:
+			  {
+				  timeMOTOR = millis();
+				  can_online |= (1 << 1);
+			  }
+		  }
+	  }
 
 	  if (millis() > (timeBAMO + CAN_TIMEOUT))
 	  {
@@ -177,7 +215,7 @@ int main(void)
 	  // Statemaschine hat Warnungen
 	  if (BMS_state.Warning)
 	  {
-		  if (millis() -timeError > 1000)
+		  if (millis() - timeError > 1000)
 		  {
 			  leuchten_out.RedLed = !leuchten_out.RedLed;
 			  timeError = millis();
@@ -189,7 +227,7 @@ int main(void)
 	  // Statemaschine hat Error
 	  if (BMS_state.Error)
 	  {
-		  if (millis() -timeError > 1000)
+		  if (millis() - timeError > 1000)
 		  {
 			  leuchten_out.RedLed = !leuchten_out.RedLed;
 			  timeError = millis();
@@ -364,6 +402,11 @@ void SystemClock_Config(void)
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
+  /** Configure LSE Drive Capability
+  */
+  HAL_PWR_EnableBkUpAccess();
+  __HAL_RCC_LSEDRIVE_CONFIG(RCC_LSEDRIVE_LOW);
+
   /** Configure the main internal regulator output voltage
   */
   __HAL_RCC_PWR_CLK_ENABLE();
@@ -372,8 +415,9 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE|RCC_OSCILLATORTYPE_LSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+  RCC_OscInitStruct.LSEState = RCC_LSE_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
   RCC_OscInitStruct.PLL.PLLM = 25;
