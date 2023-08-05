@@ -41,6 +41,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -51,11 +52,13 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+// BMS Statevariable
+BMS_states BMS_state = {{Start, true, false, false, false}};
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
+void checkSDC(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -72,9 +75,6 @@ void SystemClock_Config(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-	// BMS Statevariable
-	BMS_states BMS_state = {Start, true, false, false, false};
-
 	// BMS Statemaschine Zeitvariablen
 	uint32_t timeStandby = 0, timeError = 0;
 
@@ -86,7 +86,7 @@ int main(void)
 	CAN_message_t RxMessage;
 
 	// Backup Data, stored in RTC_Backup Register
-	uint32_t Backup = 0xFFFF;
+//	uint32_t Backup = 0xFFFF;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -116,7 +116,6 @@ int main(void)
   MX_GPIO_Init();
   MX_CAN1_Init();
   MX_SPI4_Init();
-  MX_USART2_UART_Init();
   MX_ADC1_Init();
   MX_TIM1_Init();
   MX_TIM4_Init();
@@ -133,13 +132,25 @@ int main(void)
 	uartTransmit("Ready\n", 6);
 #endif
 
-	HAL_PWR_EnableBkUpAccess();
-	Backup = HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR0);
+//	HAL_PWR_EnableBkUpAccess();
+//	Backup = HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR0);
+//	HAL_PWR_DisableBkUpAccess();
 
 	CANinit(RX_SIZE_16, TX_SIZE_16);
 	CAN_config();
 	// system_out.Power_On = true;
-	BMS_state.States = Ready;
+	BMS_state.State = Ready;
+
+	for (uint8_t j = 0; j < ANZAHL_OUTPUT_PAKETE; j++)
+	{
+		CAN_Output_PaketListe[0].msg.buf[j] = 0;
+		CAN_Output_PaketListe[1].msg.buf[j] = 0;
+		CAN_Output_PaketListe[2].msg.buf[j] = 0;
+		CAN_Output_PaketListe[3].msg.buf[j] = 0;
+		CAN_Output_PaketListe[4].msg.buf[j] = 0;
+		CAN_Output_PaketListe[5].msg.buf[j] = 0;
+		CAN_Output_PaketListe[6].msg.buf[j] = 0;
+	}
 
   /* USER CODE END 2 */
 
@@ -176,8 +187,26 @@ int main(void)
 			  // Motorsteuergeraet Safety ID
 			  case MOTOR_CAN_SAFETY:
 			  {
-				  timeMOTOR = millis();
 				  can_online |= (1 << 1);
+				  timeMOTOR = millis();
+				  break;
+			  }
+
+			  // Motorsteuergeraet Safety ID
+			  case MOTOR_CAN_DIGITAL_IN:
+			  {
+				  // TODO: Zuordnung Signal Bit
+				  if (1)//motor_anlasser == 1)
+				  {
+					  sdc_in.Anlassen = true;
+				  }
+				  break;
+			  }
+
+			  //
+			  default:
+			  {
+				  break;
 			  }
 		  }
 	  }
@@ -199,7 +228,7 @@ int main(void)
 	  }
 
 	  // Wenn Statemaschine nicht im Standby ist
-	  if (BMS_state.States != Standby)
+	  if (BMS_state.State != Standby)
 	  {
 		  // Schreibe alle CAN-Nachrichten auf BUS, wenn nicht im Standby
 		  CANwork();
@@ -244,13 +273,13 @@ int main(void)
 	  }
 
 	  // Statemaschine vom Batteriemanagement-System
-	  switch(BMS_state.States)
+	  switch(BMS_state.State)
 	  {
 		  // State Ready, Vorbereiten des Batteriemanagement
 		  case Ready:
 		  {
 			  uartTransmit("KL15\n", 5);
-			  BMS_state.States = KL15;
+			  BMS_state.State = KL15;
 
 			  break;
 		  }
@@ -261,7 +290,7 @@ int main(void)
 			  if (!(BMS_state.CriticalError))
 			  {
 				  uartTransmit("Anlassen\n", 9);
-				  BMS_state.States = Anlassen;
+				  BMS_state.State = Anlassen;
 
 				  sdc_in.Anlassen = true;
 
@@ -271,7 +300,7 @@ int main(void)
 			  if (system_in.KL15 == 1)
 			  {
 				  uartTransmit("Standby\n", 8);
-				  BMS_state.States = Standby;
+				  BMS_state.State = Standby;
 				  timeStandby = millis();
 			  }
 
@@ -281,16 +310,16 @@ int main(void)
 		  // State Anlassen, wenn Schluessel auf Position 3 und keine kritischen Fehler, Anlasser einschalten
 		  case Anlassen:
 		  {
-			  if (1)
+			  if (sdc_in.Anlassen == true)
 			  {
 				  uartTransmit("Precharge\n", 10);
-				  BMS_state.States = Precharge;
+				  BMS_state.State = Precharge;
 			  }
 
 			  if (system_in.KL15 == 1)
 			  {
 				  uartTransmit("Standby\n", 8);
-				  BMS_state.States = Standby;
+				  BMS_state.State = Standby;
 				  timeStandby = millis();
 			  }
 
@@ -300,16 +329,16 @@ int main(void)
 		  // State Precharge,
 		  case Precharge:
 		  {
-			  if (1)
+			  if (sdc_in.PrechargeIn == 1)
 			  {
 				  uartTransmit("ReadyToDrive\n", 13);
-				  BMS_state.States = ReadyToDrive;
+				  BMS_state.State = ReadyToDrive;
 			  }
 
 			  if (system_in.KL15 == 1)
 			  {
 				  uartTransmit("Standby\n", 8);
-				  BMS_state.States = Standby;
+				  BMS_state.State = Standby;
 				  timeStandby = millis();
 			  }
 
@@ -322,13 +351,13 @@ int main(void)
 			  if (1)
 			  {
 				  uartTransmit("Drive\n", 6);
-				  BMS_state.States = Drive;
+				  BMS_state.State = Drive;
 			  }
 
 			  if (system_in.KL15 == 1)
 			  {
 				  uartTransmit("Standby\n", 8);
-				  BMS_state.States = Standby;
+				  BMS_state.State = Standby;
 				  timeStandby = millis();
 			  }
 
@@ -341,7 +370,7 @@ int main(void)
 			  if (system_in.KL15 == 1)
 			  {
 				  uartTransmit("Standby\n", 8);
-				  BMS_state.States = Standby;
+				  BMS_state.State = Standby;
 				  timeStandby = millis();
 			  }
 
@@ -354,12 +383,12 @@ int main(void)
 			  if (millis() - timeStandby > BMSTIME)
 			  {
 				  uartTransmit("Ausschalten\n", 12);
-				  BMS_state.States = Ausschalten;
+				  BMS_state.State = Ausschalten;
 			  }
 			  else if (system_in.KL15 != 1)
 			  {
 				  uartTransmit("Ready\n", 6);
-				  BMS_state.States = Ready;
+				  BMS_state.State = Ready;
 			  }
 
 			  break;
@@ -453,7 +482,75 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+void checkSDC(void)
+{
+	sdc_in.SDC_OK = 1;
 
+	if (sdc_in.IMD_OK_IN != 1)
+	{
+		BMS_state.Error = true;
+		sdc_in.SDC_OK = 0;
+	}
+
+	if (sdc_in.HVIL != 1)
+	{
+		BMS_state.Error = true;
+		sdc_in.SDC_OK = 0;
+	}
+
+	if (sdc_in.BTB_SDC != 1)
+	{
+		BMS_state.Error = true;
+		sdc_in.SDC_OK = 0;
+	}
+}
+
+// Sortiere CAN Daten
+void sortCAN(void)
+{
+	// Digital-Ausgaenge
+	CAN_Output_PaketListe[1].msg.buf[0] = system_out.systemoutput;
+	CAN_Output_PaketListe[1].msg.buf[1] = highcurrent_out.high_out;
+	CAN_Output_PaketListe[1].msg.buf[2] = leuchten_out.ledoutput;
+	CAN_Output_PaketListe[1].msg.buf[3] = komfort_out.komfortoutput;
+	CAN_Output_PaketListe[1].msg.buf[4] = 0;
+
+	// Digital-Eingaenge
+	CAN_Output_PaketListe[2].msg.buf[0] = 0;
+	CAN_Output_PaketListe[2].msg.buf[1] = system_in.systeminput;
+	CAN_Output_PaketListe[2].msg.buf[2] = sdc_in.sdcinput;
+	CAN_Output_PaketListe[2].msg.buf[3] = komfort_in.komfortinput;
+
+	// Analogeingaenge
+	CAN_Output_PaketListe[3].msg.buf[0] = 0;
+	CAN_Output_PaketListe[3].msg.buf[1] = 0;
+	CAN_Output_PaketListe[3].msg.buf[2] = 0;
+	CAN_Output_PaketListe[3].msg.buf[3] = 0;
+	CAN_Output_PaketListe[3].msg.buf[4] = 0;
+	CAN_Output_PaketListe[3].msg.buf[5] = 0;
+	CAN_Output_PaketListe[3].msg.buf[6] = 0;
+	CAN_Output_PaketListe[3].msg.buf[7] = 0;
+
+	// Motor 280
+	CAN_Output_PaketListe[4].msg.buf[0] = 0;
+	CAN_Output_PaketListe[4].msg.buf[1] = 0;
+	CAN_Output_PaketListe[4].msg.buf[2] = 0;
+	CAN_Output_PaketListe[4].msg.buf[3] = 0;
+	CAN_Output_PaketListe[4].msg.buf[4] = 0;
+	CAN_Output_PaketListe[4].msg.buf[5] = 0;
+	CAN_Output_PaketListe[4].msg.buf[6] = 0;
+	CAN_Output_PaketListe[4].msg.buf[7] = 0;
+
+	// Motor 480
+	CAN_Output_PaketListe[5].msg.buf[0] = BMS_state.status;
+
+	// Temperatureingaenge
+	CAN_Output_PaketListe[6].msg.buf[0] = imd.status[0];
+	CAN_Output_PaketListe[6].msg.buf[1] = imd.status[1];
+	CAN_Output_PaketListe[6].msg.buf[2] = imd.status[2];
+	CAN_Output_PaketListe[6].msg.buf[3] = imd.status[3];
+	CAN_Output_PaketListe[6].msg.buf[4] = imd.status[4];
+}
 /* USER CODE END 4 */
 
 /**

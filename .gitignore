@@ -55,3 +55,4 @@ Module.symvers
 Mkfile.old
 dkms.conf
 /Test/
+Application/Inc/git.h

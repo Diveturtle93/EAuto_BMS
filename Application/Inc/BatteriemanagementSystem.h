@@ -147,13 +147,18 @@ typedef enum
 	Ausschalten,															// 8 Batteriemanagement ausschalten
 } states;
 //----------------------------------------------------------------------
-typedef struct
+typedef union
 {
-	uint8_t States : 4;														// State der Statemaschine
-	uint8_t Normal : 1;														// Statemaschine Normal
-	uint8_t Warning : 1;													// Statemaschine Warning
-	uint8_t Error : 1;														// Statemaschine Error
-	uint8_t CriticalError : 1;												// Statemaschine kritischer Error
+	struct
+	{
+		uint8_t State : 4;													// State der Statemaschine
+		uint8_t Normal : 1;													// Statemaschine Normal
+		uint8_t Warning : 1;												// Statemaschine Warning
+		uint8_t Error : 1;													// Statemaschine Error
+		uint8_t CriticalError : 1;											// Statemaschine kritischer Error
+	};
+
+	uint8_t status;									// 1 Byte
 } BMS_states;
 //----------------------------------------------------------------------
 

@@ -343,7 +343,9 @@ uint8_t ltc6811_read(uint16_t command, uint8_t* data)
 
 	// PEC berechnen, Anhand Command
 	uint16_t pec;															// pec = Zwischenspeicher 16-Bit Command
+#ifdef DEBUG_LTC6811
 	uint16_t tmp;															// Zwischenspeicher fuer Pruefung CRC
+#endif
 	uint8_t cmd[4];															// Zwischenspeicher Command + Pec CRC
 	pec = peccommand(command);
 	
@@ -369,17 +371,17 @@ uint8_t ltc6811_read(uint16_t command, uint8_t* data)
 		HAL_SPI_Receive(&hspi4, &data[i*8], 8, 100);
 	}
 
-	// Pec zuruecksetzen
-	pec = 0;
-
 	// Pec pruefen
 	for (uint8_t i = 0; i < LTC6811_DEVICES; i++)
 	{
+#ifdef DEBUG_LTC6811
+		// Pec zuruecksetzen
+		pec = 0;
+
 		// Variante 1, Pec berechnen und pruefen, ob richtiger Pec mitgesendet wurde
 		tmp = ((data[i + 6] << 8) + data[i + 7]);
 		pec = peclookup(6, &data[i*8]);
 
-#ifdef DEBUG_LTC6811
 		if (pec != tmp)
 		{
 			uartTransmit("Pec Error1: ", 11);
