@@ -78,7 +78,7 @@
 #define BMS_CAN_ANALOG_IN							0x239					// Analogwerte Batteriemanagement, Spannung Relais, PCB
 #define BMS_CAN_TEMPERATUR							0x538					// Temperatur Batteriemanagement, Temperatursensor 1 bis 4
 #define BMS_CAN_STATUS								0x560					// Status BMS
-#define BMS_CAN_IMD									0x505					// Status IMD
+#define BMS_CAN_IMD									0x565					// Status IMD
 #define BMS_CAN_Zellen11							0x640					// Batterie-Zellen 1-4 Modul 1
 #define BMS_CAN_Zellen12							0x641					// Batterie-Zellen 5-8 Modul 1
 #define BMS_CAN_Zellen13							0x642					// Batterie-Zellen 9-12 Modul 1
@@ -94,11 +94,11 @@
 //----------------------------------------------------------------------
 // Motorsteuergeraet neu
 //----------------------------------------------------------------------
-#define MOTOR_CAN_SAFETY							0x139					// Shutdown Circuit Motorsteuergeraet, Sicherheitsrelevante Daten
-#define MOTOR_CAN_DIGITAL_OUT						0x240					// Digitale Ausgaenge Motorsteuergeraet, Alle digitalen Ausgaenge
-#define MOTOR_CAN_DIGITAL_IN						0x241					// Digitale Eingaenge Motorsteuergeraet, Alle digitalen Eingaenge
-#define MOTOR_CAN_ANALOG_IN							0x242					// Analogwerte Motorsteuergerat, Gaspedal, Bremsdruck, Info, Return, KlimaFlap, KL15
-#define MOTOR_CAN_TEMPERATUR						0x539					// Temperatur Motorsteuergeraet, PCB, Bremsdrucktemperatur, Kuehlwassertemperatur
+#define MOTOR_CAN_STATUS							0x505					// Motorsteuergeraet Status
+#define MOTOR_CAN_DIGITAL_OUT						0x581					// Digitale Ausgaenge Motorsteuergeraet, Alle digitalen Ausgaenge
+#define MOTOR_CAN_DIGITAL_IN						0x582					// Digitale Eingaenge Motorsteuergeraet, Alle digitalen Eingaenge
+#define MOTOR_CAN_ANALOG_IN							0x583					// Analogwerte Motorsteuergeraet, Gaspedal, Bremsdruck, Info, Return, KlimaFlap, KL15
+#define MOTOR_CAN_TEMPERATUR						0x584					// Temperatur Motorsteuergeraet, PCB, Bremsdrucktemperatur, Kuehlwassertemperatur
 //----------------------------------------------------------------------
 // Motorsteuergeraet alt
 //----------------------------------------------------------------------

@@ -58,8 +58,9 @@ BMS_states BMS_state = {{Start, true, false, false, false}};
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-void checkSDC(void);
 /* USER CODE BEGIN PFP */
+void checkSDC(void);
+void sortCAN(void);
 
 /* USER CODE END PFP */
 
@@ -84,6 +85,8 @@ int main(void)
 
 	// CAN-Bus Receive Message
 	CAN_message_t RxMessage;
+
+	bool ActivDrive = false;
 
 	// Backup Data, stored in RTC_Backup Register
 //	uint32_t Backup = 0xFFFF;
@@ -116,6 +119,7 @@ int main(void)
   MX_GPIO_Init();
   MX_CAN1_Init();
   MX_SPI4_Init();
+  MX_USART2_UART_Init();
   MX_ADC1_Init();
   MX_TIM1_Init();
   MX_TIM4_Init();
@@ -140,6 +144,10 @@ int main(void)
 	CAN_config();
 	// system_out.Power_On = true;
 	BMS_state.State = Ready;
+
+	// BMS Fehler zuruecksetzen bei Systemstart
+	system_out.AmsLimit = true;
+	system_out.ImdOK = true;
 
 	for (uint8_t j = 0; j < ANZAHL_OUTPUT_PAKETE; j++)
 	{
@@ -168,7 +176,10 @@ int main(void)
 	  // TODO: ADCs
 
 	  // Shutdown-Circuit checken
-	  // checkSDC();
+	  checkSDC();
+
+	  // Sortiere CAN-Daten auf CAN-Buffer
+	  sortCAN();
 
 	  if (CAN_available() >= 1)
 	  {
@@ -184,22 +195,28 @@ int main(void)
 				  break;
 			  }
 
-			  // Motorsteuergeraet Safety ID
-			  case MOTOR_CAN_SAFETY:
+			  // Motorsteuergeraet Status ID
+			  case MOTOR_CAN_STATUS:
 			  {
 				  can_online |= (1 << 1);
 				  timeMOTOR = millis();
 				  break;
 			  }
 
-			  // Motorsteuergeraet Safety ID
+			  // Motorsteuergeraet Digital Input ID
 			  case MOTOR_CAN_DIGITAL_IN:
 			  {
 				  // TODO: Zuordnung Signal Bit
-				  if (1)//motor_anlasser == 1)
+				  if (RxMessage.buf[2] == (1 << 7))
 				  {
 					  sdc_in.Anlassen = true;
 				  }
+
+				  if (RxMessage.buf[4] == (1 << 0))
+				  {
+					  ActivDrive = true;
+				  }
+
 				  break;
 			  }
 
@@ -239,6 +256,8 @@ int main(void)
 	  {
 		  leuchten_out.RedLed = false;
 		  leuchten_out.GreenLed = true;
+
+		  system_out.AmsLimit = true;
 	  }
 
 	  // Statemaschine hat Warnungen
@@ -251,6 +270,8 @@ int main(void)
 		  }
 
 		  leuchten_out.GreenLed = true;
+
+		  system_out.AmsLimit = true;
 	  }
 
 	  // Statemaschine hat Error
@@ -263,6 +284,8 @@ int main(void)
 		  }
 
 		  leuchten_out.GreenLed = false;
+
+		  system_out.AmsLimit = false;
 	  }
 
 	  // Statemaschine hat Kritische Fehler
@@ -270,6 +293,8 @@ int main(void)
 	  {
 		  leuchten_out.RedLed = true;
 		  leuchten_out.GreenLed = false;
+
+		  system_out.AmsLimit = false;
 	  }
 
 	  // Statemaschine vom Batteriemanagement-System
@@ -310,7 +335,7 @@ int main(void)
 		  // State Anlassen, wenn Schluessel auf Position 3 und keine kritischen Fehler, Anlasser einschalten
 		  case Anlassen:
 		  {
-			  if (sdc_in.Anlassen == true)
+			  if (sdc_in.Anlassen != true)
 			  {
 				  uartTransmit("Precharge\n", 10);
 				  BMS_state.State = Precharge;
@@ -348,7 +373,7 @@ int main(void)
 		  // State ReadyToDrive, wenn SDC OK ist
 		  case ReadyToDrive:
 		  {
-			  if (1)
+			  if (ActivDrive)
 			  {
 				  uartTransmit("Drive\n", 6);
 				  BMS_state.State = Drive;
@@ -486,19 +511,19 @@ void checkSDC(void)
 {
 	sdc_in.SDC_OK = 1;
 
-	if (sdc_in.IMD_OK_IN != 1)
+	if (sdc_in.IMD_OK_IN == 1)
 	{
 		BMS_state.Error = true;
 		sdc_in.SDC_OK = 0;
 	}
 
-	if (sdc_in.HVIL != 1)
+	if (sdc_in.HVIL == 1)
 	{
 		BMS_state.Error = true;
 		sdc_in.SDC_OK = 0;
 	}
 
-	if (sdc_in.BTB_SDC != 1)
+	if (sdc_in.BTB_SDC == 1)
 	{
 		BMS_state.Error = true;
 		sdc_in.SDC_OK = 0;
@@ -531,7 +556,7 @@ void sortCAN(void)
 	CAN_Output_PaketListe[3].msg.buf[6] = 0;
 	CAN_Output_PaketListe[3].msg.buf[7] = 0;
 
-	// Motor 280
+	// Temperatureingaenge
 	CAN_Output_PaketListe[4].msg.buf[0] = 0;
 	CAN_Output_PaketListe[4].msg.buf[1] = 0;
 	CAN_Output_PaketListe[4].msg.buf[2] = 0;
@@ -541,10 +566,10 @@ void sortCAN(void)
 	CAN_Output_PaketListe[4].msg.buf[6] = 0;
 	CAN_Output_PaketListe[4].msg.buf[7] = 0;
 
-	// Motor 480
+	// Batteriemanagement Status
 	CAN_Output_PaketListe[5].msg.buf[0] = BMS_state.status;
 
-	// Temperatureingaenge
+	// IMD Status
 	CAN_Output_PaketListe[6].msg.buf[0] = imd.status[0];
 	CAN_Output_PaketListe[6].msg.buf[1] = imd.status[1];
 	CAN_Output_PaketListe[6].msg.buf[2] = imd.status[2];
