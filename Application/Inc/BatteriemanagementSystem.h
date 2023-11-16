@@ -145,6 +145,10 @@ typedef enum
 	Drive,																	// 6 Fahrzeug im Fahrmodus
 	Standby,																// 7 Auto wird abgeschaltet, Zeitverzoegerung bis Batteriemanagement ausgeht
 	Ausschalten,															// 8 Batteriemanagement ausschalten
+	StateNormal = 0x10,														// 16 Normalzustand
+	StateWarning = 0x20,													// 32 Warnung
+	StateError = 0x40,														// 64 Fehler
+	CriticalError = 0x80,													// 128 Critischer Fehler
 } states;
 //----------------------------------------------------------------------
 typedef union

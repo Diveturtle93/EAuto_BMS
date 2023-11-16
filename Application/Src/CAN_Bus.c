@@ -61,7 +61,7 @@ void CANinit(RXQUEUE_TABLE rxSize, TXQUEUE_TABLE txSize)
 	initializeBuffer();
 
 	// Konfiguriere CAN
-	MX_CAN1_Init();
+	MX_CAN3_Init();
 }
 //----------------------------------------------------------------------
 

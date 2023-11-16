@@ -97,7 +97,7 @@ void MX_CAN3_Init(void)
 	}
 
 	// Aktiviere Interrupt fuer CAN-Bus
-	if ((HAL_CAN_ActivateNotification(&hcan3, CAN_IT_RX_FIFO0_FULL)) != HAL_OK)
+	if ((HAL_CAN_ActivateNotification(&hcan3, CAN_IT_RX_FIFO0_MSG_PENDING)) != HAL_OK)
 	{
 		// Fehler in der Initialisierung des CAN-Interrupts
 		Error_Handler();
@@ -108,9 +108,9 @@ void MX_CAN3_Init(void)
 	sFilterConfig.FilterBank = 0;
 	sFilterConfig.FilterMode = CAN_FILTERMODE_IDMASK;
 	sFilterConfig.FilterScale = CAN_FILTERSCALE_32BIT;
-	sFilterConfig.FilterIdHigh = 0x111 << 5;
+	sFilterConfig.FilterIdHigh = 0x0;
 	sFilterConfig.FilterIdLow = 0x0;
-	sFilterConfig.FilterMaskIdHigh = 0x111 << 5;
+	sFilterConfig.FilterMaskIdHigh = 0x0;
 	sFilterConfig.FilterMaskIdLow = 0x0;
 	sFilterConfig.FilterFIFOAssignment = 0;
 	sFilterConfig.FilterActivation = ENABLE;

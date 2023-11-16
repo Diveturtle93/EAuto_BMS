@@ -61,6 +61,7 @@ void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
 void checkSDC(void);
 void sortCAN(void);
+void setStatus(uint8_t Status);
 
 /* USER CODE END PFP */
 
@@ -119,7 +120,6 @@ int main(void)
   MX_GPIO_Init();
   MX_CAN1_Init();
   MX_SPI4_Init();
-  MX_USART2_UART_Init();
   MX_ADC1_Init();
   MX_TIM1_Init();
   MX_TIM4_Init();
@@ -207,12 +207,12 @@ int main(void)
 			  case MOTOR_CAN_DIGITAL_IN:
 			  {
 				  // TODO: Zuordnung Signal Bit
-				  if (RxMessage.buf[2] == (1 << 7))
+				  if (RxMessage.buf[2] & (1 << 7))
 				  {
 					  sdc_in.Anlassen = true;
 				  }
 
-				  if (RxMessage.buf[4] == (1 << 0))
+				  if (RxMessage.buf[4] & (1 << 0))
 				  {
 					  ActivDrive = true;
 				  }
@@ -312,14 +312,18 @@ int main(void)
 		  // State KL15, wenn Schluessel auf Position 2, KL15 eingeschaltet
 		  case KL15:
 		  {
-			  if (!(BMS_state.CriticalError))
+			  if (sdc_in.Anlassen == true)
 			  {
-				  uartTransmit("Anlassen\n", 9);
-				  BMS_state.State = Anlassen;
+				  if (!(BMS_state.CriticalError))
+				  {
+					  uartTransmit("Anlassen\n", 9);
+					  BMS_state.State = Anlassen;
 
-				  sdc_in.Anlassen = true;
+					  highcurrent_out.HV_CHG = true;
+					  HAL_GPIO_WritePin(PWM_HV_Charger_GPIO_Port, PWM_HV_Charger_Pin, true);
 
-				  system_out.AmsOK = true;
+					  system_out.AmsOK = true;
+				  }
 			  }
 
 			  if (system_in.KL15 == 1)
@@ -434,8 +438,7 @@ int main(void)
 		  default:
 		  {
 			  uartTransmit("BMS Kritischer Fehler\n!", 24);
-			  BMS_state.CriticalError = true;
-			  BMS_state.Normal = false;
+			  setStatus(CriticalError);
 
 			  break;
 		  }
@@ -513,20 +516,31 @@ void checkSDC(void)
 
 	if (sdc_in.IMD_OK_IN == 1)
 	{
-		BMS_state.Error = true;
+		setStatus(StateError);
 		sdc_in.SDC_OK = 0;
 	}
 
-	if (sdc_in.HVIL == 1)
+	if (sdc_in.HVIL != 1)
 	{
-		BMS_state.Error = true;
+		setStatus(StateError);
 		sdc_in.SDC_OK = 0;
 	}
 
-	if (sdc_in.BTB_SDC == 1)
+	if (sdc_in.BTB_SDC != 1)
 	{
-		BMS_state.Error = true;
+		setStatus(StateError);
 		sdc_in.SDC_OK = 0;
+	}
+
+	if (sdc_in.MotorSDC == 1)
+	{
+		setStatus(StateError);
+		sdc_in.SDC_OK = 0;
+	}
+
+	if (sdc_in.SDC_OK == 1)
+	{
+		setStatus(StateNormal);
 	}
 }
 
@@ -575,6 +589,27 @@ void sortCAN(void)
 	CAN_Output_PaketListe[6].msg.buf[2] = imd.status[2];
 	CAN_Output_PaketListe[6].msg.buf[3] = imd.status[3];
 	CAN_Output_PaketListe[6].msg.buf[4] = imd.status[4];
+}
+
+// Set Status der Statemaschine
+void setStatus(uint8_t Status)
+{
+	switch (Status & 0xF0)
+	{
+		case StateNormal:
+		case StateWarning:
+		case StateError:
+		case CriticalError:
+		{
+			BMS_state.status = (Status | BMS_state.State);
+			break;
+		}
+		default:
+		{
+			BMS_state.status = (CriticalError | BMS_state.State);
+			break;
+		}
+	}
 }
 /* USER CODE END 4 */
 
