@@ -54,6 +54,9 @@
 /* USER CODE BEGIN PV */
 // BMS Statevariable
 BMS_states BMS_state = {{Start, true, false, false, false}};
+
+// ADC Array
+uint16_t ADC_VAL[7] = {0};
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -173,7 +176,13 @@ int main(void)
 	  readall_inputs();
 
 	  // Alle ADC einlesen
-	  // TODO: ADCs
+	  ADC_VAL[0] = ADC_STMTemperatur();
+	  ADC_VAL[1] = ADC_PCBTemperatur();
+	  ADC_VAL[2] = ADC_KL15();
+	  ADC_VAL[3] = ADC_Temp1();
+	  ADC_VAL[4] = ADC_Temp2();
+	  ADC_VAL[5] = ADC_Temp3();
+	  ADC_VAL[6] = ADC_Temp4();
 
 	  // Shutdown-Circuit checken
 	  checkSDC();
@@ -207,7 +216,7 @@ int main(void)
 			  case MOTOR_CAN_DIGITAL_IN:
 			  {
 				  // TODO: Zuordnung Signal Bit
-				  if (RxMessage.buf[2] & (1 << 7))
+				  if (~RxMessage.buf[2] & (1 << 7))
 				  {
 					  sdc_in.Anlassen = true;
 				  }
@@ -339,7 +348,7 @@ int main(void)
 		  // State Anlassen, wenn Schluessel auf Position 3 und keine kritischen Fehler, Anlasser einschalten
 		  case Anlassen:
 		  {
-			  if (sdc_in.Anlassen != true)
+			  if (sdc_in.Anlassen == true)
 			  {
 				  uartTransmit("Precharge\n", 10);
 				  BMS_state.State = Precharge;
@@ -520,13 +529,13 @@ void checkSDC(void)
 		sdc_in.SDC_OK = 0;
 	}
 
-	if (sdc_in.HVIL != 1)
+	if (sdc_in.HVIL == 1)
 	{
 		setStatus(StateError);
 		sdc_in.SDC_OK = 0;
 	}
 
-	if (sdc_in.BTB_SDC != 1)
+	if (sdc_in.BTB_SDC == 1)
 	{
 		setStatus(StateError);
 		sdc_in.SDC_OK = 0;
@@ -561,22 +570,22 @@ void sortCAN(void)
 	CAN_Output_PaketListe[2].msg.buf[3] = komfort_in.komfortinput;
 
 	// Analogeingaenge
-	CAN_Output_PaketListe[3].msg.buf[0] = 0;
-	CAN_Output_PaketListe[3].msg.buf[1] = 0;
-	CAN_Output_PaketListe[3].msg.buf[2] = 0;
-	CAN_Output_PaketListe[3].msg.buf[3] = 0;
-	CAN_Output_PaketListe[3].msg.buf[4] = 0;
+	CAN_Output_PaketListe[3].msg.buf[0] = ADC_VAL[0];
+	CAN_Output_PaketListe[3].msg.buf[1] = (ADC_VAL[0] >> 8) | (ADC_VAL[1] << 4);
+	CAN_Output_PaketListe[3].msg.buf[2] = (ADC_VAL[1] >> 4);
+	CAN_Output_PaketListe[3].msg.buf[3] = ADC_VAL[2];
+	CAN_Output_PaketListe[3].msg.buf[4] = (ADC_VAL[2] >> 8);
 	CAN_Output_PaketListe[3].msg.buf[5] = 0;
 	CAN_Output_PaketListe[3].msg.buf[6] = 0;
 	CAN_Output_PaketListe[3].msg.buf[7] = 0;
 
 	// Temperatureingaenge
-	CAN_Output_PaketListe[4].msg.buf[0] = 0;
-	CAN_Output_PaketListe[4].msg.buf[1] = 0;
-	CAN_Output_PaketListe[4].msg.buf[2] = 0;
-	CAN_Output_PaketListe[4].msg.buf[3] = 0;
-	CAN_Output_PaketListe[4].msg.buf[4] = 0;
-	CAN_Output_PaketListe[4].msg.buf[5] = 0;
+	CAN_Output_PaketListe[4].msg.buf[0] = ADC_VAL[3];
+	CAN_Output_PaketListe[4].msg.buf[1] = (ADC_VAL[3] >> 8) | (ADC_VAL[4] << 4);
+	CAN_Output_PaketListe[4].msg.buf[2] = (ADC_VAL[4] >> 4);
+	CAN_Output_PaketListe[4].msg.buf[3] = ADC_VAL[5];
+	CAN_Output_PaketListe[4].msg.buf[4] = (ADC_VAL[5] >> 8) | (ADC_VAL[6] << 4);
+	CAN_Output_PaketListe[4].msg.buf[5] = (ADC_VAL[6] >> 4);
 	CAN_Output_PaketListe[4].msg.buf[6] = 0;
 	CAN_Output_PaketListe[4].msg.buf[7] = 0;
 

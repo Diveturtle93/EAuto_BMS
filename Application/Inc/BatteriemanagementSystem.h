@@ -24,7 +24,7 @@
 //----------------------------------------------------------------------
 #include "BasicUart.h"
 #include "AD8403.h"
-//#include "adc_input.h"
+#include "adc_inputs.h"
 #include "app_info.h"
 #include "CAN_Bus.h"
 #include "error.h"
