@@ -19,7 +19,7 @@
 #include "inttypes.h"
 //----------------------------------------------------------------------
 
-// Define Debug Symbols
+// Definiere Debug Symbols
 //----------------------------------------------------------------------
 #ifdef DEBUG
 //	#define DEBUG_ISOSPI
@@ -27,22 +27,21 @@
 #endif
 //----------------------------------------------------------------------
 
-// Define Statemaschine Typedefines
+// Definiere Statemaschine Typedefines
 //----------------------------------------------------------------------
-// Define IsoSpi States
+// Definiere IsoSpi States
 //----------------------------------------------------------------------
-typedef enum
-{
-	ISOIdle,																// Kommunikation unterbrochen
-	ISOReady,																// Kommunikation kann durchgefuehrt werden
-	ISOActive,																// Kommunikation wird durchgefuehrt
-	ISOGetReady,															// Kommunikation wird vorbereitet
+typedef enum IsoSpiState_tag {
+	IsoIdle,																// Kommunikation unterbrochen
+	IsoReady,																// Kommunikation kann durchgefuehrt werden
+	IsoActive,																// Kommunikation wird durchgefuehrt
+	IsoGetReady,															// Kommunikation wird vorbereitet
+	IsoSleep,																// Kommunikation abgeschaltet
 } IsoSpi_State;
 //----------------------------------------------------------------------
-// Define LTC6811 States
+// Definiere LTC6811 States
 //----------------------------------------------------------------------
-typedef enum
-{
+typedef enum LTC6811State_tag {
 	LTCStandby,																// IC im Standby, Referenzspannung inaktiv, Beide Timer laufen
 	LTCMeasure,																// Messung am ADC wird durchgefuehrt
 	LTCRefup,																// Referenzspannung aktiv
@@ -55,7 +54,7 @@ typedef enum
 
 // Allgemeine Einstellungen
 //----------------------------------------------------------------------
-#define LTC6811_DEVICES				1										// Number of devices in daisy chain
+#define LTC6811_DEVICES				1										// Anzahl Chips im Daisy-Chain
 #define LTC6811_UVOLT				2000									// Unterspannung einer Zelle		3.2 = 2000 * 16 * 100µV, Spannung = VUV * 16 * 100µV, VUV muss im Register stehen
 #define LTC6811_OVOLT				2625									// Ueberspannung einer Zelle		4.2 = 2625 * 16 * 100µV, Spannung = VOV * 16 * 100µV, VOV muss im Register stehen
 #define LTC6811_SOC					25200									// Summe der Zellspannungen an einem LTC6811	50.4 = 25200 * 20 * 100µV, Spannung = SC * 20 * 100µV, SC muss im Register stehen
@@ -72,6 +71,8 @@ typedef enum
 //----------------------------------------------------------------------
 #define WRCFG						0b00000000001							// Write Configuration
 #define RDCFG						0b00000000010							// Read Configuration
+#define WRCFGA						0b00000000001							// Write Configuration A, only LTC6812 / LTC6813
+#define RDCFGA						0b00000000010							// Read Configuration A, only LTC6812 / LTC6813
 #define WRCFGB						0b00000100100							// Write Configuration B, only LTC6812 / LTC6813
 #define RDCFGB						0b00000100110							// Read Configuration B, only LTC6812 / LTC6813
 //----------------------------------------------------------------------
@@ -129,9 +130,14 @@ typedef enum
 #define PUP							0b00001000000							// Pull-up Current
 //----------------------------------------------------------------------
 
+//----------------------------------------------------------------------
 #define CVST						0b01000000111							// Start Self-Test Cell Conversion
 
+#define ADOL						0b01000000001							// Start overlapping measurement of cell 7
+//----------------------------------------------------------------------
+
 #define ADAX						0b10001100000							// Start GPIO ADC Conversion
+#define ADAXD						0b10000000000							// Start GPIO ADC Conversion with redundancy check
 //----------------------------------------------------------------------
 #define GPIOALL						0b00000000000							// Read All GPIO & Reference
 #define GPIO1						0b00000000001							// Read GPIO 1
@@ -145,6 +151,7 @@ typedef enum
 #define AUXST						0b10000000111							// Start Self-Test GPIO Conversion
 
 #define ADSTAT						0b10001101000							// Start Status ADC Conversion
+#define ADSTATD						0b10000001000							// Start Status ADC Conversion with redundancy check
 //----------------------------------------------------------------------
 #define STATALL						0b00000000000							// Read All Status
 #define STATSOC						0b00000000001							// Read SOC Status
@@ -153,8 +160,11 @@ typedef enum
 #define STATVD						0b00000000100							// Read VD Status
 //----------------------------------------------------------------------
 
+//----------------------------------------------------------------------
 #define STATST						0b10000001111							// Start Self-Test Status ADC Conversion
+
 #define ADCVAX						0b10001101111							// Start Combined Cell, GPIO1 & GPIO 2 Conversion
+#define ADCVSC						0b10001100111							// Start Combined Cell, SC Conversion
 //----------------------------------------------------------------------
 
 // S Controll Commands
@@ -164,7 +174,7 @@ typedef enum
 #define WRPWM						0b00000100000							// Write PWM Register Group
 #define WRPSB						0b00000011100							// Write PWM and S Control Register
 #define RDPWM						0b00000100010							// Read PWM Register Group
-#define RDSPB						0b00000011110							// Read PWM and S Control Register B
+#define RDPSB						0b00000011110							// Read PWM and S Control Register B
 #define STSCTRL						0b00000011001							// Starte S Control Pulsing
 //----------------------------------------------------------------------
 
@@ -197,17 +207,31 @@ typedef enum
 
 // Funktionen definieren
 //----------------------------------------------------------------------
-void set_isospi_state(IsoSpi_State newState);								// Setze Statemaschine fuer ISPSpi
-void set_ltc6811_state(LTC6811_State newState);								// Setze Statemaschine fuer LTC6811
-void wakeup_ltc6811(void);													// Aufwachfunktion LTC6811
+// IsoSPI Funktionen
+//----------------------------------------------------------------------
+void set_IsoSpiState(IsoSpi_State newState);								// Setze neuen State von IsoSPI
+void IsoSPI_statemaschine(void);											// Auswertung State von IsoSPI
+IsoSpi_State get_IsoSpiState(void);											// Bekomme aktuellen State von IsoSPI
+void IsoSPI_wakeup(void);													// Aufwachfunktion fuer IsoSPI
+void IsoSPI_cmd(uint8_t* command);											// Sende Command ueber IsoSPI
+void IsoSPI_transmit(uint8_t* command, uint8_t* data);						// Sende Daten ueber IsoSPI
+void IsoSPI_read(uint8_t* command, uint8_t* data);							// Lese Daten ueber IsoSPI
+//----------------------------------------------------------------------
+// LTC Funktionen
+//----------------------------------------------------------------------
+void set_ltc6811_state(LTC6811_State newState);								// Setze neuen Stat von LTC6811
+void ltc6811_statemaschine(void);											// Auswertung State von LTC6811
+LTC6811_State get_ltc6811_state(void);										// Bekomme aktuellen State von LTC6811
 void ltc6811(uint16_t command);												// LTC6811 Commando
 void ltc6811_write(uint16_t command, uint8_t *data);						// Schreibfunktion LTC6811
 uint8_t ltc6811_read(uint16_t command, uint8_t *data);						// Lesefunktion LTC6811
 uint16_t peccommand(uint16_t command);										// CRC Berechnung Command, 16 Bit
 uint16_t peclookup(uint8_t len,	uint8_t *data);								// CRC Berechnung Daten Array, 8 Bit
 uint8_t peccheck(uint8_t len, uint8_t *data);								// CRC Validieren und pruefen
+void ltc6811_init(void);													// Initialisiere LTC6811, Konfigurierung
 uint8_t ltc6811_check(void);												// Diagnose LTC6811, fuehrt alle Tests durch
 uint8_t ltc6811_test(uint16_t command);										// Diagnose Selbsttest Test 1 und 2
+uint8_t ltc6811_thermal(void);												// Diagnose Thermal Shutdown
 uint8_t ltc6811_diagn(void);												// Diagnose Multiplexer
 uint8_t ltc6811_openwire(void);												// Leitungscheck offene Leitung
 uint16_t ltc6811_poll(void);												// Poll Data nach Conversion
@@ -217,20 +241,18 @@ uint16_t ltc6811_poll(void);												// Poll Data nach Conversion
 
 // Definiere Zellenarray
 //----------------------------------------------------------------------
-typedef union
-{
-	struct
-	{
-		uint8_t LTC_GPIO5 : 1;												// GPIO 5
-		uint8_t LTC_GPIO4 : 1;												// GPIO 4
-		uint8_t LTC_GPIO3 : 1;												// GPIO 3
-		uint8_t LTC_GPIO2 : 1;												// GPIO 2
-		uint8_t LTC_GPIO1 : 1;												// GPIO 1
-		uint8_t REFON : 1;													// Reference voltage shutdown
-		uint8_t SWTRD : 1;													// SWT Pin
+typedef union __ltc6811_configuration_tag {
+	struct {
 		uint8_t ADCOPT : 1;													// ADC Mode Option
-		uint16_t VUV : 12;													// Undervoltage Treshold
-		uint16_t VOV : 12;													// Overvoltage Treshold
+		uint8_t SWTRD : 1;													// SWT Pin
+		uint8_t REFON : 1;													// Reference voltage shutdown
+		uint8_t LTC_GPIO1 : 1;												// GPIO 1
+		uint8_t LTC_GPIO2 : 1;												// GPIO 2
+		uint8_t LTC_GPIO3 : 1;												// GPIO 3
+		uint8_t LTC_GPIO4 : 1;												// GPIO 4
+		uint8_t LTC_GPIO5 : 1;												// GPIO 5
+		uint32_t VUV : 12;													// Undervoltage Treshold
+		uint32_t VOV : 12;													// Overvoltage Treshold
 		uint8_t DCC1 : 1;													// Zelle 1 Balancing
 		uint8_t DCC2 : 1;													// Zelle 2 Balancing
 		uint8_t DCC3 : 1;													// Zelle 3 Balancing
@@ -251,9 +273,7 @@ typedef union
 //----------------------------------------------------------------------
 
 //----------------------------------------------------------------------
-extern ltc6811_configuration_tag Ltc6811_Conf;								// LTC6811 Configurations Register
-extern uint8_t CellVolt[LTC6811_DEVICES][12];								// Array fuer gemessene Zellspannungen
-extern uint8_t CellTemp[LTC6811_DEVICES][12];								// Array fuer gemessene Zelltemperaturen
+extern ltc6811_configuration_tag ltc6811_Conf;								// LTC6811 Configurations Register
 //----------------------------------------------------------------------
 
 #endif /* INC_LTC6811_H_ */

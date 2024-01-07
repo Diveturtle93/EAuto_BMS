@@ -56,6 +56,9 @@ BatteriemanagementSystem.list \
 OBJCOPY_HEX += \
 BatteriemanagementSystem.hex \
 
+OBJCOPY_BIN += \
+BatteriemanagementSystem.bin \
+
 
 # All Target
 all:
@@ -85,16 +88,21 @@ BatteriemanagementSystem.hex: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TO
 	@echo 'Finished building: $@'
 	@echo ' '
 
+BatteriemanagementSystem.bin: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-objcopy  -O binary $(EXECUTABLES) "BatteriemanagementSystem.bin"
+	@echo 'Finished building: $@'
+	@echo ' '
+
 # Other Targets
 clean:
-	-$(RM) BatteriemanagementSystem.elf BatteriemanagementSystem.hex BatteriemanagementSystem.list BatteriemanagementSystem.map default.size.stdout
+	-$(RM) BatteriemanagementSystem.bin BatteriemanagementSystem.elf BatteriemanagementSystem.hex BatteriemanagementSystem.list BatteriemanagementSystem.map default.size.stdout
 	-@echo ' '
 
 pre-build:
 	$(MAKE) -f ../Make/git.mk
 	-@echo ' '
 
-secondary-outputs: $(SIZE_OUTPUT) $(OBJDUMP_LIST) $(OBJCOPY_HEX)
+secondary-outputs: $(SIZE_OUTPUT) $(OBJDUMP_LIST) $(OBJCOPY_HEX) $(OBJCOPY_BIN)
 
 fail-specified-linker-script-missing:
 	@echo 'Error: Cannot find the specified linker script. Check the linker settings in the build configuration.'

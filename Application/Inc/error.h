@@ -31,6 +31,7 @@
 #define ERROR_LTC6811_OPENWIRE					5
 #define ERROR_LTC6811_OVERVOLT					6
 #define ERROR_LTC6811_UNDERVOLT					7
+#define ERROR_LTC6811_INITIALTEST				8
 #define ERROR_SDC_BTB							10
 #define ERROR_SDC_MOTOR							11
 #define ERROR_SDC_HVIL							12
