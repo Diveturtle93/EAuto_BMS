@@ -1,5 +1,14 @@
-# Git File
-git.h
+#settings
+.settings/
+
+#metadata
+.metadata/
+
+#Debug
+Debug/
+debug/
+Release/
+release
 
 # Prerequisites
 *.d
@@ -9,15 +18,12 @@ git.h
 *.ko
 *.obj
 *.elf
+*.cyclo
 
 # Linker output
 *.ilk
 *.map
 *.exp
-
-# Precompiled Headers
-*.gch
-*.pch
 
 # Libraries
 *.lib
@@ -25,7 +31,7 @@ git.h
 *.la
 *.lo
 
-# Shared objects (inc. Windows DLLs)
+# Shared objects
 *.dll
 *.so
 *.so.*
@@ -38,6 +44,7 @@ git.h
 *.i*86
 *.x86_64
 *.hex
+*.bin
 
 # Debug files
 *.dSYM/
@@ -53,4 +60,6 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+Application/Inc/git.h
+Debug/Motorsteuergeraet.list
 /Test/

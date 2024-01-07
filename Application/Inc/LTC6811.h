@@ -71,6 +71,8 @@ typedef enum LTC6811State_tag {
 //----------------------------------------------------------------------
 #define WRCFG						0b00000000001							// Write Configuration
 #define RDCFG						0b00000000010							// Read Configuration
+#define WRCFGA						0b00000000001							// Write Configuration A, only LTC6812 / LTC6813
+#define RDCFGA						0b00000000010							// Read Configuration A, only LTC6812 / LTC6813
 #define WRCFGB						0b00000100100							// Write Configuration B, only LTC6812 / LTC6813
 #define RDCFGB						0b00000100110							// Read Configuration B, only LTC6812 / LTC6813
 //----------------------------------------------------------------------
@@ -128,9 +130,14 @@ typedef enum LTC6811State_tag {
 #define PUP							0b00001000000							// Pull-up Current
 //----------------------------------------------------------------------
 
+//----------------------------------------------------------------------
 #define CVST						0b01000000111							// Start Self-Test Cell Conversion
 
+#define ADOL						0b01000000001							// Start overlapping measurement of cell 7
+//----------------------------------------------------------------------
+
 #define ADAX						0b10001100000							// Start GPIO ADC Conversion
+#define ADAXD						0b10000000000							// Start GPIO ADC Conversion with redundancy check
 //----------------------------------------------------------------------
 #define GPIOALL						0b00000000000							// Read All GPIO & Reference
 #define GPIO1						0b00000000001							// Read GPIO 1
@@ -144,6 +151,7 @@ typedef enum LTC6811State_tag {
 #define AUXST						0b10000000111							// Start Self-Test GPIO Conversion
 
 #define ADSTAT						0b10001101000							// Start Status ADC Conversion
+#define ADSTATD						0b10000001000							// Start Status ADC Conversion with redundancy check
 //----------------------------------------------------------------------
 #define STATALL						0b00000000000							// Read All Status
 #define STATSOC						0b00000000001							// Read SOC Status
@@ -152,8 +160,11 @@ typedef enum LTC6811State_tag {
 #define STATVD						0b00000000100							// Read VD Status
 //----------------------------------------------------------------------
 
+//----------------------------------------------------------------------
 #define STATST						0b10000001111							// Start Self-Test Status ADC Conversion
+
 #define ADCVAX						0b10001101111							// Start Combined Cell, GPIO1 & GPIO 2 Conversion
+#define ADCVSC						0b10001100111							// Start Combined Cell, SC Conversion
 //----------------------------------------------------------------------
 
 // S Controll Commands
@@ -163,7 +174,7 @@ typedef enum LTC6811State_tag {
 #define WRPWM						0b00000100000							// Write PWM Register Group
 #define WRPSB						0b00000011100							// Write PWM and S Control Register
 #define RDPWM						0b00000100010							// Read PWM Register Group
-#define RDSPB						0b00000011110							// Read PWM and S Control Register B
+#define RDPSB						0b00000011110							// Read PWM and S Control Register B
 #define STSCTRL						0b00000011001							// Starte S Control Pulsing
 //----------------------------------------------------------------------
 

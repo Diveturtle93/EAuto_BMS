@@ -301,7 +301,7 @@ int main(void)
 			// Sende Nachricht digitale Ausgaenge
 			status = HAL_CAN_AddTxMessage(&hcan3, &TxOutput, OutData, (uint32_t *)CAN_TX_MAILBOX0);
 			hal_error(status);
-			while(HAL_CAN_IsTxMessagePending(&hcan2, CAN_TX_MAILBOX0) == 1)
+			while(HAL_CAN_IsTxMessagePending(&hcan3, CAN_TX_MAILBOX0) == 1)
 			{
 
 			}
@@ -314,7 +314,7 @@ int main(void)
 			// Sende Nachricht digitale Eingaenge
 			status = HAL_CAN_AddTxMessage(&hcan3, &TxInput, InData, (uint32_t *)CAN_TX_MAILBOX0);
 			hal_error(status);
-			while(HAL_CAN_IsTxMessagePending(&hcan2, CAN_TX_MAILBOX0) == 1)
+			while(HAL_CAN_IsTxMessagePending(&hcan3, CAN_TX_MAILBOX0) == 1)
 			{
 
 			}
@@ -322,7 +322,7 @@ int main(void)
 			// Sende Nachricht Zellspannung 1 - 4
 			status = HAL_CAN_AddTxMessage(&hcan3, &TxVoltage11, &data[0], (uint32_t *)CAN_TX_MAILBOX0);
 			hal_error(status);
-			while(HAL_CAN_IsTxMessagePending(&hcan2, CAN_TX_MAILBOX0) == 1)
+			while(HAL_CAN_IsTxMessagePending(&hcan3, CAN_TX_MAILBOX0) == 1)
 			{
 
 			}
@@ -330,7 +330,7 @@ int main(void)
 			// Sende Nachricht Zellspannung 5 - 8
 			status = HAL_CAN_AddTxMessage(&hcan3, &TxVoltage12, &data[6], (uint32_t *)CAN_TX_MAILBOX0);
 			hal_error(status);
-			while(HAL_CAN_IsTxMessagePending(&hcan2, CAN_TX_MAILBOX0) == 1)
+			while(HAL_CAN_IsTxMessagePending(&hcan3, CAN_TX_MAILBOX0) == 1)
 			{
 
 			}
@@ -338,7 +338,7 @@ int main(void)
 			// Sende Nachricht Zellspannung 9 - 12
 			status = HAL_CAN_AddTxMessage(&hcan3, &TxVoltage13, &data[12], (uint32_t *)CAN_TX_MAILBOX0);
 			hal_error(status);
-			while(HAL_CAN_IsTxMessagePending(&hcan2, CAN_TX_MAILBOX0) == 1)
+			while(HAL_CAN_IsTxMessagePending(&hcan3, CAN_TX_MAILBOX0) == 1)
 			{
 
 			}
@@ -346,7 +346,7 @@ int main(void)
 			// Sende Nachricht Zelltemperaturen 1 - 4
 			status = HAL_CAN_AddTxMessage(&hcan3, &TxTemperature11, &data[0], (uint32_t *)CAN_TX_MAILBOX0);
 			hal_error(status);
-			while(HAL_CAN_IsTxMessagePending(&hcan2, CAN_TX_MAILBOX0) == 1)
+			while(HAL_CAN_IsTxMessagePending(&hcan3, CAN_TX_MAILBOX0) == 1)
 			{
 
 			}
@@ -354,7 +354,7 @@ int main(void)
 			// Sende Nachricht Zelltemperaturen 5 - 8
 			status = HAL_CAN_AddTxMessage(&hcan3, &TxTemperature12, &data[6], (uint32_t *)CAN_TX_MAILBOX0);
 			hal_error(status);
-			while(HAL_CAN_IsTxMessagePending(&hcan2, CAN_TX_MAILBOX0) == 1)
+			while(HAL_CAN_IsTxMessagePending(&hcan3, CAN_TX_MAILBOX0) == 1)
 			{
 
 			}
@@ -362,7 +362,7 @@ int main(void)
 			// Sende Nachricht Zelltemperaturen 9 - 12
 			status = HAL_CAN_AddTxMessage(&hcan3, &TxTemperature13, &data[12], (uint32_t *)CAN_TX_MAILBOX0);
 			hal_error(status);
-			while(HAL_CAN_IsTxMessagePending(&hcan2, CAN_TX_MAILBOX0) == 1)
+			while(HAL_CAN_IsTxMessagePending(&hcan3, CAN_TX_MAILBOX0) == 1)
 			{
 
 			}
@@ -370,7 +370,7 @@ int main(void)
 			// Sende Nachricht Zelltemperaturen 13 - 16
 			status = HAL_CAN_AddTxMessage(&hcan3, &TxTemperature14, &data[18], (uint32_t *)CAN_TX_MAILBOX0);
 			hal_error(status);
-			while(HAL_CAN_IsTxMessagePending(&hcan2, CAN_TX_MAILBOX0) == 1)
+			while(HAL_CAN_IsTxMessagePending(&hcan3, CAN_TX_MAILBOX0) == 1)
 			{
 
 			}
@@ -384,7 +384,7 @@ int main(void)
 			// Sende Nachricht Dummy
 			status = HAL_CAN_AddTxMessage(&hcan3, &TxMessage, TxData, (uint32_t *)CAN_TX_MAILBOX0);
 			hal_error(status);
-			while(HAL_CAN_IsTxMessagePending(&hcan2, CAN_TX_MAILBOX0) == 1)
+			while(HAL_CAN_IsTxMessagePending(&hcan3, CAN_TX_MAILBOX0) == 1)
 			{
 
 			}
