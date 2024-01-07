@@ -38,6 +38,7 @@
 #include "SPI_resource.h"
 #include "statemaschine.h"
 #include "SystemInfo.h"
+#include "batteriemanagement.h"
 //----------------------------------------------------------------------
 
 // Definiere Revision of Batteriemanagement HW PCB

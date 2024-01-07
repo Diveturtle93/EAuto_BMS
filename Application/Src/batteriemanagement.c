@@ -20,12 +20,8 @@
 
 // Einfuegen der eigenen Include Dateien
 //----------------------------------------------------------------------
-#include "BasicUart.h"
-#include "error.h"
 #include "batteriemanagement.h"
-#include "LTC6811.h"
-#include "LTC1380.h"
-#include "outputs.h"
+#include "BatteriemanagementSystem.h"
 //----------------------------------------------------------------------
 
 // Definiere Global Variablen

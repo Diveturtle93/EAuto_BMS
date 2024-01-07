@@ -434,13 +434,12 @@ uint8_t ltc6811_read(uint16_t command, uint8_t* data)
 	// Befehl ueber IsoSPI senden
 	IsoSPI_read(&cmd[0], &data[0]);											// Sende Daten
 
+	// Pec zuruecksetzen
+	pec = 0;
+
 	// Pec pruefen
 	for (uint8_t i = 0; i < LTC6811_DEVICES; i++)
 	{
-#ifdef DEBUG_LTC6811
-		// Pec zuruecksetzen
-		pec = 0;
-
 		// Variante 1, Pec berechnen und pruefen, ob richtiger Pec mitgesendet wurde
 #ifdef DEBUG_LTC6811
 		tmp = ((data[i + 6] << 8) + data[i + 7]);
