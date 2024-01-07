@@ -37,7 +37,7 @@ uint32_t stackvoltage;
 uint16_t mincelltemperature[LTC6811_DEVICES + 1];
 uint16_t maxcelltemperature[LTC6811_DEVICES + 1];
 uint16_t LTC6811_Tempstatus = 0;
-uint16_t LTC6811_Temperatures[LTC6811_DEVICES];
+uint16_t LTC6811_Temperature[LTC6811_DEVICES];
 uint16_t LTC6811_undervolt[LTC6811_DEVICES] = {0};
 uint16_t LTC6811_overvolt[LTC6811_DEVICES] = {0};
 uint16_t LTC6811_analogvolt[LTC6811_DEVICES];
@@ -50,6 +50,7 @@ uint8_t bms_tempcount = 0;
 //----------------------------------------------------------------------
 uint16_t cellvoltage[LTC6811_DEVICES][12];										// Array fuer gemessene Zellspannungen
 uint16_t celltemperature[LTC6811_DEVICES][LTC1380_DEVICES * LTC1380_SENSORES];	// Array fuer gemessene Zelltemperaturen
+uint16_t modulvoltage[LTC6811_DEVICES];											// Array fuer gemessene Modulspannung
 //----------------------------------------------------------------------
 
 // BMS initialisieren
@@ -108,24 +109,75 @@ void bms_init(void)
 	// Alle Zellen und Spannungen auslesen und abspeichern
 	for (uint8_t i = 0; i < 8; i++)
 	{
-		bms_measure(i);														// Zellen messen und Arrays initialisieren
+		bms_celltemperatur(i);												// Zellen messen und Arrays initialisieren
 	}
 }
 //----------------------------------------------------------------------
 
-// Lese Zellspannungen ein
+// Lese alle Zellspannungen ein
 //----------------------------------------------------------------------
-void bms_cellspannungen(uint16_t command)
+void bms_cellspannungen(void)
 {
+	uint8_t data[32 * LTC6811_DEVICES];
 
+	ltc6811(ADCVC | MD73);
+
+	ltc6811_read(RDCVA, &data[0]);
+	ltc6811_read(RDCVB, &data[8 * LTC6811_DEVICES]);
+	ltc6811_read(RDCVC, &data[16 * LTC6811_DEVICES]);
+	ltc6811_read(RDCVD, &data[24 * LTC6811_DEVICES]);
+
+	for (uint8_t i = 0; i < LTC6811_DEVICES; i++)
+	{
+		for (uint8_t j = 0; j < 12; j++)
+		{
+			switch (j)
+			{
+				case 0:
+				case 1:
+				case 2:
+					cellvoltage[i][j] = ((data[i*8 + j*2 + 1] << 8) | data[i*8 + j*2]);
+					break;
+				case 3:
+				case 4:
+				case 5:
+					cellvoltage[i][j] = ((data[(LTC6811_DEVICES+i)*8 + (j-3)*2 + 1] << 8) | data[(LTC6811_DEVICES+i)*8+ (j-3)*2]);
+					break;
+				case 6:
+				case 7:
+				case 8:
+					cellvoltage[i][j] = ((data[(LTC6811_DEVICES*2+i)*8 + (j-6)*2 + 1] << 8) | data[(LTC6811_DEVICES*2+i)*8 + (j-6)*2]);
+					break;
+				case 9:
+				case 10:
+				case 11:
+					cellvoltage[i][j] = ((data[(LTC6811_DEVICES*3+i)*8 + (j-9)*2 + 1] << 8) | data[(LTC6811_DEVICES*3+i)*8 + (j-9)*2]);
+					break;
+			}
+		}
+	}
 }
 //----------------------------------------------------------------------
 
-// Lese Zelltemperaturen ein
+// Lese Zelltemperatur ein
 //----------------------------------------------------------------------
-void bms_celltemperaturen(uint16_t command)
+void bms_celltemperatur(uint8_t tempsensor)
 {
+	uint8_t data[8 * LTC6811_DEVICES];
 
+	ltc1380_write(LTC1380_MUX0, tempsensor);
+	ltc1380_write(LTC1380_MUX2, tempsensor);
+	ltc6811(ADAX | MD73);
+	
+	ltc6811_read(RDAUXA, &data[0 * LTC6811_DEVICES]);
+
+	for (uint8_t i = 0; i < LTC6811_DEVICES; i++)
+	{
+		for (uint8_t j = 0; j < 2; j++)
+		{
+			celltemperature[i][2*tempsensor + j] = ((data[i*8 + j*2 + 1] << 8) | data[i*8 + j*2]);
+		}
+	}
 }
 //----------------------------------------------------------------------
 
@@ -145,9 +197,9 @@ void bms_ltc_status(void)
 		LTC6811_undervolt[i] = 0;
 		LTC6811_overvolt[i] = 0;
 
-		LTC6811_soc[i] = ((data[i*16 + 1] << 8) | data[i*16]);
-		LTC6811_Temperatures[i] = ((data[i*16 + 3] << 8) | data[i*16 + 2]);
-		LTC6811_analogvolt[i] = ((data[i*16 + 5] << 8) | data[i*16 + 5]);
+		LTC6811_soc[i] = ((data[i*8 + 1] << 8) | data[i*8]);
+		LTC6811_Temperature[i] = ((data[i*8 + 3] << 8) | data[i*8 + 2]);
+		LTC6811_analogvolt[i] = ((data[i*8 + 5] << 8) | data[i*8 + 4]);
 		LTC6811_digitalvolt[i] = ((data[i*16 + 9] << 8) | data[i*16 + 8]);
 
 		for (uint8_t j = 0; j < 3; j++)
@@ -173,7 +225,7 @@ void bms_ltc_status(void)
 
 // Messe alle Zellspannungen und zwei Temperaturen
 //----------------------------------------------------------------------
-void bms_measure(uint8_t tempsensor)
+void bms_volt_temp(uint8_t tempsensor)
 {
 	uint8_t data[40 * LTC6811_DEVICES];
 
@@ -196,37 +248,87 @@ void bms_measure(uint8_t tempsensor)
 				case 0:
 				case 1:
 				case 2:
-					cellvoltage[i][j] = ((data[i*12 + j*2 + 1] << 8) | data[i*12 + j*2]);
+					cellvoltage[i][j] = ((data[i*8 + j*2 + 1] << 8) | data[i*8 + j*2]);
 					break;
 				case 3:
 				case 4:
 				case 5:
-					cellvoltage[i][j] = ((data[i*12 + j*2 + 3] << 8) | data[i*12 + j*2 + 2]);
+					cellvoltage[i][j] = ((data[(LTC6811_DEVICES+i)*8 + (j-3)*2 + 1] << 8) | data[(LTC6811_DEVICES+i)*8+ (j-3)*2]);
 					break;
 				case 6:
 				case 7:
 				case 8:
-					cellvoltage[i][j] = ((data[i*12 + j*2 + 5] << 8) | data[i*12 + j*2 + 4]);
+					cellvoltage[i][j] = ((data[(LTC6811_DEVICES*2+i)*8 + (j-6)*2 + 1] << 8) | data[(LTC6811_DEVICES*2+i)*8 + (j-6)*2]);
 					break;
 				case 9:
 				case 10:
 				case 11:
-					cellvoltage[i][j] = ((data[i*12 + j*2 + 7] << 8) | data[i*12 + j*2 + 6]);
+					cellvoltage[i][j] = ((data[(LTC6811_DEVICES*3+i)*8 + (j-9)*2 + 1] << 8) | data[(LTC6811_DEVICES*3+i)*8 + (j-9)*2]);
 					break;
 			}
 		}
 
 		for (uint8_t j = 0; j < 2; j++)
 		{
-			celltemperature[i][2*tempsensor + j] = ((data[i*12 + 32 + j*2 + 1] << 8) | data[i*12 + 32 + j*2]);
+			celltemperature[i][2*tempsensor + j] = ((data[(LTC6811_DEVICES*4+i)*8 + j*2 + 1] << 8) | data[(LTC6811_DEVICES*4+i)*8 + j*2]);
 		}
 	}
 }
-// Pruefe ob BMS OK ist
 //----------------------------------------------------------------------
-void bms_ok(void)
+
+// Messe alle Zellspannungen und zwei Temperaturen
+//----------------------------------------------------------------------
+void bms_volt_SOC(void)
 {
-	bms_measure(bms_tempcount);
+	uint8_t data[40 * LTC6811_DEVICES];
+
+	ltc6811(ADCVSC | MD73);
+
+	ltc6811_read(RDCVA, &data[0]);
+	ltc6811_read(RDCVB, &data[8 * LTC6811_DEVICES]);
+	ltc6811_read(RDCVC, &data[16 * LTC6811_DEVICES]);
+	ltc6811_read(RDCVD, &data[24 * LTC6811_DEVICES]);
+	ltc6811_read(RDSTATA, &data[32 * LTC6811_DEVICES]);
+
+	for (uint8_t i = 0; i < LTC6811_DEVICES; i++)
+	{
+		for (uint8_t j = 0; j < 12; j++)
+		{
+			switch (j)
+			{
+				case 0:
+				case 1:
+				case 2:
+					cellvoltage[i][j] = ((data[i*8 + j*2 + 1] << 8) | data[i*8 + j*2]);
+					break;
+				case 3:
+				case 4:
+				case 5:
+					cellvoltage[i][j] = ((data[(LTC6811_DEVICES+i)*8 + (j-3)*2 + 1] << 8) | data[(LTC6811_DEVICES+i)*8+ (j-3)*2]);
+					break;
+				case 6:
+				case 7:
+				case 8:
+					cellvoltage[i][j] = ((data[(LTC6811_DEVICES*2+i)*8 + (j-6)*2 + 1] << 8) | data[(LTC6811_DEVICES*2+i)*8 + (j-6)*2]);
+					break;
+				case 9:
+				case 10:
+				case 11:
+					cellvoltage[i][j] = ((data[(LTC6811_DEVICES*3+i)*8 + (j-9)*2 + 1] << 8) | data[(LTC6811_DEVICES*3+i)*8 + (j-9)*2]);
+					break;
+			}
+		}
+
+		LTC6811_soc[i] = ((data[(LTC6811_DEVICES*4+i)*8 + 1] << 8) | data[(LTC6811_DEVICES*4+i)*8]);
+	}
+}
+//----------------------------------------------------------------------
+
+// Fuehre BMS Operation durch
+//----------------------------------------------------------------------
+void bms_work(void)
+{
+	bms_volt_temp(bms_tempcount);
 	bms_Vminmax();
 	bms_Tminmax();
 	bms_MSvoltage();
@@ -239,6 +341,15 @@ void bms_ok(void)
 		bms_tempcount = 0;
 	}
 }
+//----------------------------------------------------------------------
+
+// Pruefe ob BMS OK ist
+//----------------------------------------------------------------------
+void bms_ok(void)
+{
+
+}
+//----------------------------------------------------------------------
 
 // Minimal- / Maximalspannung ermitteln
 //----------------------------------------------------------------------
