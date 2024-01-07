@@ -126,6 +126,22 @@
 #define x_CAN										0x010					// Einmalig gesendet wenn Schlüssel auf Stufe 2
 #define xy_CAN										0x011					// Einmalig gesendet wenn Schlüssel auf Stufe 2
 //----------------------------------------------------------------------
+// Bamocar
+//----------------------------------------------------------------------
+#define BAMOCAR_CAN_RX								0x181					// Bamocar Empfangs ID
+#define BAMOCAR_CAN_TX								0x210					// Bamocar Sende ID
+//----------------------------------------------------------------------
+// Stromsensor HV-Kreis
+//----------------------------------------------------------------------
+#define STROM_CAN_I									0x521					// Aktueller Stromverbrauch
+#define STROM_CAN_U1								0x522					// Aktuelle Spannung U1
+#define STROM_CAN_U2								0x523					// Aktuelle Spannung U2
+#define STROM_CAN_U3								0x524					// Aktuelle Spannung U3
+#define STROM_CAN_T									0x525					// Aktuelle Temperatur
+#define STROM_CAN_W									0x526					// Power (U1 x I)
+#define STROM_CAN_AS								0x527					// Gesamtstromvrbrauch
+#define STROM_CAN_WH								0x528					// Gesamtenergie (U1 x I)
+//----------------------------------------------------------------------
 
 //
 //----------------------------------------------------------------------

@@ -5,6 +5,7 @@
 "./Application/Src/LTC1380.o"
 "./Application/Src/LTC6811.o"
 "./Application/Src/SystemInfo.o"
+"./Application/Src/adc_inputs.o"
 "./Application/Src/app_info.o"
 "./Application/Src/error.o"
 "./Application/Src/imd.o"

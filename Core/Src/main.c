@@ -85,7 +85,7 @@ int main(void)
 
 	// BMS CAN-Bus Zeitvariable, Errorvariable
 	uint8_t can_online = 0;
-	uint32_t timeBAMO = 0, timeMOTOR = 0;
+	uint32_t timeBAMO = 0, timeMOTOR = 0, timeSTROM;
 
 	// CAN-Bus Receive Message
 	CAN_message_t RxMessage;
@@ -197,7 +197,7 @@ int main(void)
 		  switch (RxMessage.id)
 		  {
 			  // Bamocar ID
-			  case 0x210:
+			  case BAMOCAR_CAN_RX:
 			  {
 				  can_online |= (1 << 0);
 				  timeBAMO = millis();
@@ -229,6 +229,14 @@ int main(void)
 				  break;
 			  }
 
+			  // Stromsensor
+			  case STROM_CAN_I:
+			  {
+				  can_online |= (1 << 2);
+				  timeSTROM = millis();
+				  break;
+			  }
+
 			  //
 			  default:
 			  {
@@ -244,6 +252,10 @@ int main(void)
 	  if (millis() > (timeMOTOR + CAN_TIMEOUT))
 	  {
 		  can_online &= ~(1 << 1);
+	  }
+	  if (millis() > (timeSTROM + CAN_TIMEOUT))
+	  {
+		  can_online &= ~(1 << 2);
 	  }
 
 	  // Crash Ausgeloest
