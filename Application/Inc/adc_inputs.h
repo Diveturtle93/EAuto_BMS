@@ -25,10 +25,6 @@
 //#define TEMP_SENSOR_VOLTAGE_MV_AT_25					760.0f
 //#define ADC_REFERENCE_VOLTAGE_MV						3300.0f
 //#define ADC_MAX_OUTPUT_VALUE							4095.0f
-#define TEMP110_CAL_VALUE								((uint16_t*)((uint32_t)0x1FF0F44E))
-#define TEMP30_CAL_VALUE								((uint16_t*)((uint32_t)0x1FF0F44C))
-#define TEMP110											110.0f
-#define TEMP30											30.0f
 //----------------------------------------------------------------------
 
 // Funktionen definieren
@@ -36,6 +32,7 @@
 uint16_t ADC_STMTemperatur(void);
 uint16_t ADC_PCBTemperatur(void);
 uint16_t ADC_KL15(void);
+uint16_t ADC_KL30_Relais (void);
 uint16_t ADC_Temp1(void);
 uint16_t ADC_Temp2 (void);
 uint16_t ADC_Temp3(void);

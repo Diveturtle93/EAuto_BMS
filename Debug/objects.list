@@ -15,6 +15,7 @@
 "./Application/Src/millis.o"
 "./Application/Src/my_math.o"
 "./Application/Src/outputs.o"
+"./Application/Src/temperatur.o"
 "./Core/Src/adc.o"
 "./Core/Src/can.o"
 "./Core/Src/gpio.o"
