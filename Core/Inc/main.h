@@ -206,7 +206,7 @@ void Error_Handler(void);
 /* USER CODE BEGIN Private defines */
 // Anzahl der CAN Output Pakete defineren
 //----------------------------------------------------------------------
-#define ANZAHL_OUTPUT_PAKETE			7									// Anzahl Sende Nachrichten
+#define ANZAHL_OUTPUT_PAKETE			13									// Anzahl Sende Nachrichten
 //----------------------------------------------------------------------
 
 // Typedefine Boolean definieren

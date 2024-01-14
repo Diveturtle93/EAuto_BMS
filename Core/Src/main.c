@@ -137,8 +137,6 @@ int main(void)
 #ifdef DEBUG
 	#define MAINWHILE			"\nStarte While Schleife\n"
 	uartTransmit(MAINWHILE, sizeof(MAINWHILE));
-
-	uartTransmit("Ready\n", 6);
 #endif
 
 //	HAL_PWR_EnableBkUpAccess();
@@ -147,8 +145,13 @@ int main(void)
 
 	CANinit(RX_SIZE_16, TX_SIZE_16);
 	CAN_config();
+
+	// System Selbsterhaltung einschalten
 	// system_out.Power_On = true;
-	BMS_state.State = Ready;
+
+	// BMS initialisieren
+	bms_init();
+	uartTransmit("BMS gestartet\n", 14);
 
 	// BMS Fehler zuruecksetzen bei Systemstart
 	system_out.AmsLimit = true;
@@ -166,9 +169,9 @@ int main(void)
 		CAN_Output_PaketListe[j].msg.buf[7] = 0;
 	}
 
-	// BMS initialisieren
-	bms_init();
-	uartTransmit("BMS gestartet\n", 14);
+	// Nach erfolgreicher Initialisiserung aller Konfigurationen
+	uartTransmit("Ready\n", 6);
+	BMS_state.State = Ready;
 
   /* USER CODE END 2 */
 
@@ -280,6 +283,7 @@ int main(void)
 		  CANwork();
 
 		  // TODO: Zellspannungen und -temperaturen in CAN-Nachrichten schreiben
+		  // TODO: Timeout fuer LTC6811
 		  // BMS-Work Funktion nur alle 100ms aufrufen
 		  if (millis() > (timeBMSWork + BMS_WORK_TIME))
 		  {
@@ -462,6 +466,8 @@ int main(void)
 		  // State Ausschalten, wenn Standby State laenger als 5min dauert
 		  case Ausschalten:
 		  {
+			  // Alle Ausgaenge zuruecksetzen, ausser PowerOn
+//			  system_out.systemoutput = 0x80;
 			  system_out.systemoutput = 0;
 			  highcurrent_out.high_out = 0;
 			  leuchten_out.ledoutput = 0;

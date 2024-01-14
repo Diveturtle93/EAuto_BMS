@@ -335,6 +335,20 @@ void bms_work(void)
 	{
 		bms_tempcount = 0;
 	}
+
+	// Zellwerte in CAN-Nachrichten abspeichern
+	// xxx: Aufruf hier? Oder wo anders?
+	for (uint8_t i = 0; i < 3; i++)
+	{
+		CAN_Output_PaketListe[7+i].msg.buf[0] = cellvoltage[0][0+i*4];
+		CAN_Output_PaketListe[7+i].msg.buf[1] = (cellvoltage[0][0+i*4]>>8);
+		CAN_Output_PaketListe[7+i].msg.buf[2] = cellvoltage[0][1+i*4];
+		CAN_Output_PaketListe[7+i].msg.buf[3] = (cellvoltage[0][1+i*4]>>8);
+		CAN_Output_PaketListe[7+i].msg.buf[4] = cellvoltage[0][2+i*4];
+		CAN_Output_PaketListe[7+i].msg.buf[5] = (cellvoltage[0][2+i*4]>>8);
+		CAN_Output_PaketListe[7+i].msg.buf[6] = cellvoltage[0][3+i*4];
+		CAN_Output_PaketListe[7+i].msg.buf[7] = (cellvoltage[0][3+i*4]>>8);
+	}
 }
 //----------------------------------------------------------------------
 
@@ -342,7 +356,7 @@ void bms_work(void)
 //----------------------------------------------------------------------
 void bms_ok(void)
 {
-
+	// TODO: BMS OK abfrage erstellen
 }
 //----------------------------------------------------------------------
 

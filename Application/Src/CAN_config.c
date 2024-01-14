@@ -28,12 +28,18 @@
 //----------------------------------------------------------------------
 void CAN_config(void)
 {
-	CAN_Output_PaketListe[0] = CAN_Nachricht(BMS_CAN_SAFETY, 6, 100, 17);
-	CAN_Output_PaketListe[1] = CAN_Nachricht(BMS_CAN_DIGITAL_OUT, 5, 200, 13);
-	CAN_Output_PaketListe[2] = CAN_Nachricht(BMS_CAN_DIGITAL_IN, 4, 200, 14);
-	CAN_Output_PaketListe[3] = CAN_Nachricht(BMS_CAN_ANALOG_IN, 8, 500, 7);
-	CAN_Output_PaketListe[4] = CAN_Nachricht(BMS_CAN_TEMPERATUR, 8, 500, 24);
-	CAN_Output_PaketListe[5] = CAN_Nachricht(BMS_CAN_STATUS, 1, 200, 5);
-	CAN_Output_PaketListe[6] = CAN_Nachricht(BMS_CAN_IMD, 5, 200, 12);
+	CAN_Output_PaketListe[0] = CAN_Nachricht(BMS_CAN_SAFETY, 6, 100, 17);		// main.c
+	CAN_Output_PaketListe[1] = CAN_Nachricht(BMS_CAN_DIGITAL_OUT, 5, 200, 13);	// main.c
+	CAN_Output_PaketListe[2] = CAN_Nachricht(BMS_CAN_DIGITAL_IN, 4, 200, 14);	// main.c
+	CAN_Output_PaketListe[3] = CAN_Nachricht(BMS_CAN_ANALOG_IN, 8, 500, 7);		// main.c
+	CAN_Output_PaketListe[4] = CAN_Nachricht(BMS_CAN_TEMPERATUR, 8, 500, 24);	// main.c
+	CAN_Output_PaketListe[5] = CAN_Nachricht(BMS_CAN_STATUS, 1, 200, 5);		// main.c
+	CAN_Output_PaketListe[6] = CAN_Nachricht(BMS_CAN_IMD, 5, 200, 12);			// main.c oder imd.c?
+	CAN_Output_PaketListe[7] = CAN_Nachricht(BMS_CAN_ZELLEN11, 8, 200, 28);		// batteriemanagement.c
+	CAN_Output_PaketListe[8] = CAN_Nachricht(BMS_CAN_ZELLEN12, 8, 200, 30);		// batteriemanagement.c
+	CAN_Output_PaketListe[9] = CAN_Nachricht(BMS_CAN_ZELLEN13, 8, 200, 27);		// batteriemanagement.c
+	CAN_Output_PaketListe[10] = CAN_Nachricht(BMS_CAN_ZELLEN21, 8, 200, 40);	// batteriemanagement.c
+	CAN_Output_PaketListe[11] = CAN_Nachricht(BMS_CAN_ZELLEN22, 8, 200, 57);	// batteriemanagement.c
+	CAN_Output_PaketListe[12] = CAN_Nachricht(BMS_CAN_ZELLEN23, 8, 200, 37);	// batteriemanagement.c
 }
 //----------------------------------------------------------------------
