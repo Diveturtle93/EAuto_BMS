@@ -26,7 +26,7 @@
 
 // Gleitenden Mittelwert berechnen, sehr Speicher arm
 //----------------------------------------------------------------------
-static int32_t calculateMovingAverage(uint16_t oldValue, uint16_t newValue, uint16_t n)
+int32_t calculateMovingAverage(uint16_t oldValue, uint16_t newValue, uint16_t n)
 {
 	return (oldValue + ((newValue - oldValue) / n));						// MovingAverage Calculation x_n  = x_{n-1} + ((x_n+x_{n-1})/n)
 }
@@ -34,7 +34,7 @@ static int32_t calculateMovingAverage(uint16_t oldValue, uint16_t newValue, uint
 
 // Differenz Berechnen, Betrag
 //----------------------------------------------------------------------
-static uint16_t getDifference(uint16_t a, uint16_t b)
+uint16_t getDifference(uint16_t a, uint16_t b)
 {
 	// A ist groesser B
 	if (a > b)

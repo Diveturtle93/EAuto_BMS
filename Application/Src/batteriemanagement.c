@@ -72,8 +72,6 @@ void bms_init(void)
 		{
 			#define LTC6811_FAILED	"Selbsttest LTC6811 fehlerhaft\n"
 			uartTransmit(LTC6811_FAILED, sizeof(LTC6811_FAILED));				// Ausgabe bei Fehlerhaftem Selbsttest
-			leuchten_out.RedLed = 1;											// Variable setzen
-			HAL_GPIO_WritePin(RED_LED_GPIO_Port, RED_LED_Pin, leuchten_out.RedLed);// Ausgabe auf LEDs
 
 			uartTransmitNumber(error, 10);
 			uartTransmit("\n", 1);
@@ -84,6 +82,7 @@ void bms_init(void)
 			uartTransmit(LTC6811_PASSED, sizeof(LTC6811_PASSED));				// Ausgabe bei Erfolgreichem Selbsttest
 		}
 
+		// TODO: Count wird nicht hochgezaehlt
 		if (count >= 10)
 		{
 			software_error(ERROR_LTC6811_INITIALTEST);

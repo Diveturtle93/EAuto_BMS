@@ -56,7 +56,7 @@
 BMS_states BMS_state = {{Start, true, false, false, false}};
 
 // ADC Array
-uint16_t ADC_VAL[7] = {0};
+uint16_t ADC_VAL[8] = {0};
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -82,6 +82,9 @@ int main(void)
   /* USER CODE BEGIN 1 */
 	// BMS Statemaschine Zeitvariablen
 	uint32_t timeStandby = 0, timeError = 0;
+
+	// BMS Abfrage Zeitvariablen
+	uint32_t timeBMSWork = 0;
 
 	// BMS CAN-Bus Zeitvariable, Errorvariable
 	uint8_t can_online = 0;
@@ -128,7 +131,6 @@ int main(void)
   MX_TIM4_Init();
   MX_SPI1_Init();
   MX_CAN3_Init();
-  MX_TIM6_Init();
   MX_RTC_Init();
   /* USER CODE BEGIN 2 */
 
@@ -154,14 +156,19 @@ int main(void)
 
 	for (uint8_t j = 0; j < ANZAHL_OUTPUT_PAKETE; j++)
 	{
-		CAN_Output_PaketListe[0].msg.buf[j] = 0;
-		CAN_Output_PaketListe[1].msg.buf[j] = 0;
-		CAN_Output_PaketListe[2].msg.buf[j] = 0;
-		CAN_Output_PaketListe[3].msg.buf[j] = 0;
-		CAN_Output_PaketListe[4].msg.buf[j] = 0;
-		CAN_Output_PaketListe[5].msg.buf[j] = 0;
-		CAN_Output_PaketListe[6].msg.buf[j] = 0;
+		CAN_Output_PaketListe[j].msg.buf[0] = 0;
+		CAN_Output_PaketListe[j].msg.buf[1] = 0;
+		CAN_Output_PaketListe[j].msg.buf[2] = 0;
+		CAN_Output_PaketListe[j].msg.buf[3] = 0;
+		CAN_Output_PaketListe[j].msg.buf[4] = 0;
+		CAN_Output_PaketListe[j].msg.buf[5] = 0;
+		CAN_Output_PaketListe[j].msg.buf[6] = 0;
+		CAN_Output_PaketListe[j].msg.buf[7] = 0;
 	}
+
+	// BMS initialisieren
+	bms_init();
+	uartTransmit("BMS gestartet\n", 14);
 
   /* USER CODE END 2 */
 
@@ -179,10 +186,11 @@ int main(void)
 	  ADC_VAL[0] = ADC_STMTemperatur();
 	  ADC_VAL[1] = ADC_PCBTemperatur();
 	  ADC_VAL[2] = ADC_KL15();
-	  ADC_VAL[3] = ADC_Temp1();
-	  ADC_VAL[4] = ADC_Temp2();
-	  ADC_VAL[5] = ADC_Temp3();
-	  ADC_VAL[6] = ADC_Temp4();
+	  ADC_VAL[3] = ADC_KL30_Relais();
+	  ADC_VAL[4] = ADC_Temp1();
+	  ADC_VAL[5] = ADC_Temp2();
+	  ADC_VAL[6] = ADC_Temp3();
+	  ADC_VAL[7] = ADC_Temp4();
 
 	  // Shutdown-Circuit checken
 	  checkSDC();
@@ -230,7 +238,7 @@ int main(void)
 			  }
 
 			  // Stromsensor
-			  case STROM_CAN_I:
+			  case STROM_HV_CAN_I:
 			  {
 				  can_online |= (1 << 2);
 				  timeSTROM = millis();
@@ -270,6 +278,13 @@ int main(void)
 	  {
 		  // Schreibe alle CAN-Nachrichten auf BUS, wenn nicht im Standby
 		  CANwork();
+
+		  // TODO: Zellspannungen und -temperaturen in CAN-Nachrichten schreiben
+		  // BMS-Work Funktion nur alle 100ms aufrufen
+		  if (millis() > (timeBMSWork + BMS_WORK_TIME))
+		  {
+			  bms_work();
+		  }
 	  }
 
 	  // Statemaschine keine Fehler

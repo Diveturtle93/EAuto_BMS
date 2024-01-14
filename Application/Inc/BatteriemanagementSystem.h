@@ -226,6 +226,7 @@ typedef enum BMSState_tag
 //
 //----------------------------------------------------------------------
 #define CAN_TIMEOUT									3000					// Zeit bis CAN Timeout auftritt
+#define BMS_WORK_TIME								100						// Zeitintervall fuer BMS-Abfrage
 //----------------------------------------------------------------------
 
 // Definiere Statemaschine Typedefines

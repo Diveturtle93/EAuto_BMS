@@ -383,12 +383,9 @@ void ltc6811_write(uint16_t command, uint8_t* data)
 	// Sende Command auf UART
 	for (uint8_t i = 0; i < 4; i++)
 	{
-		spi_transmit(data[i]);
 		ITM_SendChar(' ');
 		ITM_SendNumber(cmd[i]);
 	}
-	spi_transmit((pec_d>>8) & 0xFF);
-	spi_transmit(pec_d & 0xFE);
 	
 	ITM_SendChar('\n');
 
@@ -396,10 +393,10 @@ void ltc6811_write(uint16_t command, uint8_t* data)
 	ITM_SendString("Folgendes wurde gesendet:");
 
 	// Sende Daten auf UART
-	for (uint8_t i = 0; i < 8; i++)
+	for (uint8_t i = 0; i < (8*LTC6811_DEVICES); i++)
 	{
 		ITM_SendChar(' ');
-		ITM_SendNumber(data[i]);
+		ITM_SendNumber(tmp_data[i]);
 	}
 	ITM_SendChar('\n');
 #endif
@@ -494,7 +491,7 @@ uint8_t ltc6811_read(uint16_t command, uint8_t* data)
 	ITM_SendString("Folgendes wurde empfangen:");
 
 	// Sende Daten auf UART
-	for (uint8_t i = 0; i < 8; i++)
+	for (uint8_t i = 0; i < (8*LTC6811_DEVICES); i++)
 	{
 		ITM_SendChar(' ');
 		ITM_SendNumber(data[i]);
