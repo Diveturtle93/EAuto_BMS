@@ -38,8 +38,10 @@ void CAN_config(void)
 	CAN_Output_PaketListe[7] = CAN_Nachricht(BMS_CAN_ZELLEN11, 8, 200, 28);		// batteriemanagement.c
 	CAN_Output_PaketListe[8] = CAN_Nachricht(BMS_CAN_ZELLEN12, 8, 200, 30);		// batteriemanagement.c
 	CAN_Output_PaketListe[9] = CAN_Nachricht(BMS_CAN_ZELLEN13, 8, 200, 27);		// batteriemanagement.c
-	CAN_Output_PaketListe[10] = CAN_Nachricht(BMS_CAN_ZELLEN21, 8, 200, 40);	// batteriemanagement.c
-	CAN_Output_PaketListe[11] = CAN_Nachricht(BMS_CAN_ZELLEN22, 8, 200, 57);	// batteriemanagement.c
-	CAN_Output_PaketListe[12] = CAN_Nachricht(BMS_CAN_ZELLEN23, 8, 200, 37);	// batteriemanagement.c
+	CAN_Output_PaketListe[10] = CAN_Nachricht(BMS_CAN_TEMPERATUR11, 8, 200, 40);// batteriemanagement.c
+	CAN_Output_PaketListe[11] = CAN_Nachricht(BMS_CAN_TEMPERATUR12, 8, 200, 57);// batteriemanagement.c
+	CAN_Output_PaketListe[12] = CAN_Nachricht(BMS_CAN_TEMPERATUR13, 8, 200, 37);// batteriemanagement.c
+	CAN_Output_PaketListe[13] = CAN_Nachricht(BMS_CAN_TEMPERATUR14, 8, 200, 20);// batteriemanagement.c
+	CAN_Output_PaketListe[14] = CAN_Nachricht(BMS_CAN_STACKVOLTAGE, 4, 200, 73);// batteriemanagement.c
 }
 //----------------------------------------------------------------------

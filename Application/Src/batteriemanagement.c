@@ -34,6 +34,7 @@ uint16_t mincelltemperature[LTC6811_DEVICES + 1];
 uint16_t maxcelltemperature[LTC6811_DEVICES + 1];
 uint16_t LTC6811_Tempstatus = 0;
 uint16_t LTC6811_Temperature[LTC6811_DEVICES];
+uint16_t PCB_Temperature[LTC6811_DEVICES];
 uint16_t LTC6811_undervolt[LTC6811_DEVICES] = {0};
 uint16_t LTC6811_overvolt[LTC6811_DEVICES] = {0};
 uint16_t LTC6811_analogvolt[LTC6811_DEVICES];
@@ -170,8 +171,10 @@ void bms_celltemperatur(uint8_t tempsensor)
 	{
 		for (uint8_t j = 0; j < 2; j++)
 		{
-			celltemperature[i][2*tempsensor + j] = ((data[i*8 + j*2 + 1] << 8) | data[i*8 + j*2]);
+			celltemperature[i][2*tempsensor + j] = ((data[i*8 + j*2 + 1] << 8) | data[i*8 + j*2]);	// LTC GPIO 0 und 1, Byte 0 bis 3 des Registers
 		}
+
+		PCB_Temperature[i] = ((data[i*8 + 4 + 1] << 8) | data[i*8 + 4]);	// LTC GPIO 2, Byte 4 und 5 des Registers
 	}
 }
 //----------------------------------------------------------------------
@@ -338,6 +341,7 @@ void bms_work(void)
 
 	// Zellwerte in CAN-Nachrichten abspeichern
 	// xxx: Aufruf hier? Oder wo anders?
+	// Spannungen
 	for (uint8_t i = 0; i < 3; i++)
 	{
 		CAN_Output_PaketListe[7+i].msg.buf[0] = cellvoltage[0][0+i*4];
@@ -349,6 +353,44 @@ void bms_work(void)
 		CAN_Output_PaketListe[7+i].msg.buf[6] = cellvoltage[0][3+i*4];
 		CAN_Output_PaketListe[7+i].msg.buf[7] = (cellvoltage[0][3+i*4]>>8);
 	}
+
+	// Temperaturen
+	for (uint8_t i = 0; i < 4; i++)
+	{
+		CAN_Output_PaketListe[10+i].msg.buf[0] = celltemperature[0][0+i*4];
+		CAN_Output_PaketListe[10+i].msg.buf[1] = (celltemperature[0][0+i*4]>>8);
+		CAN_Output_PaketListe[10+i].msg.buf[2] = celltemperature[0][1+i*4];
+		CAN_Output_PaketListe[10+i].msg.buf[3] = (celltemperature[0][1+i*4]>>8);
+		CAN_Output_PaketListe[10+i].msg.buf[4] = celltemperature[0][2+i*4];
+		CAN_Output_PaketListe[10+i].msg.buf[5] = (celltemperature[0][2+i*4]>>8);
+		CAN_Output_PaketListe[10+i].msg.buf[6] = celltemperature[0][3+i*4];
+		CAN_Output_PaketListe[10+i].msg.buf[7] = (celltemperature[0][3+i*4]>>8);
+	}
+
+	// Stackvoltage
+	CAN_Output_PaketListe[14].msg.buf[0] = stackvoltage;
+	CAN_Output_PaketListe[14].msg.buf[1] = (stackvoltage >> 8);
+	CAN_Output_PaketListe[14].msg.buf[2] = (stackvoltage >> 16);
+	CAN_Output_PaketListe[14].msg.buf[3] = (stackvoltage >> 24);
+
+#ifdef DEBUG_BMS_WORK
+	for (uint8_t i = 0; i < LTC6811_DEVICES; i++)
+	{
+		for (uint8_t j = 0; j < 12; j++)
+		{
+			uartTransmitNumber(cellvoltage[i][j], 10);
+			uartTransmit(", ", 2);
+		}
+
+		for (uint8_t j = 0; j < 16; j++)
+		{
+			uartTransmitNumber(celltemperature[i][j], 10);
+			uartTransmit(", ", 2);
+		}
+
+		uartTransmitNumber(PCB_Temperature[i], 10);
+	}
+#endif
 }
 //----------------------------------------------------------------------
 
@@ -364,8 +406,8 @@ void bms_ok(void)
 //----------------------------------------------------------------------
 void bms_Vminmax(void)
 {
-	mincellvoltage[LTC6811_DEVICES] = 65535;
-	maxcellvoltage[LTC6811_DEVICES] = 0;
+	mincellvoltage[LTC6811_DEVICES + 1] = 65535;
+	maxcellvoltage[LTC6811_DEVICES + 1] = 0;
 
 	for (uint8_t i = 0; i < LTC6811_DEVICES; i++)
 	{
@@ -402,8 +444,8 @@ void bms_Vminmax(void)
 //----------------------------------------------------------------------
 void bms_Tminmax(void)
 {
-	mincelltemperature[LTC6811_DEVICES] = 65535;
-	maxcelltemperature[LTC6811_DEVICES] = 0;
+	mincelltemperature[LTC6811_DEVICES + 1] = 65535;
+	maxcelltemperature[LTC6811_DEVICES + 1] = 0;
 
 	for (uint8_t i = 0; i < LTC6811_DEVICES; i++)
 	{
