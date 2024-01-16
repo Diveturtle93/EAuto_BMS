@@ -60,7 +60,7 @@
 //----------------------------------------------------------------------
 #if TISCHAUFBAU == 1
 #warning "Programm ist fuer Tischaufbau kompiliert!!"
-#elif
+#else
 #warning "Programm ist fuer Auto kompiliert!!"
 #endif
 //----------------------------------------------------------------------
@@ -125,11 +125,11 @@ typedef enum BMSState_tag
 #define BMS_CAN_TEMPERATUR11						0x740					// Batterie-Temperatur 1-4 Modul 1
 #define BMS_CAN_TEMPERATUR12						0x741					// Batterie-Temperatur 5-8 Modul 1
 #define BMS_CAN_TEMPERATUR13						0x742					// Batterie-Temperatur 9-12 Modul 1
-#define BMS_CAN_TEMPERATUR34						0x743					// Batterie-Temperatur 13-16 Modul 1
+#define BMS_CAN_TEMPERATUR14						0x743					// Batterie-Temperatur 13-16 Modul 1
 #define BMS_CAN_TEMPERATUR21						0x744					// Batterie-Temperatur 1-4 Modul 2
 #define BMS_CAN_TEMPERATUR22						0x745					// Batterie-Temperatur 5-8 Modul 2
 #define BMS_CAN_TEMPERATUR23						0x746					// Batterie-Temperatur 9-12 Modul 2
-#define BMS_CAN_TEMPERATUR34						0x747					// Batterie-Temperatur 13-16 Modul 2
+#define BMS_CAN_TEMPERATUR24						0x747					// Batterie-Temperatur 13-16 Modul 2
 #define BMS_CAN_TEMPERATUR31						0x748					// Batterie-Temperatur 1-4 Modul 3
 #define BMS_CAN_TEMPERATUR32						0x749					// Batterie-Temperatur 5-8 Modul 3
 #define BMS_CAN_TEMPERATUR33						0x750					// Batterie-Temperatur 9-12 Modul 3

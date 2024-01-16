@@ -35,7 +35,7 @@
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
 // TODO:
-// FIXME: CAN Bus (CAN-Bus braucht Ablaufprogramm)
+// FIXME: FIX BMS
 // xxx: Schlechte Performance
 /* USER CODE END PTD */
 
@@ -607,18 +607,18 @@ void sortCAN(void)
 	CAN_Output_PaketListe[3].msg.buf[1] = (ADC_VAL[0] >> 8) | (ADC_VAL[1] << 4);
 	CAN_Output_PaketListe[3].msg.buf[2] = (ADC_VAL[1] >> 4);
 	CAN_Output_PaketListe[3].msg.buf[3] = ADC_VAL[2];
-	CAN_Output_PaketListe[3].msg.buf[4] = (ADC_VAL[2] >> 8);
-	CAN_Output_PaketListe[3].msg.buf[5] = 0;
+	CAN_Output_PaketListe[3].msg.buf[4] = (ADC_VAL[2] >> 8) | (ADC_VAL[3] << 4);
+	CAN_Output_PaketListe[3].msg.buf[5] = (ADC_VAL[3] >> 4);
 	CAN_Output_PaketListe[3].msg.buf[6] = 0;
 	CAN_Output_PaketListe[3].msg.buf[7] = 0;
 
 	// Temperatureingaenge
-	CAN_Output_PaketListe[4].msg.buf[0] = ADC_VAL[3];
-	CAN_Output_PaketListe[4].msg.buf[1] = (ADC_VAL[3] >> 8) | (ADC_VAL[4] << 4);
-	CAN_Output_PaketListe[4].msg.buf[2] = (ADC_VAL[4] >> 4);
-	CAN_Output_PaketListe[4].msg.buf[3] = ADC_VAL[5];
-	CAN_Output_PaketListe[4].msg.buf[4] = (ADC_VAL[5] >> 8) | (ADC_VAL[6] << 4);
-	CAN_Output_PaketListe[4].msg.buf[5] = (ADC_VAL[6] >> 4);
+	CAN_Output_PaketListe[4].msg.buf[0] = ADC_VAL[4];
+	CAN_Output_PaketListe[4].msg.buf[1] = (ADC_VAL[4] >> 8) | (ADC_VAL[7] << 4);
+	CAN_Output_PaketListe[4].msg.buf[2] = (ADC_VAL[5] >> 4);
+	CAN_Output_PaketListe[4].msg.buf[3] = ADC_VAL[6];
+	CAN_Output_PaketListe[4].msg.buf[4] = (ADC_VAL[6] >> 8) | (ADC_VAL[7] << 4);
+	CAN_Output_PaketListe[4].msg.buf[5] = (ADC_VAL[7] >> 4);
 	CAN_Output_PaketListe[4].msg.buf[6] = 0;
 	CAN_Output_PaketListe[4].msg.buf[7] = 0;
 

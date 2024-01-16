@@ -44,6 +44,7 @@
 //----------------------------------------------------------------------
 void hal_error(uint8_t status);
 void software_error(uint8_t errorcode);
+void software_error_debug(uint8_t errorcode);
 void ITM_SendString(char *text);
 void ITM_SendNumber(long number);
 void ITM_SendFloat(double number, int digits);

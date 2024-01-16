@@ -76,6 +76,7 @@ void bms_init(void)
 
 			uartTransmitNumber(error, 10);
 			uartTransmit("\n", 1);
+			count++;
 		}
 		else
 		{
@@ -86,10 +87,15 @@ void bms_init(void)
 		// TODO: Count wird nicht hochgezaehlt
 		if (count >= 10)
 		{
+#ifdef DEBUG
+			software_error_debug(ERROR_LTC6811_INITIALTEST);
+			return;
+#else
 			software_error(ERROR_LTC6811_INITIALTEST);
+#endif
 		}
 	}
-	while (error != 0);
+	while ((error != 0) && (count <= 10));
 
 	// LTC6811 initialisieren
 	ltc6811_init();
@@ -334,7 +340,7 @@ void bms_work(void)
 
 	bms_tempcount++;
 
-	if (bms_tempcount == 8)
+	if (bms_tempcount == LTC1380_SENSORES)
 	{
 		bms_tempcount = 0;
 	}
@@ -390,6 +396,7 @@ void bms_work(void)
 
 		uartTransmitNumber(PCB_Temperature[i], 10);
 	}
+	uartTransmit("\n", 1);
 #endif
 }
 //----------------------------------------------------------------------
