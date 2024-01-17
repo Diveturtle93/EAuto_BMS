@@ -26,28 +26,29 @@
 
 // Definiere Global Variablen
 //----------------------------------------------------------------------
-uint16_t mincellvoltage[LTC6811_DEVICES + 1];
-uint16_t maxcellvoltage[LTC6811_DEVICES + 1];
-uint32_t modulevoltage[LTC6811_DEVICES];
-uint32_t stackvoltage;
-uint16_t mincelltemperature[LTC6811_DEVICES + 1];
-uint16_t maxcelltemperature[LTC6811_DEVICES + 1];
+uint16_t mincellvoltage[LTC6811_DEVICES + 1] = {0};
+uint16_t maxcellvoltage[LTC6811_DEVICES + 1] = {0};
+uint32_t modulevoltage[LTC6811_DEVICES] = {0};
+uint32_t stackvoltage = 0;
+uint16_t mincelltemperature[LTC6811_DEVICES + 1] = {0};
+uint16_t maxcelltemperature[LTC6811_DEVICES + 1] = {0};
 uint16_t LTC6811_Tempstatus = 0;
-uint16_t LTC6811_Temperature[LTC6811_DEVICES];
-uint16_t PCB_Temperature[LTC6811_DEVICES];
+uint16_t LTC6811_Temperature[LTC6811_DEVICES] = {0};
+uint16_t PCB_Temperature[LTC6811_DEVICES] = {0};
 uint16_t LTC6811_undervolt[LTC6811_DEVICES] = {0};
 uint16_t LTC6811_overvolt[LTC6811_DEVICES] = {0};
-uint16_t LTC6811_analogvolt[LTC6811_DEVICES];
-uint16_t LTC6811_digitalvolt[LTC6811_DEVICES];
-uint16_t LTC6811_soc[LTC6811_DEVICES];
+uint16_t LTC6811_analogvolt[LTC6811_DEVICES] = {0};
+uint16_t LTC6811_digitalvolt[LTC6811_DEVICES] = {0};
+uint16_t LTC6811_soc[LTC6811_DEVICES] = {0};
 uint8_t bms_tempcount = 0;
+uint16_t Sec_Ref[LTC6811_DEVICES] = {0};
 //----------------------------------------------------------------------
 
 // Definiere Zellenarray
 //----------------------------------------------------------------------
-uint16_t cellvoltage[LTC6811_DEVICES][12];										// Array fuer gemessene Zellspannungen
-uint16_t celltemperature[LTC6811_DEVICES][LTC1380_DEVICES * LTC1380_SENSORES];	// Array fuer gemessene Zelltemperaturen
-uint16_t modulvoltage[LTC6811_DEVICES];											// Array fuer gemessene Modulspannung
+uint16_t cellvoltage[LTC6811_DEVICES][12] = {0};								// Array fuer gemessene Zellspannungen
+uint16_t celltemperature[LTC6811_DEVICES][LTC1380_DEVICES * LTC1380_SENSORES] = {0};	// Array fuer gemessene Zelltemperaturen
+uint16_t modulvoltage[LTC6811_DEVICES] = {0};									// Array fuer gemessene Modulspannung
 //----------------------------------------------------------------------
 
 // BMS initialisieren
@@ -106,12 +107,75 @@ void bms_init(void)
 	ltc6811(CLRAUX);
 
 	// Erster ADC Vorgang ist ungueltig
-	ltc6811(ADCVC | MD73 | CELLALL);										// Initial Command Zellen auslesen
+	ltc6811(ADCVC | MD73 | CELLALL);											// Initial Command Zellen auslesen
 
 	// Alle Zellen und Spannungen auslesen und abspeichern
 	for (uint8_t i = 0; i < 8; i++)
 	{
-		bms_celltemperatur(i);												// Zellen messen und Arrays initialisieren
+		bms_celltemperatur(i);													// Zellen messen und Arrays initialisieren
+	}
+}
+//----------------------------------------------------------------------
+
+// Lese alle Zellspannung ein
+//----------------------------------------------------------------------
+void bms_cellspannung(uint8_t cell)
+{
+	uint8_t data[32 * LTC6811_DEVICES];
+
+	ltc6811(ADCVC | MD73 | cell);
+
+	switch (cell)
+	{
+		case 1:
+		case 2:
+		case 3:
+			ltc6811_read(RDCVA, &data[0]);
+			ltc6811_read(RDCVC, &data[16 * LTC6811_DEVICES]);
+			break;
+		case 4:
+		case 5:
+		case 6:
+			ltc6811_read(RDCVB, &data[8 * LTC6811_DEVICES]);
+			ltc6811_read(RDCVD, &data[24 * LTC6811_DEVICES]);
+			break;
+		default:
+			ltc6811_read(RDCVA, &data[0]);
+			ltc6811_read(RDCVB, &data[8 * LTC6811_DEVICES]);
+			ltc6811_read(RDCVC, &data[16 * LTC6811_DEVICES]);
+			ltc6811_read(RDCVD, &data[24 * LTC6811_DEVICES]);
+			break;
+	}
+
+	// TODO: sortiere Zellspannungen
+	for (uint8_t i = 0; i < LTC6811_DEVICES; i++)
+	{
+		for (uint8_t j = 0; j < 12; j++)
+		{
+			switch (j)
+			{
+				case 0:
+				case 1:
+				case 2:
+					cellvoltage[i][j] = ((data[i*8 + j*2 + 1] << 8) | data[i*8 + j*2]);
+					break;
+				case 3:
+				case 4:
+				case 5:
+					cellvoltage[i][j] = ((data[(LTC6811_DEVICES+i)*8 + (j-3)*2 + 1] << 8) | data[(LTC6811_DEVICES+i)*8+ (j-3)*2]);
+					break;
+				case 6:
+				case 7:
+				case 8:
+					cellvoltage[i][j] = ((data[(LTC6811_DEVICES*2+i)*8 + (j-6)*2 + 1] << 8) | data[(LTC6811_DEVICES*2+i)*8 + (j-6)*2]);
+					break;
+				case 9:
+				case 10:
+				case 11:
+					cellvoltage[i][j] = ((data[(LTC6811_DEVICES*3+i)*8 + (j-9)*2 + 1] << 8) | data[(LTC6811_DEVICES*3+i)*8 + (j-9)*2]);
+					break;
+			}
+		}
 	}
 }
 //----------------------------------------------------------------------
@@ -161,6 +225,7 @@ void bms_cellspannungen(void)
 }
 //----------------------------------------------------------------------
 
+// TODO: Lese Referenzspannung, GPIO3
 // Lese Zelltemperatur ein
 //----------------------------------------------------------------------
 void bms_celltemperatur(uint8_t tempsensor)
@@ -180,7 +245,41 @@ void bms_celltemperatur(uint8_t tempsensor)
 			celltemperature[i][2*tempsensor + j] = ((data[i*8 + j*2 + 1] << 8) | data[i*8 + j*2]);	// LTC GPIO 0 und 1, Byte 0 bis 3 des Registers
 		}
 
-		PCB_Temperature[i] = ((data[i*8 + 4 + 1] << 8) | data[i*8 + 4]);	// LTC GPIO 2, Byte 4 und 5 des Registers
+		PCB_Temperature[i] = ((data[i*8 + 4 + 1] << 8) | data[i*8 + 4]);		// LTC GPIO 2, Byte 4 und 5 des Registers
+	}
+}
+//----------------------------------------------------------------------
+
+// Lese Analogspannung an den GPIOs ein
+//----------------------------------------------------------------------
+void bms_readgpio(uint8_t gpio)
+{
+	uint8_t data[16 * LTC6811_DEVICES];
+
+	ltc6811(ADAX | MD73 | gpio);
+
+	ltc6811_read(RDAUXA, &data[0]);
+	ltc6811_read(RDAUXB, &data[8 * LTC6811_DEVICES]);
+
+	for (uint8_t i = 0; i < LTC6811_DEVICES; i++)
+	{
+		switch (gpio)
+		{
+			case 1:
+			case 2:
+				break;
+			case 3:
+				PCB_Temperature[i] = ((data[i*8 + 4 + 1] << 8) | data[i*8 + 4]);// LTC GPIO 2, Byte 4 und 5 des Registers
+				break;
+			case 4:
+			case 5:
+				break;
+			case 6:
+				Sec_Ref[i] = ((data[i*16 + 6 + 1] << 8) | data[i*16 + 6]);		// LTC Sec Referenzspannung einlesen, Byte 6 und 7 des Registers
+				break;
+			default:
+				break;
+		}
 	}
 }
 //----------------------------------------------------------------------

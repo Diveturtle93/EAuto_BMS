@@ -96,7 +96,8 @@ void bms_init(void);														// Initialisier BMS
 void bms_cellspannung(uint8_t cell);										// Lese einen Zellblock ein
 void bms_cellspannungen(void);												// Lese alle Zellspannungen ein
 void bms_celltemperatur(uint8_t tempsensor);								// Lese Zelltemperatur ein
-void bms_celltemperaturen(void);											// Lesse alle Zelltemperaturen ein
+void bms_celltemperaturen(void);											// Lese alle Zelltemperaturen ein
+void bms_readgpio(uint8_t gpio);											// Lese GPIO des LTC ein
 void bms_ltc_status(void);													// Lese IC Status ein
 void bms_volt_temp(uint8_t tempsensor);										// Messe Zellspannungen und zwei Temperaturen
 void bms_volt_SOC(void);													// Messe Zellspannungen und Sum of Cells
