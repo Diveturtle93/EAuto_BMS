@@ -107,13 +107,18 @@ void bms_init(void)
 	ltc6811(CLRAUX);
 
 	// Erster ADC Vorgang ist ungueltig
-	ltc6811(ADCVC | MD73 | CELLALL);											// Initial Command Zellen auslesen
+	ltc6811(ADCVC | MD73);														// Initial Command Zellen auslesen
 
+	// Fuehre Zellmessungen durch
+	bms_cellspannungen();
 	// Alle Zellen und Spannungen auslesen und abspeichern
 	for (uint8_t i = 0; i < 8; i++)
 	{
 		bms_celltemperatur(i);													// Zellen messen und Arrays initialisieren
 	}
+
+	// Fuhre Statusfunktion aus
+	bms_ltc_status();
 }
 //----------------------------------------------------------------------
 
@@ -242,7 +247,7 @@ void bms_celltemperatur(uint8_t tempsensor)
 	{
 		for (uint8_t j = 0; j < 2; j++)
 		{
-			celltemperature[i][2*tempsensor + j] = ((data[i*8 + j*2 + 1] << 8) | data[i*8 + j*2]);	// LTC GPIO 0 und 1, Byte 0 bis 3 des Registers
+			celltemperature[i][tempsensor + j*8] = ((data[i*8 + j*2 + 1] << 8) | data[i*8 + j*2]);	// LTC GPIO 0 und 1, Byte 0 bis 3 des Registers
 		}
 
 		PCB_Temperature[i] = ((data[i*8 + 4 + 1] << 8) | data[i*8 + 4]);		// LTC GPIO 2, Byte 4 und 5 des Registers
@@ -373,7 +378,7 @@ void bms_volt_temp(uint8_t tempsensor)
 
 		for (uint8_t j = 0; j < 2; j++)
 		{
-			celltemperature[i][2*tempsensor + j] = ((data[(LTC6811_DEVICES*4+i)*8 + j*2 + 1] << 8) | data[(LTC6811_DEVICES*4+i)*8 + j*2]);
+			celltemperature[i][tempsensor + j*8] = ((data[(LTC6811_DEVICES*4+i)*8 + j*2 + 1] << 8) | data[(LTC6811_DEVICES*4+i)*8 + j*2]);
 		}
 	}
 }
@@ -431,18 +436,21 @@ void bms_volt_SOC(void)
 //----------------------------------------------------------------------
 void bms_work(void)
 {
-	bms_volt_temp(bms_tempcount);
-	bms_Vminmax();
-	bms_Tminmax();
-	bms_MSvoltage();
-//	bms_ltc_status();
-
-	bms_tempcount++;
-
 	if (bms_tempcount == LTC1380_SENSORES)
 	{
 		bms_tempcount = 0;
+		bms_celltemperatur(bms_tempcount);
+		bms_ltc_status();
 	}
+	else
+	{
+		bms_volt_temp(bms_tempcount);
+		bms_tempcount++;
+	}
+
+	bms_Vminmax();
+	bms_Tminmax();
+	bms_MSvoltage();
 
 	// Zellwerte in CAN-Nachrichten abspeichern
 	// xxx: Aufruf hier? Oder wo anders?
@@ -478,25 +486,30 @@ void bms_work(void)
 	CAN_Output_PaketListe[14].msg.buf[2] = (stackvoltage >> 16);
 	CAN_Output_PaketListe[14].msg.buf[3] = (stackvoltage >> 24);
 
-#ifdef DEBUG_BMS_WORK
-	for (uint8_t i = 0; i < LTC6811_DEVICES; i++)
+	if (bms_tempcount == LTC1380_SENSORES)
 	{
-		for (uint8_t j = 0; j < 12; j++)
+#ifdef DEBUG_BMS_WORK
+		for (uint8_t i = 0; i < LTC6811_DEVICES; i++)
 		{
-			uartTransmitNumber(cellvoltage[i][j], 10);
-			uartTransmit(", ", 2);
-		}
+			for (uint8_t j = 0; j < 12; j++)
+			{
+				uartTransmitNumber(cellvoltage[i][j], 10);
+				uartTransmit(", ", 2);
+			}
 
-		for (uint8_t j = 0; j < 16; j++)
-		{
-			uartTransmitNumber(celltemperature[i][j], 10);
-			uartTransmit(", ", 2);
-		}
+			for (uint8_t j = 0; j < 16; j++)
+			{
+				uartTransmitNumber(celltemperature[i][j], 10);
+				uartTransmit(", ", 2);
+			}
 
-		uartTransmitNumber(PCB_Temperature[i], 10);
-	}
-	uartTransmit("\n", 1);
+			uartTransmitNumber(PCB_Temperature[i], 10);
+			uartTransmit(", ", 2);
+			uartTransmitNumber(LTC6811_soc[i], 10);
+		}
+		uartTransmit("\n", 1);
 #endif
+	}
 }
 //----------------------------------------------------------------------
 
@@ -512,8 +525,8 @@ void bms_ok(void)
 //----------------------------------------------------------------------
 void bms_Vminmax(void)
 {
-	mincellvoltage[LTC6811_DEVICES + 1] = 65535;
-	maxcellvoltage[LTC6811_DEVICES + 1] = 0;
+	mincellvoltage[LTC6811_DEVICES] = 65535;
+	maxcellvoltage[LTC6811_DEVICES] = 0;
 
 	for (uint8_t i = 0; i < LTC6811_DEVICES; i++)
 	{
@@ -550,8 +563,8 @@ void bms_Vminmax(void)
 //----------------------------------------------------------------------
 void bms_Tminmax(void)
 {
-	mincelltemperature[LTC6811_DEVICES + 1] = 65535;
-	maxcelltemperature[LTC6811_DEVICES + 1] = 0;
+	mincelltemperature[LTC6811_DEVICES] = 65535;
+	maxcelltemperature[LTC6811_DEVICES] = 0;
 
 	for (uint8_t i = 0; i < LTC6811_DEVICES; i++)
 	{

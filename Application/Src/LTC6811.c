@@ -313,7 +313,7 @@ void ltc6811(uint16_t command)
 	IsoSPI_cmd(&cmd[0]);													// Sende Befehl
 
 	// Setze Statemaschine auf Messen
-	if ((command & ADAX) || (command & ADCVC) || (command & ADCVAX) || (command & ADSTAT))
+	if ((command & ADAX) || (command & ADCVC) || (command & ADCVAX) || (command & ADSTAT) || (command & ADCVSC))
 	{
 		set_ltc6811_state(LTCMeasure);
 	}
