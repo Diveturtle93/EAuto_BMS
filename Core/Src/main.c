@@ -132,21 +132,14 @@ int main(void)
   MX_RTC_Init();
   /* USER CODE BEGIN 2 */
 
-#ifdef DEBUG
-	#define MAINWHILE			"\nStarte While Schleife\n"
-	uartTransmit(MAINWHILE, sizeof(MAINWHILE));
-
-	uartTransmit("Ready\n", 6);
-#endif
-
 //	HAL_PWR_EnableBkUpAccess();
 //	Backup = HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR0);
 //	HAL_PWR_DisableBkUpAccess();
 
 	CANinit(RX_SIZE_16, TX_SIZE_16);
 	CAN_config();
-	// system_out.Power_On = true;
-	BMS_state.State = Ready;
+
+	system_out.Power_On = true;
 
 	// BMS Fehler zuruecksetzen bei Systemstart
 	system_out.AmsLimit = true;
@@ -162,6 +155,15 @@ int main(void)
 		CAN_Output_PaketListe[5].msg.buf[j] = 0;
 		CAN_Output_PaketListe[6].msg.buf[j] = 0;
 	}
+
+	BMS_state.State = Ready;
+
+#ifdef DEBUG
+	#define MAINWHILE			"\nStarte While Schleife\n"
+	uartTransmit(MAINWHILE, sizeof(MAINWHILE));
+
+	uartTransmit("Ready\n", 6);
+#endif
 
   /* USER CODE END 2 */
 
@@ -230,12 +232,12 @@ int main(void)
 			  }
 
 			  // Stromsensor
-			  case STROM_CAN_I:
-			  {
-				  can_online |= (1 << 2);
-				  timeSTROM = millis();
-				  break;
-			  }
+//			  case STROM_CAN_I:
+//			  {
+//				  can_online |= (1 << 2);
+//				  timeSTROM = millis();
+//				  break;
+//			  }
 
 			  //
 			  default:

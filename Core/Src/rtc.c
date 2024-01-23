@@ -44,17 +44,10 @@ void MX_RTC_Init(void)
   hrtc.Init.HourFormat = RTC_HOURFORMAT_24;
   hrtc.Init.AsynchPrediv = 127;
   hrtc.Init.SynchPrediv = 255;
-  hrtc.Init.OutPut = RTC_OUTPUT_WAKEUP;
-  hrtc.Init.OutPutPolarity = RTC_OUTPUT_POLARITY_LOW;
+  hrtc.Init.OutPut = RTC_OUTPUT_DISABLE;
+  hrtc.Init.OutPutPolarity = RTC_OUTPUT_POLARITY_HIGH;
   hrtc.Init.OutPutType = RTC_OUTPUT_TYPE_OPENDRAIN;
   if (HAL_RTC_Init(&hrtc) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /** Enable the WakeUp
-  */
-  if (HAL_RTCEx_SetWakeUpTimer(&hrtc, 0, RTC_WAKEUPCLOCK_RTCCLK_DIV16) != HAL_OK)
   {
     Error_Handler();
   }
@@ -67,7 +60,6 @@ void MX_RTC_Init(void)
 void HAL_RTC_MspInit(RTC_HandleTypeDef* rtcHandle)
 {
 
-  GPIO_InitTypeDef GPIO_InitStruct = {0};
   RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
   if(rtcHandle->Instance==RTC)
   {
@@ -86,17 +78,6 @@ void HAL_RTC_MspInit(RTC_HandleTypeDef* rtcHandle)
 
     /* RTC clock enable */
     __HAL_RCC_RTC_ENABLE();
-
-    __HAL_RCC_GPIOC_CLK_ENABLE();
-    /**RTC GPIO Configuration
-    PC13     ------> RTC_OUT
-    */
-    GPIO_InitStruct.Pin = POWER_ON_Pin;
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-    HAL_GPIO_Init(POWER_ON_GPIO_Port, &GPIO_InitStruct);
-
   /* USER CODE BEGIN RTC_MspInit 1 */
 
   /* USER CODE END RTC_MspInit 1 */
@@ -113,12 +94,6 @@ void HAL_RTC_MspDeInit(RTC_HandleTypeDef* rtcHandle)
   /* USER CODE END RTC_MspDeInit 0 */
     /* Peripheral clock disable */
     __HAL_RCC_RTC_DISABLE();
-
-    /**RTC GPIO Configuration
-    PC13     ------> RTC_OUT
-    */
-    HAL_GPIO_DeInit(POWER_ON_GPIO_Port, POWER_ON_Pin);
-
   /* USER CODE BEGIN RTC_MspDeInit 1 */
 
   /* USER CODE END RTC_MspDeInit 1 */
