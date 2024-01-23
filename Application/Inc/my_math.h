@@ -1,46 +1,34 @@
 //----------------------------------------------------------------------
-// Titel	:	Git.h
+// Titel	:	my_math.h
 //----------------------------------------------------------------------
 // Sprache	:	C
-// Datum	:	18.08.2021
+// Datum	:	Jan 23, 2024
 // Version	:	1.0
 // Autor	:	Diveturtle93
-// Projekt	:	STM32F767ZI
+// Projekt	:	BatteriemanagementSystem
 //----------------------------------------------------------------------
 
 // Dateiheader definieren
 //----------------------------------------------------------------------
-#ifndef _GIT_H_
-#define _GIT_H_
+#ifndef INC_MY_MATH_H_
+#define INC_MY_MATH_H_
 //----------------------------------------------------------------------
 
-// Git Commit-Infos definieren
-//----------------------------------------------------------------------
-#define GIT_COMMIT					"b0e46d8"
-#define GIT_BRANCH					"GPIOs"
-#define GIT_HASH					"b0e46d81acf8e4dfe9a400f3f5364945500b2d38"
+// ... definieren
 //----------------------------------------------------------------------
 
-// Git Tags-Infos definieren
-//----------------------------------------------------------------------
-#define GIT_LAST_TAG				"Init"
-#define GIT_TAG_COMMIT				"e03a439"
-#define GIT_TAG_DIRTY				"Init-24-gb0e46d8"
 //----------------------------------------------------------------------
 
-// Git Zaehler definieren
-//----------------------------------------------------------------------
-#define GIT_TAG_DIRTY_COUNT			"24"
-#define GIT_OVERALL_COMMIT_COUNT	"98"
-#define GIT_BRANCH_COMMIT_COUNT		"25"
-#define GIT_ACTIVE_BRANCHES			"7"
-#define GIT_TAG_COUNT				"1"
+// ... definieren
 //----------------------------------------------------------------------
 
-// Build Zeit definieren
 //----------------------------------------------------------------------
-#define BUILD_DATE					"2024-01-23"
-#define BUILD_TIME					"18:30:56"
+
+// Funktionen definieren
 //----------------------------------------------------------------------
-#endif /* _GIT_H_ */
+int calculateMovingAverage(int oldValue, int newValue, int n);
+//uint16_t getDifference(uint16_t a, uint16_t b);
+//----------------------------------------------------------------------
+
+#endif /* INC_MY_MATH_H_ */
 //----------------------------------------------------------------------

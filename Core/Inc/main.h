@@ -202,6 +202,7 @@ void Error_Handler(void);
 #define FREIGABE_GPIO_Port GPIOE
 #define INLET_GREEN_Pin GPIO_PIN_1
 #define INLET_GREEN_GPIO_Port GPIOE
+
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */

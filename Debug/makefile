@@ -1,6 +1,6 @@
 ################################################################################
 # Automatically-generated file. Do not edit!
-# Toolchain: GNU Tools for STM32 (9-2020-q2-update)
+# Toolchain: GNU Tools for STM32 (11.3.rel1)
 ################################################################################
 
 -include ../makefile.init
@@ -44,14 +44,14 @@ BUILD_ARTIFACT := $(BUILD_ARTIFACT_PREFIX)$(BUILD_ARTIFACT_NAME)$(if $(BUILD_ART
 EXECUTABLES += \
 BatteriemanagementSystem.elf \
 
+MAP_FILES += \
+BatteriemanagementSystem.map \
+
 SIZE_OUTPUT += \
 default.size.stdout \
 
 OBJDUMP_LIST += \
 BatteriemanagementSystem.list \
-
-OBJCOPY_BIN += \
-BatteriemanagementSystem.bin \
 
 
 # All Target
@@ -62,7 +62,7 @@ all:
 main-build: BatteriemanagementSystem.elf secondary-outputs
 
 # Tool invocations
-BatteriemanagementSystem.elf: $(OBJS) $(USER_OBJS) C:\Users\Frederik\Documents\Git\Audi_BMS\STM32F767ZITX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+BatteriemanagementSystem.elf BatteriemanagementSystem.map: $(OBJS) $(USER_OBJS) C:\Users\Frederik\Documents\Git\Audi_BMS\STM32F767ZITX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
 	arm-none-eabi-gcc -o "BatteriemanagementSystem.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m7 -T"C:\Users\Frederik\Documents\Git\Audi_BMS\STM32F767ZITX_FLASH.ld" --specs=nosys.specs -Wl,-Map="BatteriemanagementSystem.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv5-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
@@ -77,21 +77,16 @@ BatteriemanagementSystem.list: $(EXECUTABLES) makefile objects.list $(OPTIONAL_T
 	@echo 'Finished building: $@'
 	@echo ' '
 
-BatteriemanagementSystem.bin: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-objcopy  -O binary $(EXECUTABLES) "BatteriemanagementSystem.bin"
-	@echo 'Finished building: $@'
-	@echo ' '
-
 # Other Targets
 clean:
-	-$(RM) BatteriemanagementSystem.bin BatteriemanagementSystem.elf BatteriemanagementSystem.list default.size.stdout
+	-$(RM) BatteriemanagementSystem.elf BatteriemanagementSystem.list BatteriemanagementSystem.map default.size.stdout
 	-@echo ' '
 
 pre-build:
 	$(MAKE) -f ../Make/git.mk
 	-@echo ' '
 
-secondary-outputs: $(SIZE_OUTPUT) $(OBJDUMP_LIST) $(OBJCOPY_BIN)
+secondary-outputs: $(SIZE_OUTPUT) $(OBJDUMP_LIST)
 
 fail-specified-linker-script-missing:
 	@echo 'Error: Cannot find the specified linker script. Check the linker settings in the build configuration.'

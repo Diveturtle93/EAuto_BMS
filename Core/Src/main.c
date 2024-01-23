@@ -35,7 +35,7 @@
 #include "BatteriemanagementSystem.h"
 #include "error.h"
 #include "imd.h"
-#include "..\..\Application\Src\my_math.c"
+#include "my_math.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -90,7 +90,7 @@ int main(void)
 
   /* USER CODE BEGIN Init */
 	// Definiere Variablen fuer Main-Funktion
-	uint16_t dutyCycle, timerPeriod, frequency, count = 0, R_IMD;
+	uint16_t count = 0;
 	uint8_t start_flag = 0;
 
 	// Definiere Variablen fuer Main-Funktion
@@ -135,7 +135,6 @@ int main(void)
   	collectSystemInfo();
 #endif
 
-	timerPeriod = (HAL_RCC_GetPCLK2Freq() / htim1.Init.Prescaler);
   	// Start timer
 	if (HAL_TIM_Base_Start_IT(&htim1) != HAL_OK);
 	if (HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_1) != HAL_OK);
@@ -253,6 +252,19 @@ int main(void)
 		uartTransmit(SDC_STRING_OK, sizeof(SDC_STRING_OK));
 	}
 
+	highcurrent_out.PrechargeOut = 1;
+	highcurrent_out.HV_CHG = 1;
+	HAL_GPIO_WritePin(PRECHARGE_OUT_GPIO_Port, PRECHARGE_OUT_Pin, highcurrent_out.PrechargeOut);
+	HAL_GPIO_WritePin(HV_Charger_GPIO_Port, HV_Charger_Pin, highcurrent_out.HV_CHG);
+	HAL_GPIO_WritePin(PWM_HV_Charger_GPIO_Port, PWM_HV_Charger_Pin, highcurrent_out.HV_CHG);
+
+	HAL_Delay(5000);
+
+	highcurrent_out.PrechargeOut = 0;
+	highcurrent_out.HV_CHG = 0;
+	HAL_GPIO_WritePin(PRECHARGE_OUT_GPIO_Port, PRECHARGE_OUT_Pin, highcurrent_out.PrechargeOut);
+	HAL_GPIO_WritePin(HV_Charger_GPIO_Port, HV_Charger_Pin, highcurrent_out.HV_CHG);
+	HAL_GPIO_WritePin(PWM_HV_Charger_GPIO_Port, PWM_HV_Charger_Pin, highcurrent_out.HV_CHG);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -372,6 +384,7 @@ void SystemClock_Config(void)
   */
   __HAL_RCC_PWR_CLK_ENABLE();
   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
@@ -388,12 +401,14 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+
   /** Activate the Over-Drive mode
   */
   if (HAL_PWREx_EnableOverDrive() != HAL_OK)
   {
     Error_Handler();
   }
+
   /** Initializes the CPU, AHB and APB buses clocks
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
@@ -470,4 +485,3 @@ void assert_failed(uint8_t *file, uint32_t line)
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
-
