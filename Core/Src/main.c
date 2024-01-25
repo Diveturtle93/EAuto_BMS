@@ -252,9 +252,9 @@ int main(void)
 		uartTransmit(SDC_STRING_OK, sizeof(SDC_STRING_OK));
 	}
 
-	highcurrent_out.PrechargeOut = 1;
+//	highcurrent_out.PrechargeOut = 1;
 	highcurrent_out.HV_CHG = 1;
-	HAL_GPIO_WritePin(PRECHARGE_OUT_GPIO_Port, PRECHARGE_OUT_Pin, highcurrent_out.PrechargeOut);
+//	HAL_GPIO_WritePin(PRECHARGE_OUT_GPIO_Port, PRECHARGE_OUT_Pin, highcurrent_out.PrechargeOut);
 	HAL_GPIO_WritePin(HV_Charger_GPIO_Port, HV_Charger_Pin, highcurrent_out.HV_CHG);
 	HAL_GPIO_WritePin(PWM_HV_Charger_GPIO_Port, PWM_HV_Charger_Pin, highcurrent_out.HV_CHG);
 
