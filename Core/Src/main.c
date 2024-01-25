@@ -123,6 +123,7 @@ int main(void)
   MX_GPIO_Init();
   MX_CAN1_Init();
   MX_SPI4_Init();
+  MX_USART2_UART_Init();
   MX_ADC1_Init();
   MX_TIM1_Init();
   MX_TIM4_Init();
@@ -163,6 +164,7 @@ int main(void)
 		CAN_Output_PaketListe[6].msg.buf[j] = 0;
 	}
 
+// Test HV-Relaisschaltung
 //	highcurrent_out.PrechargeOut = 1;
 	highcurrent_out.HV_CHG = 1;
 //	HAL_GPIO_WritePin(PRECHARGE_OUT_GPIO_Port, PRECHARGE_OUT_Pin, highcurrent_out.PrechargeOut);
@@ -176,6 +178,7 @@ int main(void)
 	HAL_GPIO_WritePin(PRECHARGE_OUT_GPIO_Port, PRECHARGE_OUT_Pin, highcurrent_out.PrechargeOut);
 	HAL_GPIO_WritePin(HV_Charger_GPIO_Port, HV_Charger_Pin, highcurrent_out.HV_CHG);
 	HAL_GPIO_WritePin(PWM_HV_Charger_GPIO_Port, PWM_HV_Charger_Pin, highcurrent_out.HV_CHG);
+	
   /* USER CODE END 2 */
 
   /* Infinite loop */

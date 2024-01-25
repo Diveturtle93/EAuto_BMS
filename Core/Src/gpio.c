@@ -61,6 +61,9 @@ void MX_GPIO_Init(void)
                           |INLET_GREEN_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(POWER_ON_GPIO_Port, POWER_ON_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOF, TRIGGER_CURRENT_Pin|PRECHARGE_OUT_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
@@ -71,9 +74,6 @@ void MX_GPIO_Init(void)
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(ISOSPI_CS_GPIO_Port, ISOSPI_CS_Pin, GPIO_PIN_SET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOD, PWM_HV_Charger_Pin|DIGITAL1_Pin|DIGITAL2_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOD, PWM_HV_Charger_Pin|DIGITAL1_Pin|DIGITAL2_Pin, GPIO_PIN_RESET);
@@ -103,6 +103,13 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PtPin */
+  GPIO_InitStruct.Pin = POWER_ON_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(POWER_ON_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PF0 PF3 PF4 PF5
                            PFPin PFPin PFPin PFPin
