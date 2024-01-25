@@ -1,3 +1,16 @@
+#settings
+.settings/
+
+#metadata
+.metadata/
+
+#Debug
+Debug/
+debug/
+Release/
+release/
+Test/
+
 # Prerequisites
 *.d
 
@@ -6,15 +19,12 @@
 *.ko
 *.obj
 *.elf
+*.cyclo
 
 # Linker output
 *.ilk
 *.map
 *.exp
-
-# Precompiled Headers
-*.gch
-*.pch
 
 # Libraries
 *.lib
@@ -22,7 +32,7 @@
 *.la
 *.lo
 
-# Shared objects (inc. Windows DLLs)
+# Shared objects
 *.dll
 *.so
 *.so.*
@@ -35,6 +45,8 @@
 *.i*86
 *.x86_64
 *.hex
+*.list
+*.bin
 
 # Debug files
 *.dSYM/
@@ -50,5 +62,4 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
-/Test/
-/Debug/
+Application/Inc/git.h

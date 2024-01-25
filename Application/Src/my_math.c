@@ -8,11 +8,25 @@
 // Projekt	:	Batteriemanagement-System
 //----------------------------------------------------------------------
 
+// Einfuegen der standard Include-Dateien
+//----------------------------------------------------------------------
+
+//----------------------------------------------------------------------
+
+// Einfuegen der STM Include-Dateien
+//----------------------------------------------------------------------
+
+//----------------------------------------------------------------------
+
+// Einfuegen der eigenen Include Dateien
+//----------------------------------------------------------------------
 #include "my_math.h"
+#include "BatteriemanagementSystem.h"
+//----------------------------------------------------------------------
 
 // Gleitenden Mittelwert berechnen, sehr Speicher arm
 //----------------------------------------------------------------------
-int calculateMovingAverage(int oldValue, int newValue, int n)
+static int32_t calculateMovingAverage(uint16_t oldValue, uint16_t newValue, uint16_t n)
 {
 	return (oldValue + ((newValue - oldValue) / n));						// MovingAverage Calculation x_n  = x_{n-1} + ((x_n+x_{n-1})/n)
 }

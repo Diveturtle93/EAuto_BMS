@@ -21,6 +21,14 @@
 // Einfuegen der eigenen Include Dateien
 //----------------------------------------------------------------------
 #include "inputs.h"
+#include "BatteriemanagementSystem.h"
+//----------------------------------------------------------------------
+
+// Variablen einbinden
+//----------------------------------------------------------------------
+system_input_tag system_in;													// Variable fuer Systemeingaenge definieren
+sdc_in_tag sdc_in;															// Variable fuer SDC-Eingaenge definieren
+komfort_in_tag komfort_in;													// Variable fuer Komforteingaenge definieren
 //----------------------------------------------------------------------
 
 // Variablen einbinden

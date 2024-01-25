@@ -21,6 +21,15 @@
 // Einfuegen der eigenen Include Dateien
 //----------------------------------------------------------------------
 #include "outputs.h"
+#include "BatteriemanagementSystem.h"
+//----------------------------------------------------------------------
+
+// Variablen einbinden
+//----------------------------------------------------------------------
+system_out_tag system_out;													// Variable fuer Systemausgaenge definieren
+highcurrent_out_tag highcurrent_out;										// Variable fuer Highcurrentausgaenge definieren
+leuchten_out_tag leuchten_out;												// Variable fuer Leuchtenausgaenge definieren
+komfort_out_tag komfort_out;												// Variable fuer Komfortausgaenge definieren
 //----------------------------------------------------------------------
 
 // Variablen einbinden

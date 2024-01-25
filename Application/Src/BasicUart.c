@@ -30,6 +30,7 @@
 //----------------------------------------------------------------------
 void uartTransmit(const char *str, const size_t size)
 {
+	// Sende String mit Laenge "Size", "Size" muss bekannt sein
 	HAL_UART_Transmit(&huart2, (uint8_t *)str, size, 1000);
 }
 //----------------------------------------------------------------------
@@ -40,8 +41,17 @@ void uartTransmitNumber(const uint32_t number, const uint32_t base)
 {
 	char str[11];
 
-	utoa(number, str, base);
-	HAL_UART_Transmit(&huart2, (uint8_t *)str, strlen(str), 1000);
+	// Zahl umrechnen
+	utoa(number, str, base);												// Zahl umrechnen anhand der Basis "base"
+	HAL_UART_Transmit(&huart2, (uint8_t *)str, strlen(str), 1000);			// Sende Zahlen
+}
+//----------------------------------------------------------------------
+
+// Uart2 Transmit String Funktion
+//----------------------------------------------------------------------
+void uartTransmitString(const char *str)
+{
+	HAL_UART_Transmit(&huart2, (uint8_t *)str, sizeof(str), 1000);
 }
 //----------------------------------------------------------------------
 

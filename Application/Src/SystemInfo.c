@@ -10,14 +10,12 @@
 
 // Einfuegen der standard Include-Dateien
 //----------------------------------------------------------------------
-#include "inttypes.h"
-#include "stdlib.h"
-#include "string.h"
-#include "stdbool.h"
+
 //----------------------------------------------------------------------
 
 // Einfuegen der eigenen Include-Dateien
 //----------------------------------------------------------------------
+#include "main.h"
 #include "git.h"
 #include "SystemInfo.h"
 #include "BasicUart.h"
@@ -65,7 +63,7 @@ void collectHardwareInfo(void)
 	uartTransmit(STRING_STM_FREQ, sizeof(STRING_STM_FREQ));
 	{
 		uint32_t frequency = HAL_RCC_GetSysClockFreq();						// Systemfrequenz ausgeben
-		frequency = frequency/1000000;
+		frequency = frequency / 1000000;
 
 		uartTransmitNumber(frequency, 10);
 	}
@@ -73,6 +71,7 @@ void collectHardwareInfo(void)
 	uartTransmit(" MHz", 4);
 
 
+	uartTransmit("\n", 1);
 	uartTransmit(STRING_STM_UUID, sizeof(STRING_STM_UUID));
 	uartTransmitNumber(HAL_GetUIDw0(), 16);									// UID0 ausgeben
 
@@ -291,11 +290,7 @@ reset_reason readResetSource(void)
 //----------------------------------------------------------------------
 void printResetSource(reset_reason reset_flags)
 {
-	// Returns für Absatz nach Neustart.
-	uartTransmit("\r\r\r\r\r\r", 6);
-
-
-	if (reset_flags == STARTUP)											// Regulärer Start
+	if (reset_flags == STARTUP)												// Regulaerer Start
 	{
 		uartTransmit("Regular Start\r\n", 15);
 	}
@@ -315,12 +310,13 @@ void printResetSource(reset_reason reset_flags)
 		{
 			uartTransmit("CPU Reset\n", 10);
 		}
+
 		if (reset_flags & BORST1)											// Brown out Reset
 		{
 			uartTransmit("Brown Out Reset\n", 16);
 		}
 
-		if (reset_flags & PORST1)											//Power on Reset / Power down Reser
+		if (reset_flags & PORST1)											// Power on Reset / Power down Reser
 		{
 			uartTransmit("Power On Reset\n", 15);
 		}
@@ -330,12 +326,12 @@ void printResetSource(reset_reason reset_flags)
 			uartTransmit("Software Reset\n", 15);
 		}
 
-		if (reset_flags & PINRST1)											//NRST pin
+		if (reset_flags & PINRST1)											// NRST pin
 		{
 			uartTransmit("PIN Reset\n", 10);
 		}
 
-		if (reset_flags & RMVF1)											//NRST pin
+		if (reset_flags & RMVF1)											// NRST pin
 		{
 			uartTransmit("RMVF\n", 5);
 		}

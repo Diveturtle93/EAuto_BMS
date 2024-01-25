@@ -20,7 +20,7 @@ typedef union
 {
 	struct
 	{
-		uint8_t IMD_PWM_STATUS : 3;				// 0 - 2					// 0 = Kurzschluss gegen Masse, 0Hz
+		uint8_t IMD_PWM_STATUS : 4;				// 0 - 2					// 0 = Kurzschluss gegen Masse, 0Hz
 																			// 1 = Normalzustand, 10Hz
 																			// 2 = bei Unterspannung, 20Hz
 																			// 3 = Schnellstart-Messung, 30Hz
@@ -29,9 +29,10 @@ typedef union
 																			// 6 = Kurzschluss gegen KL15, 0Hz
 																			// 7 = IMD Error, Frequenz ausserhalb des gueltigen Bereiches
 		uint8_t IMD_PWM : 1;					// 3
-		uint8_t KL15 : 1;						// 5
-		uint8_t Crash : 1;						// 6
-		uint8_t Wakeup : 1;						// 7
+		uint8_t  : 1;							// 4
+		uint8_t KL15 : 1;						// 5						// Schalter KL15, Zuendanlassschalter
+		uint8_t Crash : 1;						// 6						// Signal Crashsensor, Airbagsteuergeraet
+		uint8_t Wakeup : 1;						// 7						// Signal Wakeup
 	};
 
 	uint8_t systeminput;						// 1 Byte
@@ -43,13 +44,13 @@ typedef union
 {
 	struct
 	{
-		uint8_t IMD_OK_IN : 1;					// 0
-		uint8_t BTB_SDC : 1;					// 1
-		uint8_t HVIL : 1;						// 2
-		uint8_t MotorSDC : 1;					// 3
-		uint8_t PrechargeIn : 1;				// 4
-		uint8_t  : 1;							// 5
-		uint8_t  : 1;							// 6
+		uint8_t IMD_OK_IN : 1;					// 0						// Signal IMD, IMD OK
+		uint8_t HVIL : 1;						// 1						// Signal HV-Stecker, Shutdown-Circuit
+		uint8_t MotorSDC : 1;					// 2						// Signal Motorsteuergeraet, Shutdown-Circuit
+		uint8_t BTB_SDC : 1;					// 3						// Signal BTB, Bamocar
+		uint8_t PrechargeIn : 1;				// 4						// Signal Precharge abgeschlossen
+		uint8_t Anlassen : 1;					// 5						// Abspeichern von Anlasser Signal
+		uint8_t SDC_OK : 1;						// 6						// Signal, SDC OK
 		uint8_t  : 1;							// 7
 	};
 
@@ -62,9 +63,9 @@ typedef union
 {
 	struct
 	{
-		uint8_t OVC : 1;						// 0
-		uint8_t Button1 : 1;					// 1
-		uint8_t Button2 : 1;					// 2
+		uint8_t OVC : 1;						// 0						// Signal Overcurrent, Stromsensor
+		uint8_t Button1 : 1;					// 1						// Schalter Button1
+		uint8_t Button2 : 1;					// 2						// Schalter Button2
 		uint8_t  : 1;							// 3
 		uint8_t  : 1;							// 4
 		uint8_t  : 1;							// 5

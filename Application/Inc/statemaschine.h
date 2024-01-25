@@ -1,46 +1,33 @@
 //----------------------------------------------------------------------
-// Titel	:	Git.h
+// Titel	:	statemaschine.h
 //----------------------------------------------------------------------
 // Sprache	:	C
-// Datum	:	18.08.2021
+// Datum	:	Jul 27, 2023
 // Version	:	1.0
 // Autor	:	Diveturtle93
-// Projekt	:	STM32F767ZI
+// Projekt	:	BatteriemanagementSystem
 //----------------------------------------------------------------------
 
 // Dateiheader definieren
 //----------------------------------------------------------------------
-#ifndef _GIT_H_
-#define _GIT_H_
+#ifndef INC_STATEMASCHINE_H_
+#define INC_STATEMASCHINE_H_
 //----------------------------------------------------------------------
 
-// Git Commit-Infos definieren
+// Konstanten definieren
 //----------------------------------------------------------------------
-#define GIT_COMMIT					"7dd6bc3"
-#define GIT_BRANCH					"GPIOs"
-#define GIT_HASH					"7dd6bc306baa2bfb60616e7717d3373a64b36e64"
+#define BMSTIME									300000						// Standby Zeit nach ausschalten KL15, 5min
 //----------------------------------------------------------------------
 
-// Git Tags-Infos definieren
-//----------------------------------------------------------------------
-#define GIT_LAST_TAG				"Init"
-#define GIT_TAG_COMMIT				"e03a439"
-#define GIT_TAG_DIRTY				"Init-25-g7dd6bc3"
+// ... definieren
 //----------------------------------------------------------------------
 
-// Git Zaehler definieren
-//----------------------------------------------------------------------
-#define GIT_TAG_DIRTY_COUNT			"25"
-#define GIT_OVERALL_COMMIT_COUNT	"99"
-#define GIT_BRANCH_COMMIT_COUNT		"26"
-#define GIT_ACTIVE_BRANCHES			"7"
-#define GIT_TAG_COUNT				"1"
 //----------------------------------------------------------------------
 
-// Build Zeit definieren
+// Funktionen definieren
 //----------------------------------------------------------------------
-#define BUILD_DATE					"2024-01-25"
-#define BUILD_TIME					"17:34:51"
+
 //----------------------------------------------------------------------
-#endif /* _GIT_H_ */
+
+#endif /* INC_STATEMASCHINE_H_ */
 //----------------------------------------------------------------------
