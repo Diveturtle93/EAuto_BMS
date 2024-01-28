@@ -85,7 +85,7 @@ int main(void)
 
 	// BMS CAN-Bus Zeitvariable, Errorvariable
 	uint8_t can_online = 0;
-	uint32_t timeBAMO = 0, timeMOTOR = 0, timeSTROM;
+	uint32_t timeBAMO = 0, timeMOTOR = 0, timeSTROM = 0, timePrecharge = 0;
 
 	// CAN-Bus Receive Message
 	CAN_message_t RxMessage;
@@ -116,6 +116,10 @@ int main(void)
 	HAL_Delay(3000);
 #endif
 
+#if TISCHAUFBAU == 1
+	sdc_in.Anlassen = true;
+#endif
+
 	uartTransmit("Start\n", 6);
   /* USER CODE END SysInit */
 
@@ -123,7 +127,6 @@ int main(void)
   MX_GPIO_Init();
   MX_CAN1_Init();
   MX_SPI4_Init();
-  MX_USART2_UART_Init();
   MX_ADC1_Init();
   MX_TIM1_Init();
   MX_TIM4_Init();
@@ -148,6 +151,7 @@ int main(void)
 	CAN_config();
 	// system_out.Power_On = true;
 	BMS_state.State = Ready;
+	ISOSPI_ENABLE();
 
 	// BMS Fehler zuruecksetzen bei Systemstart
 	system_out.AmsLimit = true;
@@ -166,18 +170,20 @@ int main(void)
 
 // Test HV-Relaisschaltung
 //	highcurrent_out.PrechargeOut = 1;
-	highcurrent_out.HV_CHG = 1;
+//	highcurrent_out.HV_CHG = 1;
 //	HAL_GPIO_WritePin(PRECHARGE_OUT_GPIO_Port, PRECHARGE_OUT_Pin, highcurrent_out.PrechargeOut);
-	HAL_GPIO_WritePin(HV_Charger_GPIO_Port, HV_Charger_Pin, highcurrent_out.HV_CHG);
-	HAL_GPIO_WritePin(PWM_HV_Charger_GPIO_Port, PWM_HV_Charger_Pin, highcurrent_out.HV_CHG);
-
-	HAL_Delay(5000);
-
-	highcurrent_out.PrechargeOut = 0;
-	highcurrent_out.HV_CHG = 0;
-	HAL_GPIO_WritePin(PRECHARGE_OUT_GPIO_Port, PRECHARGE_OUT_Pin, highcurrent_out.PrechargeOut);
-	HAL_GPIO_WritePin(HV_Charger_GPIO_Port, HV_Charger_Pin, highcurrent_out.HV_CHG);
-	HAL_GPIO_WritePin(PWM_HV_Charger_GPIO_Port, PWM_HV_Charger_Pin, highcurrent_out.HV_CHG);
+//	HAL_GPIO_WritePin(HV_Charger_GPIO_Port, HV_Charger_Pin, highcurrent_out.HV_CHG);
+//
+//	HAL_Delay(500);
+//	HAL_GPIO_WritePin(PWM_HV_Charger_GPIO_Port, PWM_HV_Charger_Pin, highcurrent_out.HV_CHG);
+//
+//	HAL_Delay(5000);
+//
+//	highcurrent_out.PrechargeOut = 0;
+//	highcurrent_out.HV_CHG = 0;
+//	HAL_GPIO_WritePin(PRECHARGE_OUT_GPIO_Port, PRECHARGE_OUT_Pin, highcurrent_out.PrechargeOut);
+//	HAL_GPIO_WritePin(HV_Charger_GPIO_Port, HV_Charger_Pin, highcurrent_out.HV_CHG);
+//	HAL_GPIO_WritePin(PWM_HV_Charger_GPIO_Port, PWM_HV_Charger_Pin, highcurrent_out.HV_CHG);
 	
   /* USER CODE END 2 */
 
@@ -246,7 +252,7 @@ int main(void)
 			  }
 
 			  // Stromsensor
-			  case STROM_CAN_I:
+			  case STROM_HV_CAN_I:
 			  {
 				  can_online |= (1 << 2);
 				  timeSTROM = millis();
@@ -300,7 +306,7 @@ int main(void)
 	  // Statemaschine hat Warnungen
 	  if (BMS_state.Warning)
 	  {
-		  if (millis() - timeError > 1000)
+		  if (millis() > (timeError + 1000))
 		  {
 			  leuchten_out.RedLed = !leuchten_out.RedLed;
 			  timeError = millis();
@@ -314,7 +320,7 @@ int main(void)
 	  // Statemaschine hat Error
 	  if (BMS_state.Error)
 	  {
-		  if (millis() - timeError > 1000)
+		  if (millis() > (timeError + 1000))
 		  {
 			  leuchten_out.RedLed = !leuchten_out.RedLed;
 			  timeError = millis();
@@ -356,8 +362,8 @@ int main(void)
 					  uartTransmit("Anlassen\n", 9);
 					  BMS_state.State = Anlassen;
 
-					  highcurrent_out.HV_CHG = true;
-					  HAL_GPIO_WritePin(PWM_HV_Charger_GPIO_Port, PWM_HV_Charger_Pin, true);
+					  highcurrent_out.PrechargeOut = true;
+					  timePrecharge = millis();
 
 					  system_out.AmsOK = true;
 				  }
@@ -392,10 +398,10 @@ int main(void)
 			  break;
 		  }
 
-		  // State Precharge,
+		  // State Precharge, lade HV-Kreis und warte bis aufgeladen ist
 		  case Precharge:
 		  {
-			  if (sdc_in.PrechargeIn == 1)
+			  if (sdc_in.PrechargeIn == 0)
 			  {
 				  uartTransmit("ReadyToDrive\n", 13);
 				  BMS_state.State = ReadyToDrive;
@@ -414,6 +420,11 @@ int main(void)
 		  // State ReadyToDrive, wenn SDC OK ist
 		  case ReadyToDrive:
 		  {
+			  if (millis() > (timePrecharge + 10000))
+			  {
+				  highcurrent_out.PrechargeOut = false;
+			  }
+
 			  if (ActivDrive)
 			  {
 				  uartTransmit("Drive\n", 6);
@@ -446,7 +457,7 @@ int main(void)
 		  // State Standby, wenn Schluessel gezogen wird, KL15 ausgeschaltet
 		  case Standby:
 		  {
-			  if (millis() - timeStandby > BMSTIME)
+			  if (millis() > (timeStandby + BMSTIME))
 			  {
 				  uartTransmit("Ausschalten\n", 12);
 				  BMS_state.State = Ausschalten;
