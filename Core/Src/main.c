@@ -355,13 +355,16 @@ int main(void)
 		  // State KL15, wenn Schluessel auf Position 2, KL15 eingeschaltet
 		  case KL15:
 		  {
+			  // Wenn Anlassen aktiviert wird
 			  if (sdc_in.Anlassen == true)
 			  {
+				  // Solange kein kritischer Fehler auftritt
 				  if (!(BMS_state.CriticalError))
 				  {
 					  uartTransmit("Anlassen\n", 9);
 					  BMS_state.State = Anlassen;
 
+					  // Precharge Relais aktivieren
 					  highcurrent_out.PrechargeOut = true;
 					  timePrecharge = millis();
 
@@ -369,6 +372,7 @@ int main(void)
 				  }
 			  }
 
+			  // Falls KL15 abfaellt und der Schluessel abgezogen wird
 			  if (system_in.KL15 == 1)
 			  {
 				  uartTransmit("Standby\n", 8);
@@ -382,12 +386,15 @@ int main(void)
 		  // State Anlassen, wenn Schluessel auf Position 3 und keine kritischen Fehler, Anlasser einschalten
 		  case Anlassen:
 		  {
+			  // Wenn Anlassen aktiviert wird
+			  // TODO: Anlassen wird aktuell uebersprungen
 			  if (sdc_in.Anlassen == true)
 			  {
 				  uartTransmit("Precharge\n", 10);
 				  BMS_state.State = Precharge;
 			  }
 
+			  // Falls KL15 abfaellt und der Schluessel abgezogen wird
 			  if (system_in.KL15 == 1)
 			  {
 				  uartTransmit("Standby\n", 8);
@@ -401,12 +408,25 @@ int main(void)
 		  // State Precharge, lade HV-Kreis und warte bis aufgeladen ist
 		  case Precharge:
 		  {
+			  // Wenn Precharge nach 10s nicht Abgeschlossen werden konnte
+			  if (millis() > (timePrecharge + 10000))
+			  {
+				  // Precharge Relais abschalten und kritischer Fehler
+				  highcurrent_out.PrechargeOut = false;
+				  BMS_state.CriticalError = true;
+			  }
+
+			  // Wenn Precharge angeschlossen ist
 			  if (sdc_in.PrechargeIn == 0)
 			  {
 				  uartTransmit("ReadyToDrive\n", 13);
+
+				  // HV+ Relais activieren
+				  system_out.HV_P = true;
 				  BMS_state.State = ReadyToDrive;
 			  }
 
+			  // Falls KL15 abfaellt und der Schluessel abgezogen wird
 			  if (system_in.KL15 == 1)
 			  {
 				  uartTransmit("Standby\n", 8);
@@ -420,17 +440,23 @@ int main(void)
 		  // State ReadyToDrive, wenn SDC OK ist
 		  case ReadyToDrive:
 		  {
+			  // Nach 10s nach dem Precharge gestartet wurde, wird das Precharge Relais wieder abgeschaltet
 			  if (millis() > (timePrecharge + 10000))
 			  {
 				  highcurrent_out.PrechargeOut = false;
 			  }
 
+			  // Sobald ActivDrive aktiviert ist in den Drive Modus gehen und Freigabe an Bamocar senden
 			  if (ActivDrive)
 			  {
 				  uartTransmit("Drive\n", 6);
+
+				  // Freigabe fuer Bamocar aktivieren
+				  system_out.Freigabe = true;
 				  BMS_state.State = Drive;
 			  }
 
+			  // Falls KL15 abfaellt und der Schluessel abgezogen wird
 			  if (system_in.KL15 == 1)
 			  {
 				  uartTransmit("Standby\n", 8);
@@ -444,6 +470,7 @@ int main(void)
 		  // State Drive, wenn Fahrmodus manuell aktiviert wird
 		  case Drive:
 		  {
+			  // Falls KL15 abfaellt und der Schluessel abgezogen wird
 			  if (system_in.KL15 == 1)
 			  {
 				  uartTransmit("Standby\n", 8);
@@ -457,11 +484,13 @@ int main(void)
 		  // State Standby, wenn Schluessel gezogen wird, KL15 ausgeschaltet
 		  case Standby:
 		  {
+			  // Fuer 5min warten und BMS weiterhin aktiv halten
 			  if (millis() > (timeStandby + BMSTIME))
 			  {
 				  uartTransmit("Ausschalten\n", 12);
 				  BMS_state.State = Ausschalten;
 			  }
+			  // Falls innerhalb der 5min die KL15 wieder aktiviert wird
 			  else if (system_in.KL15 != 1)
 			  {
 				  uartTransmit("Ready\n", 6);
@@ -474,6 +503,7 @@ int main(void)
 		  // State Ausschalten, wenn Standby State laenger als 5min dauert
 		  case Ausschalten:
 		  {
+			  // Alle Ausgaenge auf Null setzen
 			  system_out.systemoutput = 0;
 			  highcurrent_out.high_out = 0;
 			  leuchten_out.ledoutput = 0;
