@@ -97,7 +97,7 @@ void imd_status(void)
 			imd.PWM_STATUS = IMD_NORMAL;											// IMD funktioniert normal
 
 			// DutyCycle abfragen
-			if (imd.DutyCycle > 5 && imd.DutyCycle < 95)							// IMD PWM
+			if (imd.DutyCycle >= 5 && imd.DutyCycle <= 95)							// IMD PWM
 			{
 				// Widerstand berechnen
 				imd.Resistanc = 90 * 1200 / (imd.DutyCycle - 5) - 1200;				// Angabe in kOhm
@@ -126,7 +126,7 @@ void imd_status(void)
 			imd.PWM_STATUS = IMD_UNTERSPANNUNG;										// Unterspannung an HV erkannt
 
 			// DutyCycle abfragen
-			if (imd.DutyCycle > 5 && imd.DutyCycle < 95)							// IMD PWM
+			if (imd.DutyCycle >= 5 && imd.DutyCycle <= 95)							// IMD PWM
 			{
 				// Widerstand berechnen
 				imd.Resistanc = 90 * 1200 / (imd.DutyCycle - 5) - 1200;				// Angabe in kOhm
@@ -155,11 +155,11 @@ void imd_status(void)
 			imd.PWM_STATUS = IMD_SCHNELLSTART;										// Schnellstartmessung
 
 			// DutyCycle abfragen
-			if (imd.DutyCycle > 5 && imd.DutyCycle < 11)							// IMD Gut
+			if (imd.DutyCycle >= 5 && imd.DutyCycle < 11)							// IMD Gut
 			{
 
 			}
-			else if (imd.DutyCycle > 89 && imd.DutyCycle < 95)						// IMD Schlecht
+			else if (imd.DutyCycle > 89 && imd.DutyCycle <= 95)						// IMD Schlecht
 			{
 
 			}
@@ -224,7 +224,8 @@ void imd_status(void)
 	// Abfrage Plausibilitaet am IMD
 	if ((sdc_in.IMD_OK_IN == 1) && (imd.PWM_STATUS != 10))
 	{
-		system_in.IMD_PWM_STATUS = IMD_PLAUS_ERROR;									// Plausibilitaetsfehler be IMD ok und falschem Status
+		system_in.IMD_PWM_STATUS = IMD_PLAUS_ERROR;									// Plausibilitaetsfehler bei IMD ok und falschem Status
+		imd.PWM_STATUS = IMD_PLAUS_ERROR;											// Plausibilitaetsfehler bei IMD ok und falschem Status
 	}
 
 #ifdef DEBUG_IMD

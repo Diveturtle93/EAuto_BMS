@@ -26,8 +26,8 @@
 
 // Funktionen definieren
 //----------------------------------------------------------------------
-static int32_t calculateMovingAverage(uint16_t oldValue, uint16_t newValue, uint16_t n);		// Gleitenden Mittelwert berechnen
-static uint16_t getDifference(uint16_t a, uint16_t b);						// Differenzberechnung
+int32_t calculateMovingAverage(uint16_t oldValue, uint16_t newValue, uint16_t n);		// Gleitenden Mittelwert berechnen
+uint16_t getDifference(uint16_t a, uint16_t b);											// Differenzberechnung
 //----------------------------------------------------------------------
 
 #endif /* INC_MATH_H_ */

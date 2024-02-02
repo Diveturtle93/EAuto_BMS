@@ -26,6 +26,7 @@
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
+#include <math.h>			// TODO: Tauschen der Bibliothek
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -57,6 +58,10 @@ BMS_states BMS_state = {{Start, true, false, false, false}};
 
 // ADC Array
 uint16_t ADC_VAL[7] = {0};
+
+// IMD Variablen fuer Timer
+static volatile uint16_t rising = 0, falling = 0;
+static volatile uint8_t pwm_change = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -90,7 +95,12 @@ int main(void)
 	// CAN-Bus Receive Message
 	CAN_message_t RxMessage;
 
+	// Anforderung Motorsteuergeraet Drive-Modus aktivieren
 	bool ActivDrive = false;
+
+	// IMD Variablen fuer Berechnung
+	uint8_t imd_pwm_count = 0;
+	uint32_t timerPeriode = 0, timeIMD = 0;
 
 	// Backup Data, stored in RTC_Backup Register
 //	uint32_t Backup = 0xFFFF;
@@ -146,6 +156,12 @@ int main(void)
 //	HAL_PWR_EnableBkUpAccess();
 //	Backup = HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR0);
 //	HAL_PWR_DisableBkUpAccess();
+
+	// Timer 1 fuer IMD PWM-Eingang aktivieren
+	if (HAL_TIM_Base_Init(&htim1) != HAL_OK);
+	if (HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_1) != HAL_OK);
+	if (HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_2) != HAL_OK);
+	timerPeriode = (HAL_RCC_GetPCLK2Freq() / htim1.Init.Prescaler / 2);
 
 	CANinit(RX_SIZE_16, TX_SIZE_16);
 	CAN_config();
@@ -211,6 +227,42 @@ int main(void)
 
 	  // Sortiere CAN-Daten auf CAN-Buffer
 	  sortCAN();
+
+	  // Lese IMD Status ein
+	  if (millis() > (timeIMD + 1000))
+	  {
+		  // Wenn sich der Pegel am IMD_PWM aendert
+		  if (pwm_change == 1)
+		  {
+			  if ((rising != 0) && (falling != 0))
+			  {
+			  // Berechne DutyCycle und Frequenzy von IMD_PWM
+			  uint16_t imd_diff = getDifference(rising, falling);
+			  imd.DutyCycle = 100 - round((float)(imd_diff * 100) / (float)rising);
+			  imd.Frequency = timerPeriode / rising;
+			  }
+
+			  pwm_change = 0;
+		  }
+		  else
+		  {
+			  if (imd_pwm_count == 5)
+			  {
+				  imd.DutyCycle = 0;
+				  imd.Frequency = 0;
+				  rising = 0;
+				  falling = 0;
+				  imd_pwm_count = 0;
+			  }
+			  else
+			  {
+				  imd_pwm_count++;
+			  }
+		  }
+
+		  imd_status();
+		  timeIMD = millis();
+	  }
 
 	  if (CAN_available() >= 1)
 	  {
@@ -313,7 +365,6 @@ int main(void)
 		  }
 
 		  leuchten_out.GreenLed = true;
-
 		  system_out.AmsLimit = true;
 	  }
 
@@ -327,7 +378,6 @@ int main(void)
 		  }
 
 		  leuchten_out.GreenLed = false;
-
 		  system_out.AmsLimit = false;
 	  }
 
@@ -686,6 +736,24 @@ void setStatus(uint8_t Status)
 		{
 			BMS_state.status = (CriticalError | BMS_state.State);
 			break;
+		}
+	}
+}
+
+// Timer Interrupt
+void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
+{
+	// Timer 1 fuer IMD PWM-Auswertung
+	if (htim == &htim1)
+	{
+		pwm_change = 1;
+		if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_1)
+		{
+			rising = calculateMovingAverage(rising, HAL_TIM_ReadCapturedValue(&htim1, TIM_CHANNEL_1), 10);
+		}
+		else if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_2)
+		{
+			falling = calculateMovingAverage(falling, HAL_TIM_ReadCapturedValue(&htim1, TIM_CHANNEL_2), 10);
 		}
 	}
 }

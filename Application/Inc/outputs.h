@@ -27,7 +27,7 @@ typedef union
 		uint8_t Recuperation : 1;				// 4						// Recuperation moeglich
 		uint8_t HV_P : 1;						// 5						// HV-Relais, Positiv
 		uint8_t HV_N : 1;						// 6						// HV-Relais, Negativ
-		uint8_t Power_On : 1;					// 7						// Signal, Power ON
+		uint8_t PowerOn : 1;					// 7						// Signal, Power ON
 	};
 
 	uint8_t systemoutput;						// Byte
@@ -93,10 +93,10 @@ typedef union
 
 // Definiere Konstanten
 //----------------------------------------------------------------------
-#define SYSTEM_OUTPUT				0b00000000								// 8 Bit, 8 Systemausgaenge
+#define SYSTEM_OUTPUT				0b10000111								// 8 Bit, 8 Systemausgaenge
 #define HIGH_OUTPUT					0b00000000								// 8 Bit, 7 Hochstromfaehige Ausgaenge
-#define LED_OUTPUT					0b11100000								// 8 Bit, 6 Leuchtdioden
-#define KOMFORT_OUTPUT				0b00000000								// 8 Bit, 1 Komfortausgaenge
+#define LED_OUTPUT					0b01000000								// 8 Bit, 6 Leuchtdioden
+#define KOMFORT_OUTPUT				0b00000010								// 8 Bit, 3 Komfortausgaenge
 //----------------------------------------------------------------------
 
 // Definiere globale Variablen

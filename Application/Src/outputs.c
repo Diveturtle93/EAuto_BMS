@@ -26,10 +26,10 @@
 
 // Variablen einbinden
 //----------------------------------------------------------------------
-system_out_tag system_out;													// Variable fuer Systemausgaenge definieren
-highcurrent_out_tag highcurrent_out;										// Variable fuer Highcurrentausgaenge definieren
-leuchten_out_tag leuchten_out;												// Variable fuer Leuchtenausgaenge definieren
-komfort_out_tag komfort_out;												// Variable fuer Komfortausgaenge definieren
+system_out_tag system_out;																			// Variable fuer Systemausgaenge definieren
+highcurrent_out_tag highcurrent_out;																// Variable fuer Highcurrentausgaenge definieren
+leuchten_out_tag leuchten_out;																		// Variable fuer Leuchtenausgaenge definieren
+komfort_out_tag komfort_out;																		// Variable fuer Komfortausgaenge definieren
 //----------------------------------------------------------------------
 
 // Initialisiere alle Ausgangsstrukturen auf default Werte
@@ -56,7 +56,7 @@ void writeall_outputs(void)
 	HAL_GPIO_WritePin(RECUPERATION_GPIO_Port, RECUPERATION_Pin, system_out.Recuperation);			// Rekuperation aktivieren
 	HAL_GPIO_WritePin(HV_P_GPIO_Port, HV_P_Pin, system_out.HV_P);									// Ausgang HV-Schuetz Plus
 	HAL_GPIO_WritePin(HV_N_GPIO_Port, HV_N_Pin, system_out.HV_N);									// Ausgang HV-Schuetz Minus
-	HAL_GPIO_WritePin(POWER_ON_GPIO_Port, POWER_ON_Pin, system_out.Power_On);						// Selbsthaltung DCDC-Wandler Motorsteuergeraet
+	HAL_GPIO_WritePin(POWER_ON_GPIO_Port, POWER_ON_Pin, system_out.PowerOn);						// Selbsthaltung DCDC-Wandler Motorsteuergeraet
 
 	// Schreibe Hochstromfaehige Ausgaenge
 	HAL_GPIO_WritePin(DIGITAL1_GPIO_Port, DIGITAL1_Pin, highcurrent_out.Digital1);					// Digitaler Ausgang 1
@@ -170,9 +170,9 @@ void resetLadekontrolle(void)
 void setPowerOn(void)
 {
 	// Status PowerOn setzen
-	system_out.Power_On = 1;
+	system_out.PowerOn = 1;
 
 	// Selbsterhaltung einschalten
-	HAL_GPIO_WritePin(POWER_ON_GPIO_Port, POWER_ON_Pin, system_out.Power_On);						// BMS bleibt aktiv bei auschalten von KL15
+	HAL_GPIO_WritePin(POWER_ON_GPIO_Port, POWER_ON_Pin, system_out.PowerOn);						// BMS bleibt aktiv bei auschalten von KL15
 }
 //----------------------------------------------------------------------
