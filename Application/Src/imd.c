@@ -97,7 +97,7 @@ void imd_status(void)
 			imd.PWM_STATUS = IMD_NORMAL;											// IMD funktioniert normal
 
 			// DutyCycle abfragen
-			if (imd.DutyCycle >= 5 && imd.DutyCycle <= 95)							// IMD PWM
+			if (imd.DutyCycle > 5 && imd.DutyCycle <= 95)							// IMD PWM
 			{
 				// Widerstand berechnen
 				imd.Resistanc = 90 * 1200 / (imd.DutyCycle - 5) - 1200;				// Angabe in kOhm
@@ -126,7 +126,7 @@ void imd_status(void)
 			imd.PWM_STATUS = IMD_UNTERSPANNUNG;										// Unterspannung an HV erkannt
 
 			// DutyCycle abfragen
-			if (imd.DutyCycle >= 5 && imd.DutyCycle <= 95)							// IMD PWM
+			if (imd.DutyCycle > 5 && imd.DutyCycle <= 95)							// IMD PWM
 			{
 				// Widerstand berechnen
 				imd.Resistanc = 90 * 1200 / (imd.DutyCycle - 5) - 1200;				// Angabe in kOhm
