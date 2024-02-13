@@ -26,6 +26,7 @@
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
+#include <math.h>			// TODO: Tauschen der Bibliothek
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -35,7 +36,7 @@
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
 // TODO:
-// FIXME: CAN Bus (CAN-Bus braucht Ablaufprogramm)
+// FIXME:
 // xxx: Schlechte Performance
 /* USER CODE END PTD */
 
@@ -57,7 +58,11 @@ BMSState BMS_state = {{Start, true, false, false, false}};
 static uint32_t timeError = 0;
 
 // ADC Array
-uint16_t ADC_VAL[7] = {0};
+static uint16_t ADC_VAL[7] = {0};
+
+// IMD Variablen fuer Timer
+static volatile uint16_t rising = 0, falling = 0;
+static volatile uint8_t pwm_change = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -87,12 +92,17 @@ int main(void)
 
 	// BMS CAN-Bus Zeitvariable, Errorvariable
 	uint8_t can_online = 0;
-	uint32_t timeBAMO = 0, timeMOTOR = 0, timeStromHV;
+	uint32_t timeBAMO = 0, timeMOTOR = 0, timeStromHV, timePrecharge = 0;
 
 	// CAN-Bus Receive Message
 	CAN_message_t RxMessage;
 
+	// Anforderung Motorsteuergeraet Drive-Modus aktivieren
 	bool ActivDrive = false;
+
+	// IMD Variablen fuer Berechnung
+	uint8_t imd_pwm_count = 0;
+	uint32_t timer1Periode = 0, timeIMD = 0;
 
 	// Backup Data, stored in RTC_Backup Register
 //	uint32_t Backup = 0xFFFF;
@@ -118,6 +128,12 @@ int main(void)
 	HAL_Delay(3000);
 #endif
 
+#if MOTOR_AVALIBLE == 0
+	#if TISCHAUFBAU == 1
+		sdc_in.Anlassen = true;
+	#endif
+#endif
+
 	uartTransmit("Start\n", 6);
   /* USER CODE END SysInit */
 
@@ -134,21 +150,22 @@ int main(void)
   MX_RTC_Init();
   /* USER CODE BEGIN 2 */
 
-#ifdef DEBUG
-	#define MAINWHILE			"\nStarte While Schleife\n"
-	uartTransmit(MAINWHILE, sizeof(MAINWHILE));
-
-	uartTransmit("Ready\n", 6);
-#endif
-
 //	HAL_PWR_EnableBkUpAccess();
 //	Backup = HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR0);
 //	HAL_PWR_DisableBkUpAccess();
 
+	// Timer 1 fuer IMD PWM-Eingang aktivieren
+	if (HAL_TIM_Base_Init(&htim1) != HAL_OK);
+	if (HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_1) != HAL_OK);
+	if (HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_2) != HAL_OK);
+	timer1Periode = (HAL_RCC_GetPCLK2Freq() / (htim1.Init.Prescaler / 2));
+
+	// CAN-Bus initalisieren
 	CANinit(RX_SIZE_16, TX_SIZE_16);
 	CAN_config();
-	// system_out.Power_On = true;
-	BMS_state.State = Ready;
+
+	system_out.PowerOn = true;
+	ISOSPI_ENABLE();
 
 	// BMS Fehler zuruecksetzen bei Systemstart
 	system_out.AmsLimit = true;
@@ -165,6 +182,14 @@ int main(void)
 		CAN_Output_PaketListe[6].msg.buf[j] = 0;
 	}
 
+	BMS_state.State = Ready;
+	
+#ifdef DEBUG
+	#define MAINWHILE			"\nStarte While Schleife\n"
+	uartTransmit(MAINWHILE, sizeof(MAINWHILE));
+
+	uartTransmit("Ready\n", 6);
+#endif
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -198,12 +223,35 @@ int main(void)
 	  // Sortiere CAN-Daten auf CAN-Buffer
 	  sortCAN();
 
+	  // Lese IMD Status ein
+	  // Wenn sich der Pegel am IMD_PWM aendert
+	  if (pwm_change == 1)
+	  {
+		  if (rising != 0 && falling != 0)
+		  {
+			  // Berechne DutyCycle und Frequenzy von IMD_PWM
+			  uint16_t imd_diff = getDifference(rising, falling);
+			  imd.DutyCycle = 100 - round((float)(imd_diff * 100) / (float)rising);
+			  imd.Frequency = timer1Periode / rising;
+		  }
+
+		  if (millis() > (timeIMD + 5000))
+		  {
+			  imd_status();
+			  timeIMD = millis();
+		  }
+
+		  pwm_change = 0;
+	  }
+
+	  // Lese CAN-Nachrichten ein
 	  if (CAN_available() >= 1)
 	  {
 		  CANread(&RxMessage);
 
 		  switch (RxMessage.id)
 		  {
+#if BAMOCAR_AVAILIBLE == 1
 			  // Bamocar ID
 			  case BAMOCAR_CAN_RX:
 			  {
@@ -211,7 +259,9 @@ int main(void)
 				  timeBAMO = millis();
 				  break;
 			  }
+#endif
 
+#if MOTOR_AVALIBLE == 1
 			  // Motorsteuergeraet Status ID
 			  case MOTOR_CAN_STATUS:
 			  {
@@ -219,6 +269,7 @@ int main(void)
 				  timeMOTOR = millis();
 				  break;
 			  }
+#endif
 
 			  // Motorsteuergeraet Digital Input ID
 			  case MOTOR_CAN_DIGITAL_IN:
@@ -237,6 +288,7 @@ int main(void)
 				  break;
 			  }
 
+#if STROM_HV_AVAILIBLE == 1
 			  // Stromsensor
 			  case STROM_HV_CAN_I:
 			  {
@@ -244,6 +296,7 @@ int main(void)
 				  timeStromHV = millis();
 				  break;
 			  }
+#endif
 
 			  //
 			  default:
@@ -292,28 +345,26 @@ int main(void)
 	  // Statemaschine hat Warnungen
 	  if (BMS_state.Warning)
 	  {
-		  if (millis() - timeErrorLED > 1000)
+		  if (millis() > (timeErrorLED + 1000))
 		  {
 			  leuchten_out.RedLed = !leuchten_out.RedLed;
 			  timeErrorLED = millis();
 		  }
 
 		  leuchten_out.GreenLed = true;
-
 		  system_out.AmsLimit = true;
 	  }
 
 	  // Statemaschine hat Error
 	  if (BMS_state.Error)
 	  {
-		  if (millis() - timeErrorLED > 1000)
+		  if (millis() > (timeErrorLED + 1000))
 		  {
 			  leuchten_out.RedLed = !leuchten_out.RedLed;
 			  timeErrorLED = millis();
 		  }
 
 		  leuchten_out.GreenLed = false;
-
 		  system_out.AmsLimit = false;
 	  }
 
@@ -341,20 +392,24 @@ int main(void)
 		  // State KL15, wenn Schluessel auf Position 2, KL15 eingeschaltet
 		  case KL15:
 		  {
+			  // Wenn Anlassen aktiviert wird
 			  if (sdc_in.Anlassen == true)
 			  {
+				  // Solange kein kritischer Fehler auftritt
 				  if (!(BMS_state.CriticalError))
 				  {
 					  uartTransmit("Anlassen\n", 9);
 					  BMS_state.State = Anlassen;
 
-					  highcurrent_out.HV_CHG = true;
-					  HAL_GPIO_WritePin(PWM_HV_Charger_GPIO_Port, PWM_HV_Charger_Pin, true);
+					  // Precharge Relais aktivieren
+					  highcurrent_out.PrechargeOut = true;
+					  timePrecharge = millis();
 
 					  system_out.AmsOK = true;
 				  }
 			  }
 
+			  // Falls KL15 abfaellt und der Schluessel abgezogen wird
 			  if (system_in.KL15 == 1)
 			  {
 				  uartTransmit("Standby\n", 8);
@@ -368,12 +423,15 @@ int main(void)
 		  // State Anlassen, wenn Schluessel auf Position 3 und keine kritischen Fehler, Anlasser einschalten
 		  case Anlassen:
 		  {
+			  // Wenn Anlassen aktiviert wird
+			  // TODO: Anlassen wird aktuell uebersprungen
 			  if (sdc_in.Anlassen == true)
 			  {
 				  uartTransmit("Precharge\n", 10);
 				  BMS_state.State = Precharge;
 			  }
 
+			  // Falls KL15 abfaellt und der Schluessel abgezogen wird
 			  if (system_in.KL15 == 1)
 			  {
 				  uartTransmit("Standby\n", 8);
@@ -384,17 +442,38 @@ int main(void)
 			  break;
 		  }
 
-		  // State Precharge,
+		  // State Precharge, lade HV-Kreis und warte bis aufgeladen ist
 		  case Precharge:
 		  {
-			  if (sdc_in.PrechargeIn == 1)
+			  // Wenn Precharge nach 10s nicht Abgeschlossen werden konnte
+			  if (millis() > (timePrecharge + 10000))
+			  {
+				  // Precharge Relais abschalten und kritischer Fehler
+				  highcurrent_out.PrechargeOut = false;
+				  setStatus(CriticalError);
+			  }
+
+			  // Wenn Precharge angeschlossen ist
+			  if ((sdc_in.PrechargeIn == 0) && (millis() > (timePrecharge + 5000)))
 			  {
 				  uartTransmit("ReadyToDrive\n", 13);
+
+				  // HV+ Relais activieren
+//				  system_out.HV_P = true;
+				  HAL_GPIO_WritePin(PWM_HV_Charger_GPIO_Port, PWM_HV_Charger_Pin, GPIO_PIN_SET);
+
 				  BMS_state.State = ReadyToDrive;
 			  }
 
+			  // Falls KL15 abfaellt und der Schluessel abgezogen wird
 			  if (system_in.KL15 == 1)
 			  {
+				  if (sdc_in.PrechargeIn == 1)
+				  {
+					  // Precharge wieder abschalten
+					  highcurrent_out.PrechargeOut = false;
+				  }
+
 				  uartTransmit("Standby\n", 8);
 				  BMS_state.State = Standby;
 				  timeStandby = millis();
@@ -406,14 +485,28 @@ int main(void)
 		  // State ReadyToDrive, wenn SDC OK ist
 		  case ReadyToDrive:
 		  {
+			  // Nach 10s nach dem Precharge gestartet wurde, wird das Precharge Relais wieder abgeschaltet
+			  if (millis() > (timePrecharge + 10000))
+			  {
+				  highcurrent_out.PrechargeOut = false;
+			  }
+
+			  // Sobald ActivDrive aktiviert ist in den Drive Modus gehen und Freigabe an Bamocar senden
 			  if (ActivDrive)
 			  {
 				  uartTransmit("Drive\n", 6);
+
+				  // Freigabe fuer Bamocar aktivieren
+				  system_out.Freigabe = true;
 				  BMS_state.State = Drive;
 			  }
 
+			  // Falls KL15 abfaellt und der Schluessel abgezogen wird
 			  if (system_in.KL15 == 1)
 			  {
+				  system_out.Freigabe = false;
+				  HAL_GPIO_WritePin(PWM_HV_Charger_GPIO_Port, PWM_HV_Charger_Pin, GPIO_PIN_RESET);
+
 				  uartTransmit("Standby\n", 8);
 				  BMS_state.State = Standby;
 				  timeStandby = millis();
@@ -425,8 +518,14 @@ int main(void)
 		  // State Drive, wenn Fahrmodus manuell aktiviert wird
 		  case Drive:
 		  {
+			  // Falls KL15 abfaellt und der Schluessel abgezogen wird
 			  if (system_in.KL15 == 1)
 			  {
+				  system_out.Freigabe = false;
+				  HAL_GPIO_WritePin(PWM_HV_Charger_GPIO_Port, PWM_HV_Charger_Pin, GPIO_PIN_RESET);
+
+
+
 				  uartTransmit("Standby\n", 8);
 				  BMS_state.State = Standby;
 				  timeStandby = millis();
@@ -438,11 +537,13 @@ int main(void)
 		  // State Standby, wenn Schluessel gezogen wird, KL15 ausgeschaltet
 		  case Standby:
 		  {
-			  if (millis() - timeStandby > BMSTIME)
+			  // Fuer 5min warten und BMS weiterhin aktiv halten
+			  if (millis() > (timeStandby + BMSTIME))
 			  {
 				  uartTransmit("Ausschalten\n", 12);
 				  BMS_state.State = Ausschalten;
 			  }
+			  // Falls innerhalb der 5min die KL15 wieder aktiviert wird
 			  else if (system_in.KL15 != 1)
 			  {
 				  uartTransmit("Ready\n", 6);
@@ -455,6 +556,7 @@ int main(void)
 		  // State Ausschalten, wenn Standby State laenger als 5min dauert
 		  case Ausschalten:
 		  {
+			  // Alle Ausgaenge auf Null setzen
 			  system_out.systemoutput = 0;
 			  highcurrent_out.high_out = 0;
 			  leuchten_out.ledoutput = 0;
@@ -543,7 +645,8 @@ void checkSDC(void)
 {
 	sdc_in.SDC_OK = 1;
 
-	if (sdc_in.IMD_OK_IN == 1)
+	// Wenn angeschlossen und OK, Pin am uC ist 0, Wenn nicht Pin am uC ist 1
+	if (sdc_in.IMD_OK_IN != 1)
 	{
 		setStatus(StateError);
 		sdc_in.SDC_OK = 0;
@@ -659,6 +762,24 @@ void setStatus(uint8_t Status)
 		{
 			BMS_state.status = (CriticalError | BMS_state.State);
 			break;
+		}
+	}
+}
+
+// Timer Interrupt
+void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
+{
+	// Timer 1 fuer IMD PWM-Auswertung
+	if (htim == &htim1)
+	{
+		pwm_change = 1;
+		if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_1)
+		{
+			rising = calculateMovingAverage(rising, HAL_TIM_ReadCapturedValue(&htim1, TIM_CHANNEL_1), 10);
+		}
+		else if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_2)
+		{
+			falling = calculateMovingAverage(falling, HAL_TIM_ReadCapturedValue(&htim1, TIM_CHANNEL_2), 10);
 		}
 	}
 }

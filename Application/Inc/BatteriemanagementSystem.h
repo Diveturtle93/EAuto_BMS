@@ -56,6 +56,17 @@
 // Tischaufbau
 //----------------------------------------------------------------------
 #define TISCHAUFBAU									1						// 0 = Auto, 1 = Tischaufbau
+//----------------------------------------------------------------------
+
+// Motorsteuergeraet vorhanden
+//----------------------------------------------------------------------
+#define MOTOR_AVALIBLE								0						// 0 = Nicht vorhanden, 1 = vorhanden
+#define BAMOCAR_AVAILIBLE							0						// 0 = Nicht vorhanden, 1 = vorhanden
+#define STROM_HV_AVAILIBLE							0						// 0 = Nicht vorhanden, 1 = vorhanden
+#define STROM_LV_AVAILIBLE							0						// 0 = Nicht vorhanden, 1 = vorhanden
+#define KOMBIINSTRUMENT_AVALIBLE					0						// 0 = Nicht vorhanden, 1 = vorhanden
+//----------------------------------------------------------------------
+
 
 //----------------------------------------------------------------------
 #if TISCHAUFBAU == 1
