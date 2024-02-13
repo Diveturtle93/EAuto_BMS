@@ -53,7 +53,8 @@
 
 /* USER CODE BEGIN PV */
 // BMS Statevariable
-BMS_states BMS_state = {{Start, true, false, false, false}};
+BMSState BMS_state = {{Start, true, false, false, false}};
+static uint32_t timeError = 0;
 
 // ADC Array
 uint16_t ADC_VAL[7] = {0};
@@ -81,11 +82,12 @@ int main(void)
 {
   /* USER CODE BEGIN 1 */
 	// BMS Statemaschine Zeitvariablen
-	uint32_t timeStandby = 0, timeError = 0;
+	uint32_t timeStandby = 0, timeErrorLED = 0;
+//	uint32_t timeZyklus = 0;
 
 	// BMS CAN-Bus Zeitvariable, Errorvariable
 	uint8_t can_online = 0;
-	uint32_t timeBAMO = 0, timeMOTOR = 0, timeSTROM;
+	uint32_t timeBAMO = 0, timeMOTOR = 0, timeStromHV;
 
 	// CAN-Bus Receive Message
 	CAN_message_t RxMessage;
@@ -169,6 +171,12 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+#ifdef DEBUG
+//	  uartTransmit("Zykluszeit:\t\t", 13);
+//	  uartTransmitNumber(millis() - timeZyklus, 10);
+//	  uartTransmit("\n", 1);
+//	  timeZyklus = millis();
+#endif
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -230,10 +238,10 @@ int main(void)
 			  }
 
 			  // Stromsensor
-			  case STROM_CAN_I:
+			  case STROM_HV_CAN_I:
 			  {
 				  can_online |= (1 << 2);
-				  timeSTROM = millis();
+				  timeStromHV = millis();
 				  break;
 			  }
 
@@ -253,7 +261,7 @@ int main(void)
 	  {
 		  can_online &= ~(1 << 1);
 	  }
-	  if (millis() > (timeSTROM + CAN_TIMEOUT))
+	  if (millis() > (timeStromHV + CAN_TIMEOUT))
 	  {
 		  can_online &= ~(1 << 2);
 	  }
@@ -284,10 +292,10 @@ int main(void)
 	  // Statemaschine hat Warnungen
 	  if (BMS_state.Warning)
 	  {
-		  if (millis() - timeError > 1000)
+		  if (millis() - timeErrorLED > 1000)
 		  {
 			  leuchten_out.RedLed = !leuchten_out.RedLed;
-			  timeError = millis();
+			  timeErrorLED = millis();
 		  }
 
 		  leuchten_out.GreenLed = true;
@@ -298,10 +306,10 @@ int main(void)
 	  // Statemaschine hat Error
 	  if (BMS_state.Error)
 	  {
-		  if (millis() - timeError > 1000)
+		  if (millis() - timeErrorLED > 1000)
 		  {
 			  leuchten_out.RedLed = !leuchten_out.RedLed;
-			  timeError = millis();
+			  timeErrorLED = millis();
 		  }
 
 		  leuchten_out.GreenLed = false;
@@ -619,7 +627,29 @@ void setStatus(uint8_t Status)
 	{
 		case StateNormal:
 		case StateWarning:
+		{
+			if ((BMS_state.status >> 4) & 0x08)
+			{
+				break;
+			}
+
+			if ((BMS_state.status >> 4) & 0x04)
+			{
+				if (millis() > (timeError + ERROR_RESET))
+				{
+					BMS_state.status = (Status | BMS_state.State);
+				}
+			}
+		}
 		case StateError:
+		{
+			timeError = millis();
+
+			if ((BMS_state.status >> 4) & 0x8)
+			{
+				break;
+			}
+		}
 		case CriticalError:
 		{
 			BMS_state.status = (Status | BMS_state.State);

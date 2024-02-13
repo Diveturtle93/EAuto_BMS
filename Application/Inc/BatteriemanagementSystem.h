@@ -70,22 +70,6 @@
 
 // Definiere Statemaschine Typedefines
 //----------------------------------------------------------------------
-// Definiere Batteriemanagement-System States
-//----------------------------------------------------------------------
-typedef enum BMSState_tag
-{
-	BMSStart,																// Batteriemanagement wird gestartet
-	BMSSleep,																// Batteriemanagement liegt im schlafen
-	BMSStandby,																// Batteriemanagement ist im Standby
-	BMSGetReady,															// Precharge wird vorbereitet
-	BMSPrecharge,															// Akkukasten wird vorgeladen
-	BMSActive,																// Akkukasten ist Bereit und Aktiv
-	BMSFreigabe,															// Freigabe zur Leistungsentnahme
-	BMSDisable,																// Akkukasten vorbereiten zum abschalten
-	BMSDischarge,															// Akkukasten abschalten
-	BMSCharge,																// Akkukasten Laden
-} BMSState;
-//----------------------------------------------------------------------
 
 // CAN-IDs definieren
 //----------------------------------------------------------------------
@@ -225,7 +209,8 @@ typedef enum BMSState_tag
 
 //
 //----------------------------------------------------------------------
-#define CAN_TIMEOUT									3000					// Zeit bis CAN Timeout auftritt
+#define CAN_TIMEOUT									10000					// Zeit 10s bis CAN Timeout auftritt
+#define ERROR_RESET									300000					// Zeit 5min bis Error Zurueckgesetzt werden kann
 //----------------------------------------------------------------------
 
 // Definiere Statemaschine Typedefines
@@ -241,6 +226,7 @@ typedef enum
 	Drive,																	// 6 Fahrzeug im Fahrmodus
 	Standby,																// 7 Auto wird abgeschaltet, Zeitverzoegerung bis Batteriemanagement ausgeht
 	Ausschalten,															// 8 Batteriemanagement ausschalten
+	Laden,																	// 9 Lademodus
 	StateNormal = 0x10,														// 16 Normalzustand
 	StateWarning = 0x20,													// 32 Warnung
 	StateError = 0x40,														// 64 Fehler
@@ -259,7 +245,7 @@ typedef union
 	};
 
 	uint8_t status;									// 1 Byte
-} BMS_states;
+} BMSState;
 //----------------------------------------------------------------------
 
 #endif /* INC_BATTERIEMANAGEMENTSYSTEM_H_ */

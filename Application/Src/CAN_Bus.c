@@ -154,7 +154,7 @@ void CANwork(void)
 {
 	for (uint8_t i = 0; i < ANZAHL_OUTPUT_PAKETE; i++)
 	{
-		if (CAN_Output_PaketListe[i].sende_time < (millis() - CAN_Output_PaketListe[i].sendeintervall))
+		if (millis() > (CAN_Output_PaketListe[i].sende_time + CAN_Output_PaketListe[i].sendeintervall))
 		{
 			if (CANwrite(&CAN_Output_PaketListe[i].msg, false) != 1)
 			{

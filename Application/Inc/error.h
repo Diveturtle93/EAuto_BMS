@@ -16,9 +16,10 @@
 
 // Definiere Debug Symbol
 //----------------------------------------------------------------------
+#ifdef DEBUG
 //#define DEBUG_HAL
 //#define DEBUG_SWO
-#define DEBUG_SDC
+#endif
 //----------------------------------------------------------------------
 
 // Festlegen der Fehlercodes
@@ -42,11 +43,12 @@
 
 // Funktionen definieren
 //----------------------------------------------------------------------
-void hal_error(uint8_t status);
-void software_error(uint8_t errorcode);
-void ITM_SendString(char *text);
-void ITM_SendNumber(long number);
-void ITM_SendFloat(double number, int digits);
+void hal_error(uint8_t status);												// Statusausgabe HAL Error auf UART
+void software_error(uint8_t errorcode);										// Software Error auf UART, Haelt das Programm an
+void software_error_debug(uint8_t errorcode);								// Software Error auf UART
+void ITM_SendString(char *text);											// Debug Ausgabe auf SWO, String, nur DEBUG
+void ITM_SendNumber(long number);											// Debug Ausgabe auf SWO, Nummer, nur DEBUG
+void ITM_SendFloat(double number, int digits);								// Debug Ausgabe auf SWO, Float, nur DEBUG
 //----------------------------------------------------------------------
 
 #endif /* INC_ERROR_H_ */
