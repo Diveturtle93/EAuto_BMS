@@ -55,7 +55,7 @@
 /* USER CODE BEGIN PV */
 // BMS Statevariable
 BMSState BMS_state = {{Start, true, false, false, false}};
-static uint32_t timeError = 0;
+static uint32_t timeError = 0, timeWarning = 0;
 
 // ADC Array
 static uint16_t ADC_VAL[7] = {0};
@@ -90,9 +90,12 @@ int main(void)
 	uint32_t timeStandby = 0, timeErrorLED = 0;
 //	uint32_t timeZyklus = 0;
 
-	// BMS CAN-Bus Zeitvariable, Errorvariable
+	// BMS CAN-Bus Zeitvariable
 	uint8_t can_online = 0;
-	uint32_t timeBAMO = 0, timeMOTOR = 0, timeStromHV, timePrecharge = 0;
+	uint32_t timeBAMO = 0, timeMOTOR = 0, timeStromHV = 0;
+
+	// Zeitvariable Precharge
+	uint32_t timePrecharge = 0;
 
 	// CAN-Bus Receive Message
 	CAN_message_t RxMessage;
@@ -101,7 +104,6 @@ int main(void)
 	bool ActivDrive = false;
 
 	// IMD Variablen fuer Berechnung
-	uint8_t imd_pwm_count = 0;
 	uint32_t timer1Periode = 0, timeIMD = 0;
 
 	// Backup Data, stored in RTC_Backup Register
@@ -217,9 +219,6 @@ int main(void)
 	  ADC_VAL[5] = ADC_Temp3();
 	  ADC_VAL[6] = ADC_Temp4();
 
-	  // Shutdown-Circuit checken
-	  checkSDC();
-
 	  // Sortiere CAN-Daten auf CAN-Buffer
 	  sortCAN();
 
@@ -257,6 +256,9 @@ int main(void)
 			  {
 				  can_online |= (1 << 0);
 				  timeBAMO = millis();
+
+				  setStatus(StateNormal);
+
 				  break;
 			  }
 #endif
@@ -267,26 +269,33 @@ int main(void)
 			  {
 				  can_online |= (1 << 1);
 				  timeMOTOR = millis();
+
+				  setStatus(StateNormal);
+
 				  break;
 			  }
-#endif
 
 			  // Motorsteuergeraet Digital Input ID
 			  case MOTOR_CAN_DIGITAL_IN:
 			  {
 				  // TODO: Zuordnung Signal Bit
+				  // Abfrage Anlasser
 				  if (~RxMessage.buf[2] & (1 << 7))
 				  {
+					  // Anlasser Pin von Motorsteuergeraet abspeichern
 					  sdc_in.Anlassen = true;
 				  }
 
-				  if (RxMessage.buf[4] & (1 << 0))
+				  // Abrage ASR1
+				  if (RxMessage.buf[5] & (1 << 0))
 				  {
+					  // DriveMode aktivieren
 					  ActivDrive = true;
 				  }
 
 				  break;
 			  }
+#endif
 
 #if STROM_HV_AVAILIBLE == 1
 			  // Stromsensor
@@ -294,6 +303,9 @@ int main(void)
 			  {
 				  can_online |= (1 << 2);
 				  timeStromHV = millis();
+
+				  setStatus(StateNormal);
+
 				  break;
 			  }
 #endif
@@ -306,24 +318,48 @@ int main(void)
 		  }
 	  }
 
-	  if (millis() > (timeBAMO + CAN_TIMEOUT))
+#if BAMOCAR_AVAILIBLE == 1
+	  if ((mStrg_state.State > 1) && (millis() > (timeBAMO + CAN_TIMEOUT)))
 	  {
 		  can_online &= ~(1 << 0);
+		  longwarning |= (1 << 0);
+
+		  setStatus(StateWarning);
 	  }
-	  if (millis() > (timeMOTOR + CAN_TIMEOUT))
+#endif
+
+#if MOTOR_AVALIBLE == 1
+	  if ((mStrg_state.State > 1) && (millis() > (timeMOTOR + CAN_TIMEOUT)))
 	  {
 		  can_online &= ~(1 << 1);
+		  longwarning |= (1 << 0);
+
+		  setStatus(StateWarning);
 	  }
-	  if (millis() > (timeStromHV + CAN_TIMEOUT))
+#endif
+
+#if STROM_HV_AVAILIBLE == 1
+	  if ((mStrg_state.State > 1) && (millis() > (timeStromHV + CAN_TIMEOUT)))
 	  {
 		  can_online &= ~(1 << 2);
+		  longwarning |= (1 << 0);
+
+		  setStatus(StateWarning);
 	  }
+#endif
 
 	  // Crash Ausgeloest
 	  if (system_in.Crash != 1)
 	  {
-		  BMS_state.CriticalError = true;
-		  BMS_state.Normal = false;
+		  // Setze BMS Error Critical und Status auf Ready
+		  setStatus(CriticalError);
+		  BMS_state.State = Ready;
+
+		  // BMS zuruecksetzen, das kein HV mehr eingeschaltet werden kann
+		  system_out.Freigabe = false;
+		  system_out.AmsOK = false;
+		  system_out.Recuperation = false;
+		  sdc_in.Anlassen = false;
 	  }
 
 	  // Wenn Statemaschine nicht im Standby ist
@@ -331,6 +367,9 @@ int main(void)
 	  {
 		  // Schreibe alle CAN-Nachrichten auf BUS, wenn nicht im Standby
 		  CANwork();
+
+		  // Shutdown-Circuit checken
+		  checkSDC();
 	  }
 
 	  // Statemaschine keine Fehler
@@ -505,7 +544,7 @@ int main(void)
 			  if (system_in.KL15 == 1)
 			  {
 				  system_out.Freigabe = false;
-				  HAL_GPIO_WritePin(PWM_HV_Charger_GPIO_Port, PWM_HV_Charger_Pin, GPIO_PIN_RESET);
+				  ActivDrive = false;
 
 				  uartTransmit("Standby\n", 8);
 				  BMS_state.State = Standby;
@@ -522,9 +561,7 @@ int main(void)
 			  if (system_in.KL15 == 1)
 			  {
 				  system_out.Freigabe = false;
-				  HAL_GPIO_WritePin(PWM_HV_Charger_GPIO_Port, PWM_HV_Charger_Pin, GPIO_PIN_RESET);
-
-
+				  ActivDrive = false;
 
 				  uartTransmit("Standby\n", 8);
 				  BMS_state.State = Standby;
@@ -548,6 +585,13 @@ int main(void)
 			  {
 				  uartTransmit("Ready\n", 6);
 				  BMS_state.State = Ready;
+			  }
+
+			  // Fuer 5s warten bis BMS HV-Relais abschaltet, Anlassen zuruecksetzen
+			  if (millis() > (timeStandby + HVRELAISTIME))
+			  {
+				  sdc_in.Anlassen = false;
+				  HAL_GPIO_WritePin(PWM_HV_Charger_GPIO_Port, PWM_HV_Charger_Pin, GPIO_PIN_RESET);
 			  }
 
 			  break;
@@ -643,31 +687,31 @@ void SystemClock_Config(void)
 /* USER CODE BEGIN 4 */
 void checkSDC(void)
 {
-	sdc_in.SDC_OK = 1;
+	sdc_in.SDC_OK = true;
 
 	// Wenn angeschlossen und OK, Pin am uC ist 0, Wenn nicht Pin am uC ist 1
 	if (sdc_in.IMD_OK_IN != 1)
 	{
 		setStatus(StateError);
-		sdc_in.SDC_OK = 0;
+		sdc_in.SDC_OK = false;
 	}
 
 	if (sdc_in.HVIL == 1)
 	{
 		setStatus(StateError);
-		sdc_in.SDC_OK = 0;
+		sdc_in.SDC_OK = false;
 	}
 
 	if (sdc_in.BTB_SDC == 1)
 	{
 		setStatus(StateError);
-		sdc_in.SDC_OK = 0;
+		sdc_in.SDC_OK = false;
 	}
 
 	if (sdc_in.MotorSDC == 1)
 	{
 		setStatus(StateError);
-		sdc_in.SDC_OK = 0;
+		sdc_in.SDC_OK = false;
 	}
 
 	if (sdc_in.SDC_OK == 1)
@@ -729,26 +773,39 @@ void setStatus(uint8_t Status)
 	switch (Status & 0xF0)
 	{
 		case StateNormal:
-		case StateWarning:
 		{
-			if ((BMS_state.status >> 4) & 0x08)
+			if (BMS_state.status & StateWarning)
 			{
+				if (millis() > (timeWarning + WARNING_RESET))
+				{
+					BMS_state.status = (Status | BMS_state.State);
+
+					longwarning = 0;
+					longerror = 0;
+				}
+
 				break;
 			}
+		}
+		case StateWarning:
+		{
+			timeWarning = millis();
 
-			if ((BMS_state.status >> 4) & 0x04)
+			if (BMS_state.status & StateError)
 			{
 				if (millis() > (timeError + ERROR_RESET))
 				{
-					BMS_state.status = (Status | BMS_state.State);
+					BMS_state.status = (StateWarning | BMS_state.State);
 				}
+
+				break;
 			}
 		}
 		case StateError:
 		{
 			timeError = millis();
 
-			if ((BMS_state.status >> 4) & 0x8)
+			if (BMS_state.status & CriticalError)
 			{
 				break;
 			}

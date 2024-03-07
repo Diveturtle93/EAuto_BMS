@@ -60,11 +60,11 @@
 
 // Motorsteuergeraet vorhanden
 //----------------------------------------------------------------------
-#define MOTOR_AVALIBLE								0						// 0 = Nicht vorhanden, 1 = vorhanden
+#define MOTOR_AVALIBLE								1						// 0 = Nicht vorhanden, 1 = vorhanden
 #define BAMOCAR_AVAILIBLE							0						// 0 = Nicht vorhanden, 1 = vorhanden
 #define STROM_HV_AVAILIBLE							0						// 0 = Nicht vorhanden, 1 = vorhanden
 #define STROM_LV_AVAILIBLE							0						// 0 = Nicht vorhanden, 1 = vorhanden
-#define KOMBIINSTRUMENT_AVALIBLE					0						// 0 = Nicht vorhanden, 1 = vorhanden
+#define KOMBIINSTRUMENT_AVALIBLE					1						// 0 = Nicht vorhanden, 1 = vorhanden
 //----------------------------------------------------------------------
 
 
@@ -221,7 +221,9 @@
 //
 //----------------------------------------------------------------------
 #define CAN_TIMEOUT									10000					// Zeit 10s bis CAN Timeout auftritt
+#define HVRELAISTIME								5000					// Zeit 5s bis HV-Relais ausgeschaltet wird nach wegnahme Freigabe
 #define ERROR_RESET									300000					// Zeit 5min bis Error Zurueckgesetzt werden kann
+#define WARNING_RESET								10000					// Zeit 10s bis Warning Zurueckgesetzt werden kann
 //----------------------------------------------------------------------
 
 // Definiere Statemaschine Typedefines
