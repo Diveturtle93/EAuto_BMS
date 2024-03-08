@@ -63,6 +63,11 @@ void bms_init(void)
   	// Warten fuer eine kurze Zeit
   	HAL_Delay(20);
 
+	// Alle Register zuruecksetzen
+	ltc6811(CLRCELL);
+	ltc6811(CLRSTAT);
+	ltc6811(CLRAUX);
+
 	uartTransmit("\n", 1);
 
 	#define TEST_LTC6811	"Starte Batteriemanagement-System\n"
@@ -506,6 +511,7 @@ void bms_work(void)
 			uartTransmitNumber(PCB_Temperature[i], 10);
 			uartTransmit(", ", 2);
 			uartTransmitNumber(LTC6811_soc[i], 10);
+			uartTransmit("\n", 1);
 		}
 		uartTransmit("\n", 1);
 #endif

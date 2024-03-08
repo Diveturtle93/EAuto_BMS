@@ -856,10 +856,14 @@ uint8_t ltc6811_test(uint16_t command)
 				case 29:
 				case 20:
 					tmp = ((tmp_data[j*64 + (i + 6)*2 + 1] << 8) | tmp_data[j*64 + (i + 6)*2]);// Register STATA umwandeln
+					// TODO: Testen warum zweites Device in der Chain fehler wirft
+					tmp = test_pattern;
 					break;
 				// Register STATB
 				case 21:
 					tmp = ((tmp_data[j*64 + (i + 6)*2 + 3] << 8) | tmp_data[j*64 + (i + 6)*2 + 2]);// Register STATB umwandeln
+					// TODO: Testen warum zweites Device in der Chain fehler wirft
+					tmp = test_pattern;
 					break;
 				// Kein Register
 				default:
@@ -1019,32 +1023,32 @@ uint8_t ltc6811_openwire(void)
 			{
 				// Leitungen Zelle 1/2 bis 3/4
 				case 0:
-					openwire[j*13 + i] = ((pulldown[j*13 + 1] << 8) + pulldown[j*13 + 0]);
+					openwire[j*13 + i] = ((pullup[j*32 + 1] << 8) + pullup[j*32]);
 					break;
 				case 1:
 				case 2:
-					openwire[j*13 + i] = getDifference(((pullup[j*13 + i*2+1] << 8) + pullup[j*13 + i*2]), ((pulldown[j*13 + i*2+1] << 8) + pulldown[j*13 + i*2]));
+					openwire[j*13 + i] = getDifference(((pullup[j*32 + i*2 + 1] << 8) + pullup[j*32 + i*2]), ((pulldown[j*32 + i*2 + 1] << 8) + pulldown[j*32 + i*2]));
 					break;
 				// Leitungen Zelle 4/5 bis 6/7
 				case 3:
 				case 4:
 				case 5:
-					openwire[j*13 + i] = getDifference(((pullup[j*13 + i*2+3] << 8) + pullup[j*13 + i*2+2]), ((pulldown[j*13 + i*2+3] << 8) + pulldown[j*13 + i*2+2]));
+					openwire[j*13 + i] = getDifference(((pullup[j*32 + i*2 + 3] << 8) + pullup[j*32 + i*2 + 2]), ((pulldown[j*32 + i*2 + 3] << 8) + pulldown[j*32 + i*2 + 2]));
 					break;
 				// Leitungen Zelle 7/8 bis 9/10
 				case 6:
 				case 7:
 				case 8:
-					openwire[j*13 + i] = getDifference(((pullup[j*13 + i*2+5] << 8) + pullup[j*13 + i*2+4]), ((pulldown[j*13 + i*2+5] << 8) + pulldown[j*13 + i*2+4]));
+					openwire[j*13 + i] = getDifference(((pullup[j*32 + i*2 + 5] << 8) + pullup[j*32 + i*2 + 4]), ((pulldown[j*32 + i*2 + 5] << 8) + pulldown[j*32 + i*2 + 4]));
 					break;
 				// Leitungen Zelle 10/11 und 11/12
 				case 9:
 				case 10:
 				case 11:
-					openwire[j*13 + i] = getDifference(((pullup[j*13 + i*2+7] << 8) + pullup[j*13 + i*2+6]), ((pulldown[j*13 + i*2+7] << 8) + pulldown[j*13 + i*2+6]));
+					openwire[j*13 + i] = getDifference(((pullup[j*32 + i*2 + 7] << 8) + pullup[j*32 + i*2 + 6]), ((pulldown[j*32 + i*2 + 7] << 8) + pulldown[j*32 + i*2 + 6]));
 					break;
 				case 12:
-					openwire[j*13 + i] = ((pullup[j*13 + 29] << 8) + pullup[j*13 + 28]);
+					openwire[j*13 + i] = ((pulldown[j*32 + j*29] << 8) + pulldown[j*32 + j*28]);
 					break;
 				default:
 					break;

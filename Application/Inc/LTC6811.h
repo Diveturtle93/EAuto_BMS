@@ -54,7 +54,7 @@ typedef enum LTC6811State_tag {
 
 // Allgemeine Einstellungen
 //----------------------------------------------------------------------
-#define LTC6811_DEVICES				1										// Anzahl Chips im Daisy-Chain
+#define LTC6811_DEVICES				2										// Anzahl Chips im Daisy-Chain
 #define LTC6811_UVOLT				2000									// Unterspannung einer Zelle		3.2 = 2000 * 16 * 100µV, Spannung = VUV * 16 * 100µV, VUV muss im Register stehen
 #define LTC6811_OVOLT				2625									// Ueberspannung einer Zelle		4.2 = 2625 * 16 * 100µV, Spannung = VOV * 16 * 100µV, VOV muss im Register stehen
 #define LTC6811_SOC					25200									// Summe der Zellspannungen an einem LTC6811	50.4 = 25200 * 20 * 100µV, Spannung = SC * 20 * 100µV, SC muss im Register stehen

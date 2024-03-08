@@ -24,6 +24,8 @@
 #include "BatteriemanagementSystem.h"
 //----------------------------------------------------------------------
 
+// TODO: Array fuer Anzahl an LTC6811 Devices erweitern und fuellen
+
 // Kanal auswaehlen
 //----------------------------------------------------------------------
 void ltc1380_write(uint8_t Address, uint8_t Channel)
@@ -47,7 +49,7 @@ void ltc1380_write(uint8_t Address, uint8_t Channel)
 	off[3] |= ((Channel & 0x0F) << 4);										// Channel in Array uebertragen
 	
 	// LTC6811 beschreiben und ueber I2C uebertragen
-	ltc6811_write(WRCOMM, &off[0]);												// Daten in LTC6811 schreiben
+	ltc6811_write(WRCOMM, &off[0]);											// Daten in LTC6811 schreiben
 	ltc6811(STCOMM);														// Daten von LTC6811 an LTC1380 senden
 
 	// Debug Nachricht
@@ -123,7 +125,7 @@ void ltc1380_alloff(void)
 		off[1] |= (((i + 1) & 0x0F) << 4);									// Address in Array uebertragen
 		
 		// LTC6811 beschreiben und ueber I2C uebertragen
-		ltc6811_write(WRCOMM, &off[0]);											// Daten in LTC6811 schreiben
+		ltc6811_write(WRCOMM, &off[0]);										// Daten in LTC6811 schreiben
 		ltc6811(STCOMM);													// Daten von LTC6811 an LTC1380 senden
 
 		// Debug Nachricht
