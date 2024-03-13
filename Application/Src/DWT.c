@@ -25,9 +25,30 @@
 
 // DWT-Einheit aktivieren
 //----------------------------------------------------------------------
+void DWT_Init(void)
+{
+	ITM -> LAR = 0xC5ACCE55;
+//	ITM -> TCR |= ITM_TCR_DWTENA_Msk;
+	DWT_Enable();
+//	ITM -> LAR = 0xC5ACCE55;
+	DWT_CycCounterClear();
+	DWT_CycCounterEn();
+}
+//----------------------------------------------------------------------
+
+// DWT-Einheit aktivieren
+//----------------------------------------------------------------------
 void DWT_Enable(void)
 {
-	CoreDebug -> DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+	CoreDebug -> DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;						// 0x01000000
+}
+//----------------------------------------------------------------------
+
+// DWT-Einheit deaktivieren
+//----------------------------------------------------------------------
+void DWT_Disable(void)
+{
+	CoreDebug -> DEMCR &= ~CoreDebug_DEMCR_TRCENA_Msk;						// ~0x01000000
 }
 //----------------------------------------------------------------------
 
@@ -35,7 +56,7 @@ void DWT_Enable(void)
 //----------------------------------------------------------------------
 void DWT_CycCounterEn()
 {
-	DWT -> CTRL = 0x40000001;
+	DWT -> CTRL |= DWT_CTRL_CYCCNTENA_Msk;									// 0x00000001
 }
 //----------------------------------------------------------------------
 
@@ -43,7 +64,7 @@ void DWT_CycCounterEn()
 //----------------------------------------------------------------------
 void DWT_CycCounterDis(void)
 {
-	DWT -> CTRL = 0x40000000;
+	DWT -> CTRL &= ~DWT_CTRL_CYCCNTENA_Msk;									// ~0x00000001
 }
 //----------------------------------------------------------------------
 

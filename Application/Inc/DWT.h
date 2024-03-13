@@ -26,6 +26,7 @@
 
 // Funktionen definieren
 //----------------------------------------------------------------------
+void DWT_Init(void);														// DWT Zaehler initialisieren
 void DWT_Enable(void);														// DWT Zaehler aktivieren
 void DWT_CycCounterEn(void);												// DWT Zaehler einschalten
 void DWT_CycCounterDis(void);												// DWT Zaehler ausschalten

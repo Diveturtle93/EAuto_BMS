@@ -1,5 +1,6 @@
 # Prerequisites
 *.d
+/.settings/
 
 # Object files
 *.o
@@ -52,3 +53,5 @@ Mkfile.old
 dkms.conf
 /Test/
 /Debug/
+/Release/
+Application/Inc/git.h

@@ -28,6 +28,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "my_math.h"
 #include "BasicUart.h"
 #include "SystemInfo.h"
 #include "inputs.h"
@@ -35,7 +36,6 @@
 #include "BatteriemanagementSystem.h"
 #include "error.h"
 #include "imd.h"
-#include "..\..\Application\Src\my_math.c"
 #include "DWT.h"
 /* USER CODE END Includes */
 
@@ -244,28 +244,24 @@ int main(void)
 		HAL_GPIO_WritePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin, leuchten_out.GreenLed);
 
 		// Ausgabe SDC geschlossen
-		#define SDC_STRING_OK				"\nSDC ist geschlossen"
+		#define SDC_STRING_OK				"\nSDC ist geschlossen\n"
 		uartTransmit(SDC_STRING_OK, sizeof(SDC_STRING_OK));
 	}
 
-	uint32_t DWT_count = 0, test = 0;
+	uint32_t DWT_count = 0, DWT_count1 = 0, DWT_count2 = 0, test = 0;
 
 	// Systick-Zaehler benutzen
-	DWT_Enable();									// DWT-Einheit aktivieren
-	DWT_CycCounterEn();								// Zaehler aktivieren
-	DWT_CycCounterClear();							// Zaehler loeschen
+	DWT_Init();
 
 	HAL_GPIO_WritePin(RED_LED_GPIO_Port, RED_LED_Pin, SET);
 
 	DWT_count = DWT_CycCounterRead();
-	test = DWT_count / SYSTICK_CLKSOURCE_HCLK;
+	test = DWT_count;
 
 	uartTransmitNumber(test, 10);
   	uartTransmit("\n", 1);
   	DWT_CycCounterDis();							// Zaehler deaktivieren
 
-  	__disable_fault_irq();
-	__disable_irq();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -276,22 +272,20 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 	  // Systick-Zaehler benutzen
-		DWT_CycCounterClear();						// Zaehler loeschen
-		DWT_Enable();								// DWT-Einheit aktivieren
-		DWT_CycCounterEn();							// Zaehler aktivieren
+	  /*
+		DWT_Init();
 
-		//DWT_count = DWT_CycCounterRead();
-
+		DWT_count1 = DWT_CycCounterRead(); // - DWT_count;
 		HAL_GPIO_WritePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin, SET);
 		HAL_GPIO_WritePin(BLUE_LED_GPIO_Port, BLUE_LED_Pin, SET);
 
-		DWT_count = DWT_CycCounterRead(); // - DWT_count;
-		test = DWT_count / SYSTICK_CLKSOURCE_HCLK;
+		DWT_count2 = DWT_CycCounterRead(); // - DWT_count;
+		test = DWT_count1 - DWT_count2;
 
-		uartTransmitNumber(DWT_count, 10);
+		uartTransmitNumber(test, 10);
 	  	uartTransmit("\n", 1);
 	  	DWT_CycCounterDis();						// Zaehler deaktivieren
-
+*/
 		
 //		// Task wird jede Millisekunde ausgefuehrt
 //		if (millisekunden_flag_1 == 1)
