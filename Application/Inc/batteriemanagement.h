@@ -86,8 +86,11 @@
 #define Cell8Overtemperatur						44
 #define Cell9Overtemperatur						45
 #define Cell10Overtemperatur					46
-#define Cell11vertemperatur						47
-#define Cell12vertemperatur						48
+#define Cell11Overtemperatur					47
+#define Cell12Overtemperatur					48
+//----------------------------------------------------------------------
+#define ReadTimeOut								49
+#define MeasurementOutRange						50
 //----------------------------------------------------------------------
 
 // Funktionen definieren

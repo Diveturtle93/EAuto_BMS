@@ -24,17 +24,9 @@
 #include "BatteriemanagementSystem.h"
 //----------------------------------------------------------------------
 
-// Definiere Global Variablen
+// Definiere
 //----------------------------------------------------------------------
-uint16_t mincellvoltage[LTC6811_DEVICES + 1] = {0};
-uint16_t maxcellvoltage[LTC6811_DEVICES + 1] = {0};
-uint32_t modulevoltage[LTC6811_DEVICES] = {0};
 uint32_t stackvoltage = 0;
-uint16_t mincelltemperature[LTC6811_DEVICES + 1] = {0};
-uint16_t maxcelltemperature[LTC6811_DEVICES + 1] = {0};
-uint16_t LTC6811_Tempstatus = 0;
-uint16_t LTC6811_Temperature[LTC6811_DEVICES] = {0};
-uint16_t PCB_Temperature[LTC6811_DEVICES] = {0};
 uint16_t LTC6811_undervolt[LTC6811_DEVICES] = {0};
 uint16_t LTC6811_overvolt[LTC6811_DEVICES] = {0};
 uint16_t LTC6811_analogvolt[LTC6811_DEVICES] = {0};
@@ -44,11 +36,22 @@ uint8_t bms_tempcount = 0;
 uint16_t Sec_Ref[LTC6811_DEVICES] = {0};
 //----------------------------------------------------------------------
 
-// Definiere Zellenarray
+// Definiere Zellenarray Spannungen
 //----------------------------------------------------------------------
 uint16_t cellvoltage[LTC6811_DEVICES][12] = {0};								// Array fuer gemessene Zellspannungen
+uint32_t modulvoltage[LTC6811_DEVICES] = {0};									// Array fuer gemessene Modulspannung
+uint16_t mincellvoltage[LTC6811_DEVICES + 1] = {0};								// Array fuer Minimalspannungen
+uint16_t maxcellvoltage[LTC6811_DEVICES + 1] = {0};								// Array fuer Maximalspannungen
+//----------------------------------------------------------------------
+
+// Definiere Zellenarray Temperaturen
+//----------------------------------------------------------------------
 uint16_t celltemperature[LTC6811_DEVICES][LTC1380_DEVICES * LTC1380_SENSORES] = {0};	// Array fuer gemessene Zelltemperaturen
-uint16_t modulvoltage[LTC6811_DEVICES] = {0};									// Array fuer gemessene Modulspannung
+uint16_t mincelltemperature[LTC6811_DEVICES + 1] = {0};							// Array fuer Minimaltemperaturen
+uint16_t maxcelltemperature[LTC6811_DEVICES + 1] = {0};							// Array fuer Maximaltemperaturen
+uint16_t LTC6811_ThermalShutdown = 0;											// LTC Thermal Shutdown
+uint16_t LTC6811_Temperature[LTC6811_DEVICES] = {0};							// Array fuer LTC Devices Temperatur
+uint16_t PCB_Temperature[LTC6811_DEVICES] = {0};								// Array fuer PCB Temperatur
 //----------------------------------------------------------------------
 
 // BMS initialisieren
@@ -326,11 +329,11 @@ void bms_ltc_status(void)
 
 		if (data[11] & 0x01)
 		{
-			LTC6811_Tempstatus |= (1 << i);
+			LTC6811_ThermalShutdown |= (1 << i);
 		}
 		else
 		{
-			LTC6811_Tempstatus &= ~(1 << i);
+			LTC6811_ThermalShutdown &= ~(1 << i);
 		}
 	}
 }
@@ -611,14 +614,14 @@ void bms_MSvoltage(void)
 
 	for (uint8_t i = 0; i < LTC6811_DEVICES; i++)
 	{
-		modulevoltage[i] = 0;
+		modulvoltage[i] = 0;
 
 		for (uint8_t j = 0; j < 12; j++)
 		{
-			modulevoltage[i] += cellvoltage[i][j];
+			modulvoltage[i] += cellvoltage[i][j];
 		}
 
-		stackvoltage += modulevoltage[i];
+		stackvoltage += modulvoltage[i];
 	}
 }
 //----------------------------------------------------------------------

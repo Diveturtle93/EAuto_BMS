@@ -24,8 +24,6 @@
 #include "BatteriemanagementSystem.h"
 //----------------------------------------------------------------------
 
-// TODO: Array fuer Anzahl an LTC6811 Devices erweitern und fuellen
-
 // Kanal auswaehlen
 //----------------------------------------------------------------------
 void ltc1380_write(uint8_t Address, uint8_t Channel)

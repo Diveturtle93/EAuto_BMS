@@ -22,7 +22,6 @@
 //----------------------------------------------------------------------
 #include "LTC6811.h"
 #include "millis.h"
-#include "error.h"
 //----------------------------------------------------------------------
 
 // Definiere Globale Variable
@@ -83,14 +82,14 @@ void IsoSPI_statemaschine(void)
 			break;
 
 		case IsoGetReady:
-			if (millis() - timeIsoSpiState > 1)
+			if (millis() > (timeIsoSpiState + 1))
 			{
 				IsoSpiState = IsoReady;
 			}
 			break;
 
 		case IsoReady:
-			if (millis() - timeIsoSpiState > 4)
+			if (millis() > (timeIsoSpiState + 4))
 			{
 				IsoSpiState = IsoIdle;
 			}
