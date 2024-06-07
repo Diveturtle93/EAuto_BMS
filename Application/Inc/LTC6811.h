@@ -54,14 +54,16 @@ typedef enum LTC6811State_tag {
 
 // Allgemeine Einstellungen
 //----------------------------------------------------------------------
-#define LTC6811_DEVICES				2										// Anzahl Chips im Daisy-Chain
+#define LTC6811_DEVICES				1										// Anzahl Chips im Daisy-Chain
 #define LTC6811_UVOLT				2000									// Unterspannung einer Zelle		3.2 = 2000 * 16 * 100µV, Spannung = VUV * 16 * 100µV, VUV muss im Register stehen
 #define LTC6811_OVOLT				2625									// Ueberspannung einer Zelle		4.2 = 2625 * 16 * 100µV, Spannung = VOV * 16 * 100µV, VOV muss im Register stehen
 #define LTC6811_SOC					25200									// Summe der Zellspannungen an einem LTC6811	50.4 = 25200 * 20 * 100µV, Spannung = SC * 20 * 100µV, SC muss im Register stehen
-#define LTC6811_UTEMP				0										// Untertemperatur einer Zelle
-#define LTC6811_OTEMP				50										// Uebertemperatur einer Zelle
-#define LTC6811_DEVUTEMP			-20										// Untertemperatur des Chips
-#define LTC6811_DEVOTEMP			85										// Uebertemperatur des Chips
+#define LTC6811_UTEMP				45200									// Untertemperatur einer Zelle, 0°C
+#define LTC6811_OTEMP				13070									// Uebertemperatur einer Zelle, 65°C
+#define LTC6811_PCB_UTEMP			19920									// Untertemperatur der PCB, 0°C
+#define LTC6811_PCB_OTEMP			3080									// Uebertemperatur der PCB, 65°C
+#define LTC6811_DEVUTEMP			20475									// Untertemperatur des Chips, 0°C
+#define LTC6811_DEVOTEMP			25350									// Uebertemperatur des Chips, 65°C
 #define OPENWIRE_THRESHOLD			4000									// Openwire Threshold
 #define LTC6811_TIMEOUT				1800									// Timeout fuer Watchdog, 1.8s
 //----------------------------------------------------------------------

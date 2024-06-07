@@ -55,7 +55,7 @@ void ltc1380_write(uint8_t Address, uint8_t Channel)
 		// Fuer jeden LTC6811 wiederholen
 		for (uint8_t i = 0; i < 6; i++)
 		{
-			data[j * i] = off[i];											// Jeder LTC6811 bekommt die selben Daten
+			data[j*6 + i] = off[i];											// Jeder LTC6811 bekommt die selben Daten
 		}
 	}
 
@@ -105,7 +105,7 @@ void ltc1380_off(uint8_t Address)
 		// Fuer jeden LTC6811 wiederholen
 		for (uint8_t i = 0; i < 6; i++)
 		{
-			data[j * i] = off[i];											// Jeder LTC6811 bekommt die selben Daten
+			data[j*6 + i] = off[i];											// Jeder LTC6811 bekommt die selben Daten
 		}
 	}
 
