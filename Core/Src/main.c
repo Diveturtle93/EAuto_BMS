@@ -288,6 +288,7 @@ int main(void)
 		  if (millis() > (timeBMSWork + BMS_WORK_TIME))
 		  {
 			  bms_work();
+			  timeBMSWork = millis();
 		  }
 	  }
 

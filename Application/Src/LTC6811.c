@@ -607,7 +607,7 @@ void ltc6811_init(void)
 {
 	// Setze Konfiguration
 	ltc6811_Conf.ADCOPT = 0;												// Setze ADC Mode option, 0 = default
-	ltc6811_Conf.REFON = 1;													// Setze Referenzspannung, 0 = default, 0 = Shutdown after Conversion, 1 = Shutdown after Watchdog timeout
+	ltc6811_Conf.REFON = 0;													// Setze Referenzspannung, 0 = default, 0 = Shutdown after Conversion, 1 = Shutdown after Watchdog timeout
 	ltc6811_Conf.LTC_GPIO1 = 1;												// Setze GPIO Pulldown, 1 = default, 0 = On, 1 = Off
 	ltc6811_Conf.LTC_GPIO2 = 1;												// Setze GPIO Pulldown, 1 = default, 0 = On, 1 = Off
 	ltc6811_Conf.LTC_GPIO3 = 1;												// Setze GPIO Pulldown, 1 = default, 0 = On, 1 = Off
@@ -637,7 +637,7 @@ void ltc6811_init(void)
 	samplingMode = MD73;
 
 	// Schreibe Konfiguration in Register am LTC6811
-	//ltc6811_write(WRCFG, &ltc6811_Conf.ltc6811_configuration[0]);
+	ltc6811_write(WRCFG, &ltc6811_Conf.ltc6811_configuration[0]);
 }
 //----------------------------------------------------------------------
 
@@ -828,51 +828,51 @@ bool ltc6811_test(uint16_t command)
 			// Auswaehlen welches Register im Array steht
 			switch (i)
 			{
-				// Register CVA
+				// Register CVA (0 - 5, 6 & 7)
 				case 0:
 				case 1:
 				case 2:
 					tmp = ((tmp_data[j*64 + i*2 + 1] << 8) | tmp_data[j*64 + i*2]);		// Register CVA umwandeln
 					break;
-				// Register CVB
+				// Register CVB (8 - 33, 14 & 15)
 				case 3:
 				case 4:
 				case 5:
 					tmp = ((tmp_data[j*64 + i*2 + 3] << 8) | tmp_data[j*64 + i*2 + 2]);	// Register CVB umwandeln
 					break;
-				// Register CVC
+				// Register CVC (16 - 21, 22 & 23)
 				case 6:
 				case 7:
 				case 8:
 					tmp = ((tmp_data[j*64 + (i + 2)*2 + 1] << 8) | tmp_data[j*64 + (i + 2)*2]);// Register CVC umwandeln
 					break;
-				// Register CVD
+				// Register CVD (24 - 29, 30 & 31)
 				case 9:
 				case 10:
 				case 11:
 					tmp = ((tmp_data[j*64 + (i + 2)*2 + 3] << 8) | tmp_data[j*64 + (i + 2)*2 + 2]);// Register CVD umwandeln
 					break;
-				// Register AUXA
+				// Register AUXA (32 - 37, 38 & 39)
 				case 12:
 				case 13:
 				case 14:
 					tmp = ((tmp_data[j*64 + (i + 4)*2 + 1] << 8) | tmp_data[j*64 + (i + 4)*2]);// Register AUXA umwandeln
 					break;
-				// Register AUXB
+				// Register AUXB (40 - 45, 46 & 47)
 				case 15:
 				case 16:
 				case 17:
 					tmp = ((tmp_data[j*64 + (i + 4)*2 + 3] << 8) | tmp_data[j*64 + (i + 4)*2 + 2]);// Register AUXB umwandeln
 					break;
-				// Register STATA
+				// Register STATA (48 - 53, 54 & 65)
 				case 18:
-				case 29:
+				case 19:
 				case 20:
 					tmp = ((tmp_data[j*64 + (i + 6)*2 + 1] << 8) | tmp_data[j*64 + (i + 6)*2]);// Register STATA umwandeln
 					// TODO: Testen warum zweites Device in der Chain fehler wirft
 					tmp = test_pattern;
 					break;
-				// Register STATB
+				// Register STATB (56 & 57, 58 - 63)
 				case 21:
 					tmp = ((tmp_data[j*64 + (i + 6)*2 + 3] << 8) | tmp_data[j*64 + (i + 6)*2 + 2]);// Register STATB umwandeln
 					// TODO: Testen warum zweites Device in der Chain fehler wirft
