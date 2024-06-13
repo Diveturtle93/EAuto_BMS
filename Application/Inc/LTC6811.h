@@ -60,12 +60,18 @@ typedef enum LTC6811State_tag {
 #define LTC6811_SOC					25200									// Summe der Zellspannungen an einem LTC6811	50.4 = 25200 * 20 * 100µV, Spannung = SC * 20 * 100µV, SC muss im Register stehen
 #define LTC6811_UTEMP				45200									// Untertemperatur einer Zelle, 0°C
 #define LTC6811_OTEMP				13070									// Uebertemperatur einer Zelle, 65°C
-#define LTC6811_PCB_UTEMP			19920									// Untertemperatur der PCB, 0°C
-#define LTC6811_PCB_OTEMP			3080									// Uebertemperatur der PCB, 65°C
-#define LTC6811_DEVUTEMP			20475									// Untertemperatur des Chips, 0°C
-#define LTC6811_DEVOTEMP			25350									// Uebertemperatur des Chips, 65°C
+#define LTC6811_PCB_UTEMP			33000									// Untertemperatur der PCB, 0°C
+#define LTC6811_PCB_OTEMP			5760									// Uebertemperatur der PCB, 65°C
+#define LTC6811_DEVUTEMP			20475									// Untertemperatur des Chips, 0°C	ITMP * 100µV / 7500µV/°C - 273°C, 20475µV * 100µV / 7500µV/°C - 273°C = 0
+#define LTC6811_DEVOTEMP			25350									// Uebertemperatur des Chips, 65°C	ITMP * 100µV / 7500µV/°C - 273°C, 25350µV * 100µV / 7500µV/°C - 273°C = 65
 #define OPENWIRE_THRESHOLD			4000									// Openwire Threshold
 #define LTC6811_TIMEOUT				1800									// Timeout fuer Watchdog, 1.8s
+#define SEC_UVOLT					29850									// Second Referenzvoltage Untergrenze
+#define SEC_OVOLT					30150									// Second Referenzvoltage Obergrenze
+#define ANALOG_UVOLT				45000									// Analogvoltage Untergrenze
+#define ANALOG_OVOLT				55000									// Analogvoltage Obergrenze
+#define DIGITAL_UVOLT				27000									// Digitalvoltage Untergrenze
+#define DIGITAL_OVOLT				36000									// Digitalvoltage Obergrenze
 //----------------------------------------------------------------------
 
 // Command Codes definieren (Datasheet ltc6811 Page 49, Table 34)

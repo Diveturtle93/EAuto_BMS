@@ -33,7 +33,7 @@ uint16_t LTC6811_analogvolt[LTC6811_DEVICES] = {0};
 uint16_t LTC6811_digitalvolt[LTC6811_DEVICES] = {0};
 uint16_t LTC6811_soc[LTC6811_DEVICES] = {0};
 uint8_t bms_tempcount = 0;
-uint16_t Sec_Ref[LTC6811_DEVICES] = {0};
+uint16_t SecRef[LTC6811_DEVICES] = {0};
 uint8_t bms_warning[LTC6811_DEVICES + 1] = {0};
 uint64_t bms_error[LTC6811_DEVICES + 1] = {0};
 //----------------------------------------------------------------------
@@ -290,7 +290,7 @@ void bms_readgpio(uint8_t gpio)
 			case 5:
 				break;
 			case 6:
-				Sec_Ref[i] = ((data[i*16 + 6 + 1] << 8) | data[i*16 + 6]);	// LTC Sec Referenzspannung einlesen, Byte 6 und 7 des Registers
+				SecRef[i] = ((data[i*8 + 8*LTC6811_DEVICES + 4 + 1] << 8) | data[i*8 + 8*LTC6811_DEVICES + 4]);	// LTC Sec Referenzspannung einlesen, Byte 6 und 7 des Registers
 				break;
 			default:
 				break;
@@ -318,18 +318,18 @@ void bms_ltc_status(void)
 		LTC6811_soc[i] = ((data[i*8 + 1] << 8) | data[i*8]);
 		LTC6811_Temperature[i] = ((data[i*8 + 3] << 8) | data[i*8 + 2]);
 		LTC6811_analogvolt[i] = ((data[i*8 + 5] << 8) | data[i*8 + 4]);
-		LTC6811_digitalvolt[i] = ((data[i*(8*LTC6811_DEVICES) + 9] << 8) | data[i*(8*LTC6811_DEVICES) + 8]);
+		LTC6811_digitalvolt[i] = ((data[i*8 + 8*LTC6811_DEVICES + 1] << 8) | data[i*8 + 8*LTC6811_DEVICES]);
 
 		for (uint8_t j = 0; j < 3; j++)
 		{
 			for (uint8_t k = 0; k <= 3; k++)
 			{
-				LTC6811_undervolt[i] |= (((data[i*(8*LTC6811_DEVICES) + 10+j] >> (k*2)) & 1) << (j*4 + k));
-				LTC6811_overvolt[i] |= (((data[i*(8*LTC6811_DEVICES) + 10+j] >> (k*2 + 1)) & 1) << (j*4 + k));
+				LTC6811_undervolt[i] |= (((data[i*8 + 8*LTC6811_DEVICES + 2+j] >> (k*2)) & 1) << (j*4 + k));
+				LTC6811_overvolt[i] |= (((data[i*8 + 8*LTC6811_DEVICES + 2+j] >> (k*2 + 1)) & 1) << (j*4 + k));
 			}
 		}
 
-		if (data[i*(8*LTC6811_DEVICES) + 13] & 0x01)
+		if (data[i*8 + 8*LTC6811_DEVICES + 5] & 0x01)
 		{
 			LTC6811_ThermalShutdown |= (1 << i);
 		}
@@ -450,6 +450,7 @@ void bms_work(void)
 	{
 		bms_tempcount = 0;
 		bms_celltemperatur(bms_tempcount);
+		bms_readgpio(SECREF);
 		bms_ltc_status();
 		uartTransmitNumber(bms_ok(), 10);
 		uartTransmit("\n", 1);
@@ -531,10 +532,13 @@ void bms_work(void)
 bool bms_ok(void)
 {
 	// TODO: BMS OK abfrage erstellen
-	// BMS Error zuruecksetzen
-	bms_error[LTC6811_DEVICES] = 0;
-	// BMS Warnung zuruecksetzen
-	bms_warning[LTC6811_DEVICES] = 0;
+	for (uint8_t i = 0; i < LTC6811_DEVICES; i++)
+	{
+		// BMS Error zuruecksetzen
+		bms_error[i] = 0;
+		// BMS Warnung zuruecksetzen
+		bms_warning[i] = 0;
+	}
 
 	// Unterspannung
 	for (uint8_t i = 0; i < LTC6811_DEVICES; i++)
@@ -567,7 +571,7 @@ bool bms_ok(void)
 	{
 		for (uint8_t j = 0; j < (LTC1380_DEVICES*LTC1380_SENSORES); j++)
 		{
-			if (celltemperature[i][j] >= LTC6811_UTEMP)
+			if ((celltemperature[i][j] >= LTC6811_UTEMP) && (celltemperature[i][j] < 53000))
 			{
 				bms_error[i] |= (1 << (24+j));								// Offset 24, Bits in Fehlerspeicher schreiben
 			}
@@ -639,6 +643,48 @@ bool bms_ok(void)
 		}
 	}
 
+	// Second Referenzspannung am LTC pruefen
+	for (uint8_t i = 0; i < LTC6811_DEVICES; i++)
+	{
+		// Spannung ausserhalb der Grenzen
+		if ((SecRef[i] >= SEC_UVOLT) && (SecRef[i] < SEC_OVOLT))
+		{
+			bms_warning[i] &= ~(1 << 0);
+		}
+		else
+		{
+			bms_warning[i] |= (1 << 0);
+		}
+	}
+
+	// Analogspannung am LTC pruefen
+	for (uint8_t i = 0; i < LTC6811_DEVICES; i++)
+	{
+		// Spannung ausserhalb der Grenzen
+		if ((LTC6811_analogvolt[i] >= ANALOG_UVOLT) && (LTC6811_analogvolt[i] < ANALOG_OVOLT))
+		{
+			bms_warning[i] &= ~(1 << 1);
+		}
+		else
+		{
+			bms_warning[i] |= (1 << 1);
+		}
+	}
+
+	// Digitalspannung am LTC pruefen
+	for (uint8_t i = 0; i < LTC6811_DEVICES; i++)
+	{
+		// Spannung ausserhalb der Grenzen
+		if ((LTC6811_digitalvolt[i] >= DIGITAL_UVOLT) && (LTC6811_digitalvolt[i] < DIGITAL_OVOLT))
+		{
+			bms_warning[i] &= ~(1 << 2);
+		}
+		else
+		{
+			bms_warning[i] |= (1 << 2);
+		}
+	}
+
 	// Modulfehler und -warnung auswerten und speichern
 	for (uint8_t i = 0; i < LTC6811_DEVICES; i++)
 	{
@@ -650,6 +696,16 @@ bool bms_ok(void)
 		else
 		{
 			bms_error[LTC6811_DEVICES] &= ~(1 << i);
+		}
+
+		// Warnung in Modul
+		if (bms_warning[i] != 0)
+		{
+			bms_warning[LTC6811_DEVICES] |= (1 << i);
+		}
+		else
+		{
+			bms_warning[LTC6811_DEVICES] &= ~(1 << i);
 		}
 	}
 
