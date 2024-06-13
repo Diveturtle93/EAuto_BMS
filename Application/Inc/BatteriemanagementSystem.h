@@ -71,7 +71,7 @@
 //----------------------------------------------------------------------
 #if TISCHAUFBAU == 1
 #warning "Programm ist fuer Tischaufbau kompiliert!!"
-#elif
+#else
 #warning "Programm ist fuer Auto kompiliert!!"
 #endif
 //----------------------------------------------------------------------
@@ -120,37 +120,40 @@
 #define BMS_CAN_TEMPERATUR11						0x740					// Batterie-Temperatur 1-4 Modul 1
 #define BMS_CAN_TEMPERATUR12						0x741					// Batterie-Temperatur 5-8 Modul 1
 #define BMS_CAN_TEMPERATUR13						0x742					// Batterie-Temperatur 9-12 Modul 1
-#define BMS_CAN_TEMPERATUR21						0x743					// Batterie-Temperatur 1-4 Modul 2
-#define BMS_CAN_TEMPERATUR22						0x744					// Batterie-Temperatur 5-8 Modul 2
-#define BMS_CAN_TEMPERATUR23						0x745					// Batterie-Temperatur 9-12 Modul 2
-#define BMS_CAN_TEMPERATUR31						0x746					// Batterie-Temperatur 1-4 Modul 3
-#define BMS_CAN_TEMPERATUR32						0x747					// Batterie-Temperatur 5-8 Modul 3
-#define BMS_CAN_TEMPERATUR33						0x748					// Batterie-Temperatur 9-12 Modul 3
-#define BMS_CAN_TEMPERATUR34						0x749					// Batterie-Temperatur 13-16 Modul 3
-#define BMS_CAN_TEMPERATUR41						0x750					// Batterie-Temperatur 1-4 Modul 4
-#define BMS_CAN_TEMPERATUR42						0x751					// Batterie-Temperatur 5-8 Modul 4
-#define BMS_CAN_TEMPERATUR43						0x752					// Batterie-Temperatur 9-12 Modul 4
-#define BMS_CAN_TEMPERATUR44						0x753					// Batterie-Temperatur 13-16 Modul 4
-#define BMS_CAN_TEMPERATUR51						0x754					// Batterie-Temperatur 1-4 Modul 5
-#define BMS_CAN_TEMPERATUR52						0x755					// Batterie-Temperatur 5-8 Modul 5
-#define BMS_CAN_TEMPERATUR53						0x756					// Batterie-Temperatur 9-12 Modul 5
-#define BMS_CAN_TEMPERATUR54						0x757					// Batterie-Temperatur 13-16 Modul 5
-#define BMS_CAN_TEMPERATUR61						0x758					// Batterie-Temperatur 1-4 Modul 6
-#define BMS_CAN_TEMPERATUR62						0x759					// Batterie-Temperatur 5-8 Modul 6
-#define BMS_CAN_TEMPERATUR63						0x760					// Batterie-Temperatur 9-12 Modul 6
-#define BMS_CAN_TEMPERATUR64						0x761					// Batterie-Temperatur 13-16 Modul 6
-#define BMS_CAN_TEMPERATUR71						0x762					// Batterie-Temperatur 1-4 Modul 7
-#define BMS_CAN_TEMPERATUR72						0x763					// Batterie-Temperatur 5-8 Modul 7
-#define BMS_CAN_TEMPERATUR73						0x764					// Batterie-Temperatur 9-12 Modul 7
-#define BMS_CAN_TEMPERATUR74						0x765					// Batterie-Temperatur 13-16 Modul 7
-#define BMS_CAN_TEMPERATUR81						0x766					// Batterie-Temperatur 1-4 Modul 8
-#define BMS_CAN_TEMPERATUR82						0x767					// Batterie-Temperatur 5-8 Modul 8
-#define BMS_CAN_TEMPERATUR83						0x768					// Batterie-Temperatur 9-12 Modul 8
-#define BMS_CAN_TEMPERATUR84						0x769					// Batterie-Temperatur 13-16 Modul 8
-#define BMS_CAN_INT_TEMPERATUR1						0x770					// Temperatur LTC6811 ICs 1 - 4
-#define BMS_CAN_INT_TEMPERATUR2						0x771					// Temperatur LTC6811 ICs 5 - 8
-#define BMS_CAN_INT_TEMPERATUR3						0x772					// Temperatur Passiv Discharge 1 - 4
-#define BMS_CAN_INT_TEMPERATUR4						0x773					// Temperatur Passiv Discharge 5 - 8
+#define BMS_CAN_TEMPERATUR14						0x743					// Batterie-Temperatur 13-16 Modul 1
+#define BMS_CAN_TEMPERATUR21						0x744					// Batterie-Temperatur 1-4 Modul 2
+#define BMS_CAN_TEMPERATUR22						0x745					// Batterie-Temperatur 5-8 Modul 2
+#define BMS_CAN_TEMPERATUR23						0x746					// Batterie-Temperatur 9-12 Modul 2
+#define BMS_CAN_TEMPERATUR24						0x747					// Batterie-Temperatur 13-16 Modul 2
+#define BMS_CAN_TEMPERATUR31						0x748					// Batterie-Temperatur 1-4 Modul 3
+#define BMS_CAN_TEMPERATUR32						0x749					// Batterie-Temperatur 5-8 Modul 3
+#define BMS_CAN_TEMPERATUR33						0x750					// Batterie-Temperatur 9-12 Modul 3
+#define BMS_CAN_TEMPERATUR34						0x751					// Batterie-Temperatur 13-16 Modul 3
+#define BMS_CAN_TEMPERATUR41						0x752					// Batterie-Temperatur 1-4 Modul 4
+#define BMS_CAN_TEMPERATUR42						0x753					// Batterie-Temperatur 5-8 Modul 4
+#define BMS_CAN_TEMPERATUR43						0x754					// Batterie-Temperatur 9-12 Modul 4
+#define BMS_CAN_TEMPERATUR44						0x755					// Batterie-Temperatur 13-16 Modul 4
+#define BMS_CAN_TEMPERATUR51						0x756					// Batterie-Temperatur 1-4 Modul 5
+#define BMS_CAN_TEMPERATUR52						0x757					// Batterie-Temperatur 5-8 Modul 5
+#define BMS_CAN_TEMPERATUR53						0x758					// Batterie-Temperatur 9-12 Modul 5
+#define BMS_CAN_TEMPERATUR54						0x759					// Batterie-Temperatur 13-16 Modul 5
+#define BMS_CAN_TEMPERATUR61						0x760					// Batterie-Temperatur 1-4 Modul 6
+#define BMS_CAN_TEMPERATUR62						0x761					// Batterie-Temperatur 5-8 Modul 6
+#define BMS_CAN_TEMPERATUR63						0x762					// Batterie-Temperatur 9-12 Modul 6
+#define BMS_CAN_TEMPERATUR64						0x763					// Batterie-Temperatur 13-16 Modul 6
+#define BMS_CAN_TEMPERATUR71						0x764					// Batterie-Temperatur 1-4 Modul 7
+#define BMS_CAN_TEMPERATUR72						0x765					// Batterie-Temperatur 5-8 Modul 7
+#define BMS_CAN_TEMPERATUR73						0x766					// Batterie-Temperatur 9-12 Modul 7
+#define BMS_CAN_TEMPERATUR74						0x767					// Batterie-Temperatur 13-16 Modul 7
+#define BMS_CAN_TEMPERATUR81						0x768					// Batterie-Temperatur 1-4 Modul 8
+#define BMS_CAN_TEMPERATUR82						0x769					// Batterie-Temperatur 5-8 Modul 8
+#define BMS_CAN_TEMPERATUR83						0x770					// Batterie-Temperatur 9-12 Modul 8
+#define BMS_CAN_TEMPERATUR84						0x771					// Batterie-Temperatur 13-16 Modul 8
+#define BMS_CAN_INT_TEMPERATUR1						0x772					// Temperatur LTC6811 ICs 1 - 4
+#define BMS_CAN_INT_TEMPERATUR2						0x773					// Temperatur LTC6811 ICs 5 - 8
+#define BMS_CAN_INT_TEMPERATUR3						0x774					// Temperatur Passiv Discharge 1 - 4
+#define BMS_CAN_INT_TEMPERATUR4						0x775					// Temperatur Passiv Discharge 5 - 8
+#define BMS_CAN_STACKVOLTAGE						0x776					// Gesamtspannung BMS berechnet
 //----------------------------------------------------------------------
 // Motorsteuergeraet neu
 //----------------------------------------------------------------------
@@ -224,6 +227,7 @@
 #define HVRELAISTIME								5000					// Zeit 5s bis HV-Relais ausgeschaltet wird nach wegnahme Freigabe
 #define ERROR_RESET									300000					// Zeit 5min bis Error Zurueckgesetzt werden kann
 #define WARNING_RESET								10000					// Zeit 10s bis Warning Zurueckgesetzt werden kann
+#define BMS_WORK_TIME								100						// Zeitintervall fuer BMS-Abfrage
 //----------------------------------------------------------------------
 
 // Definiere Statemaschine Typedefines

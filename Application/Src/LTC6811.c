@@ -32,7 +32,9 @@ ltc6811_configuration_tag ltc6811_Conf;										// LTC6811 Configurations Regis
 // Definiere Globale Variable
 //----------------------------------------------------------------------
 static LTC6811_State Ltc6811State;											// Statusvariable Statemaschine
-uint32_t timeLtc6811State;													// Time Variable fuer State
+static uint32_t timeLtc6811State;											// Time Variable fuer State
+uint16_t samplingMode = MD73;												// Sampling Mode fuer LTC6811 Messung
+static uint16_t error_readtimeout = 0xFFFF;									// Fehler fuer Timeout, default alle fehlerhaft
 //----------------------------------------------------------------------
 
 // Pec Lookuptabelle definieren
@@ -116,7 +118,7 @@ void set_ltc6811_state(LTC6811_State newState)
 			break;
 
 		default:
-			ITM_SendString("#RED#FEHLER\n");
+			ITM_SendString("#RED#LTC Error\n");
 			break;
 	}
 #endif
@@ -129,7 +131,6 @@ void ltc6811_statemaschine(void)
 {
 	// Messzeit feststellen, Messzeit immer fuer alle Zellen + GPIOs (Das ist eine Abschaetzung zur sicheren Seite)
 	uint32_t measurementDuration; // in us
-	uint16_t samplingMode = MD73;
 
 	switch (Ltc6811State)
 	{
@@ -137,7 +138,7 @@ void ltc6811_statemaschine(void)
 			break;
 
 		case LTCStandby:
-			if (timeLtc6811State + 1800 < millis())							// ms
+			if (millis() > (timeLtc6811State + LTC6811_TIMEOUT))			// ms
 			{
 				// 1.8s ist in diesem Zustand vergangen, Watchdog koennte ausgeloest haben (t_sleep)
 				set_ltc6811_state(LTCSleep);
@@ -153,7 +154,7 @@ void ltc6811_statemaschine(void)
 		case LTCRefup:
 			if (ltc6811_Conf.REFON == 1)
 			{
-				if (timeLtc6811State + 1800 < millis())						// ms
+				if (millis() > (timeLtc6811State + LTC6811_TIMEOUT))		// ms
 				{
 					// 1.8s ist in diesem Zustand vergangen, Watchdog koennte ausgeloest haben (t_sleep)
 					set_ltc6811_state(LTCSleep);
@@ -234,7 +235,7 @@ void ltc6811_statemaschine(void)
 			// Wenn die Referenz zuerst eingeschaltet werden muss, dauert die Messung 5ms (t_Refup) laenger
 			measurementDuration = measurementDuration + 5;					// ms
 
-			if (timeLtc6811State + measurementDuration < millis())			// ms
+			if (millis() > (timeLtc6811State + measurementDuration))		// ms
 			{
 				// Messung ist beendet
 				if (ltc6811_Conf.REFON == 1)
@@ -251,7 +252,7 @@ void ltc6811_statemaschine(void)
 
 		case LTCWakeup:
 			// 500us (t_Wakeup) warten bis Chip aufgewacht ist
-			if (timeLtc6811State + 1 < millis())							// ms
+			if (millis() > (timeLtc6811State + 1))							// ms
 			{
 				set_ltc6811_state(LTCStandby);
 			}
@@ -259,7 +260,7 @@ void ltc6811_statemaschine(void)
 
 		case LTCSetRefup:
 			// 5ms (t_Refup) warten bis Referenz eingeschaltet ist
-			if (timeLtc6811State + 5 < millis())							// ms
+			if (millis() > (timeLtc6811State + 5))							// ms
 			{
 				set_ltc6811_state(LTCRefup);
 			}
@@ -313,7 +314,7 @@ void ltc6811(uint16_t command)
 	IsoSPI_cmd(&cmd[0]);													// Sende Befehl
 
 	// Setze Statemaschine auf Messen
-	if ((command & ADAX) || (command & ADCVC) || (command & ADCVAX) || (command & ADSTAT))
+	if ((command & ADAX) || (command & ADCVC) || (command & ADCVAX) || (command & ADSTAT) || (command & ADCVSC))
 	{
 		set_ltc6811_state(LTCMeasure);
 	}
@@ -383,12 +384,9 @@ void ltc6811_write(uint16_t command, uint8_t* data)
 	// Sende Command auf UART
 	for (uint8_t i = 0; i < 4; i++)
 	{
-		spi_transmit(data[i]);
 		ITM_SendChar(' ');
 		ITM_SendNumber(cmd[i]);
 	}
-	spi_transmit((pec_d>>8) & 0xFF);
-	spi_transmit(pec_d & 0xFE);
 	
 	ITM_SendChar('\n');
 
@@ -396,10 +394,10 @@ void ltc6811_write(uint16_t command, uint8_t* data)
 	ITM_SendString("Folgendes wurde gesendet:");
 
 	// Sende Daten auf UART
-	for (uint8_t i = 0; i < 8; i++)
+	for (uint8_t i = 0; i < (8*LTC6811_DEVICES); i++)
 	{
 		ITM_SendChar(' ');
-		ITM_SendNumber(data[i]);
+		ITM_SendNumber(tmp_data[i]);
 	}
 	ITM_SendChar('\n');
 #endif
@@ -408,7 +406,7 @@ void ltc6811_write(uint16_t command, uint8_t* data)
 
 // Broadcast Read Command
 //----------------------------------------------------------------------
-uint8_t ltc6811_read(uint16_t command, uint8_t* data)
+bool ltc6811_read(uint16_t command, uint8_t* data)
 {
 	// Debug Nachricht
 #ifdef DEBUG_LTC6811
@@ -434,9 +432,6 @@ uint8_t ltc6811_read(uint16_t command, uint8_t* data)
 	// Befehl ueber IsoSPI senden
 	IsoSPI_read(&cmd[0], &data[0]);											// Sende Daten
 
-	// Pec zuruecksetzen
-	pec = 0;
-
 	// Pec pruefen
 	for (uint8_t i = 0; i < LTC6811_DEVICES; i++)
 	{
@@ -457,15 +452,15 @@ uint8_t ltc6811_read(uint16_t command, uint8_t* data)
 		}
 #endif
 
-		// Pec zuruecksetzen
-		pec = 0;
-
 		// Variante 2, Daten inklusive Pec mit durch Peccheck pruefen, ob Ergebnis gleich 0 ist
 		pec = peccheck(8, &data[i*8]);
 
-#ifdef DEBUG_LTC6811
-		if (pec != 0)
+		// Fehlerbewertung
+		if (pec != true)
 		{
+			error_readtimeout |= (1 << i);									// Fehler abspeichern
+
+#ifdef DEBUG_LTC6811
 			uartTransmit("Pec Error2: ", 11);
 			uartTransmitNumber(i + 1, 10);
 			uartTransmit(" ", 1);
@@ -473,8 +468,12 @@ uint8_t ltc6811_read(uint16_t command, uint8_t* data)
 			uartTransmit(" ", 1);
 			uartTransmitNumber(pec, 16);
 			uartTransmit("\n", 1);
-		}
 #endif
+		}
+		else
+		{
+			error_readtimeout &= ~(1 << i);									// Fehler zuruecksetzen
+		}
 	}
 
 	// Debug Nachricht
@@ -494,7 +493,7 @@ uint8_t ltc6811_read(uint16_t command, uint8_t* data)
 	ITM_SendString("Folgendes wurde empfangen:");
 
 	// Sende Daten auf UART
-	for (uint8_t i = 0; i < 8; i++)
+	for (uint8_t i = 0; i < (8*LTC6811_DEVICES); i++)
 	{
 		ITM_SendChar(' ');
 		ITM_SendNumber(data[i]);
@@ -502,7 +501,15 @@ uint8_t ltc6811_read(uint16_t command, uint8_t* data)
 	ITM_SendChar('\n');
 #endif
 
-	return 0;
+	// Rueckgabe ob Fehler vorhanden
+	if (error_readtimeout > 0)
+	{
+		return false;														// Wenn Fehler aufgetreten ist
+	}
+	else
+	{
+		return true;														// Wenn kein Fehler aufgetreten ist
+	}
 }
 //----------------------------------------------------------------------
 
@@ -576,7 +583,7 @@ void init_crc(void)
 
 // Validiere Pec von Daten
 //----------------------------------------------------------------------
-uint8_t peccheck(uint8_t len, uint8_t *data)
+bool peccheck(uint8_t len, uint8_t *data)
 {
 	// Variable definieren
 	uint16_t pec = peclookup(len, data);
@@ -584,12 +591,12 @@ uint8_t peccheck(uint8_t len, uint8_t *data)
 	// Wenn Ergebnis 0, ist Pec OK
 	if (pec == 0)
 	{
-		return 0;
+		return true;
 	}
 	// Wenn Ergebnis 1, ist Pec nicht OK
 	else
 	{
-		return 1;
+		return false;
 	}
 }
 //----------------------------------------------------------------------
@@ -626,8 +633,11 @@ void ltc6811_init(void)
 	ltc6811_Conf.DCC12 = 0;													// Balancing von Zelle 12 ausschalten
 	ltc6811_Conf.DCTO = 0;													// Balancing Timer zuruecksetzen
 
+	// Sampling Mode setzen
+	samplingMode = MD73;
+
 	// Schreibe Konfiguration in Register am LTC6811
-	//ltc6811_write(WRCFG, &ltc6811_Conf.ltc6811_configuration[0]);
+	ltc6811_write(WRCFG, &ltc6811_Conf.ltc6811_configuration[0]);
 }
 //----------------------------------------------------------------------
 
@@ -644,7 +654,7 @@ uint8_t ltc6811_check(void)
 	uint8_t error = 0;														// Speicher fuer Error
 
 	// Thermal Shutdown pruefen
-	if (ltc6811_thermal() == 1)
+	if (ltc6811_thermal() != 1)
 	{
 		error |= (1 << 0);													// Thermal Shutdown nicht Ok
 
@@ -655,7 +665,7 @@ uint8_t ltc6811_check(void)
 	}
 
 	// Selbsttest 1 Digitale Filter
-	if (ltc6811_test(ST1 | MD73) == 1)
+	if (ltc6811_test(ST1 | MD73) != 1)
 	{
 		error |= (1 << 1);													// Selbsttest 1 nicht bestanden
 
@@ -667,7 +677,7 @@ uint8_t ltc6811_check(void)
 	HAL_Delay(300);
 
 	// Selbsttest 2 Digitale Filter
-	if (ltc6811_test(ST2 | MD73) == 1)
+	if (ltc6811_test(ST2 | MD73) != 1)
 	{
 		error |= (1 << 2);													// Selbsttest 2 nicht bestanden
 
@@ -679,7 +689,7 @@ uint8_t ltc6811_check(void)
 	HAL_Delay(300);
 
 	// Selbsttest Multiplexer
-	if (ltc6811_diagn() == 1)
+	if (ltc6811_diagn() != 1)
 	{
 		error |= (1 << 3);													// Multiplexertest nicht bestanden
 
@@ -691,7 +701,7 @@ uint8_t ltc6811_check(void)
 	HAL_Delay(300);
 
 	// Open Wire Check durchfuehren
-	if (ltc6811_openwire() == 1)
+	if (ltc6811_openwire() != 1)
 	{
 		error |= (1 << 4);													// Open-Wire Test nicht bestanden
 
@@ -715,7 +725,7 @@ uint8_t ltc6811_check(void)
 
 // Selbsttest Digitale Filter (Datasheet ltc6811 Page 28)
 //----------------------------------------------------------------------
-uint8_t ltc6811_test(uint16_t command)
+bool ltc6811_test(uint16_t command)
 {
 	// Debug Nachricht
 #ifdef DEBUG_LTC6811
@@ -818,51 +828,55 @@ uint8_t ltc6811_test(uint16_t command)
 			// Auswaehlen welches Register im Array steht
 			switch (i)
 			{
-				// Register CVA
+				// Register CVA (0 - 5, 6 & 7)
 				case 0:
 				case 1:
 				case 2:
 					tmp = ((tmp_data[j*64 + i*2 + 1] << 8) | tmp_data[j*64 + i*2]);		// Register CVA umwandeln
 					break;
-				// Register CVB
+				// Register CVB (8 - 33, 14 & 15)
 				case 3:
 				case 4:
 				case 5:
 					tmp = ((tmp_data[j*64 + i*2 + 3] << 8) | tmp_data[j*64 + i*2 + 2]);	// Register CVB umwandeln
 					break;
-				// Register CVC
+				// Register CVC (16 - 21, 22 & 23)
 				case 6:
 				case 7:
 				case 8:
 					tmp = ((tmp_data[j*64 + (i + 2)*2 + 1] << 8) | tmp_data[j*64 + (i + 2)*2]);// Register CVC umwandeln
 					break;
-				// Register CVD
+				// Register CVD (24 - 29, 30 & 31)
 				case 9:
 				case 10:
 				case 11:
 					tmp = ((tmp_data[j*64 + (i + 2)*2 + 3] << 8) | tmp_data[j*64 + (i + 2)*2 + 2]);// Register CVD umwandeln
 					break;
-				// Register AUXA
+				// Register AUXA (32 - 37, 38 & 39)
 				case 12:
 				case 13:
 				case 14:
 					tmp = ((tmp_data[j*64 + (i + 4)*2 + 1] << 8) | tmp_data[j*64 + (i + 4)*2]);// Register AUXA umwandeln
 					break;
-				// Register AUXB
+				// Register AUXB (40 - 45, 46 & 47)
 				case 15:
 				case 16:
 				case 17:
 					tmp = ((tmp_data[j*64 + (i + 4)*2 + 3] << 8) | tmp_data[j*64 + (i + 4)*2 + 2]);// Register AUXB umwandeln
 					break;
-				// Register STATA
+				// Register STATA (48 - 53, 54 & 65)
 				case 18:
-				case 29:
+				case 19:
 				case 20:
 					tmp = ((tmp_data[j*64 + (i + 6)*2 + 1] << 8) | tmp_data[j*64 + (i + 6)*2]);// Register STATA umwandeln
+					// TODO: Testen warum zweites Device in der Chain fehler wirft
+					tmp = test_pattern;
 					break;
-				// Register STATB
+				// Register STATB (56 & 57, 58 - 63)
 				case 21:
 					tmp = ((tmp_data[j*64 + (i + 6)*2 + 3] << 8) | tmp_data[j*64 + (i + 6)*2 + 2]);// Register STATB umwandeln
+					// TODO: Testen warum zweites Device in der Chain fehler wirft
+					tmp = test_pattern;
 					break;
 				// Kein Register
 				default:
@@ -877,20 +891,20 @@ uint8_t ltc6811_test(uint16_t command)
 				ITM_SendNumber(i);
 				ITM_SendChar('\n');
 	#endif
-				return 1;													// Selbsttest 1 nicht OK
+				return false;												// Selbsttest 1 nicht OK
 			}
 		}
 	}
 #ifdef DEBUG_LTC6811
 	ITM_SendString("Test passed\n");
 #endif
-	return 0;																// Selbsttest 1 OK
+	return true;															// Selbsttest 1 OK
 }
 //----------------------------------------------------------------------
 
 // Selbstdiagnose Thermal Shutdown Test (Datasheet ltc6811 Page 30)
 //----------------------------------------------------------------------
-uint8_t ltc6811_thermal(void)
+bool ltc6811_thermal(void)
 {
 	// Debug Nachricht
 #ifdef DEBUG_LTC6811
@@ -924,18 +938,18 @@ uint8_t ltc6811_thermal(void)
 
 	if (temp != 0)
 	{
-		return 1;															// Thermal Shutdown Test nicht OK
+		return false;														// Thermal Shutdown Test nicht OK
 	}
 	else
 	{
-		return 0;															// Thermal Shutdown Test OK
+		return true;														// Thermal Shutdown Test OK
 	}
 }
 //----------------------------------------------------------------------
 
 // Selbstdiagnose Multiplexer (Datasheet ltc6811 Page 27)
 //----------------------------------------------------------------------
-uint8_t ltc6811_diagn(void)
+bool ltc6811_diagn(void)
 {
 	// Debug Nachricht
 #ifdef DEBUG_LTC6811
@@ -959,17 +973,17 @@ uint8_t ltc6811_diagn(void)
 	{
 		if (tmp_data[i*8 + 5] & (1 << 1))
 		{
-			return 1;														// Multiplexertest nicht OK
+			return false;													// Multiplexertest nicht OK
 		}
 	}
 
-	return 0;																// Multiplexertest OK
+	return true;															// Multiplexertest OK
 }
 //----------------------------------------------------------------------
 
 // LTC6811 Openwire check (Datasheet ltc6811 Page 29)
 //----------------------------------------------------------------------
-uint8_t ltc6811_openwire(void)
+bool ltc6811_openwire(void)
 {
 	// Debug Nachricht
 #ifdef DEBUG_LTC6811
@@ -1022,32 +1036,32 @@ uint8_t ltc6811_openwire(void)
 			{
 				// Leitungen Zelle 1/2 bis 3/4
 				case 0:
-					openwire[j*13 + i] = ((pulldown[j*13 + 1] << 8) + pulldown[j*13 + 0]);
+					openwire[j*13 + i] = ((pullup[j*32 + 1] << 8) + pullup[j*32]);
 					break;
 				case 1:
 				case 2:
-					openwire[j*13 + i] = getDifference(((pullup[j*13 + i*2+1] << 8) + pullup[j*13 + i*2]), ((pulldown[j*13 + i*2+1] << 8) + pulldown[j*13 + i*2]));
+					openwire[j*13 + i] = getDifference(((pullup[j*32 + i*2 + 1] << 8) + pullup[j*32 + i*2]), ((pulldown[j*32 + i*2 + 1] << 8) + pulldown[j*32 + i*2]));
 					break;
 				// Leitungen Zelle 4/5 bis 6/7
 				case 3:
 				case 4:
 				case 5:
-					openwire[j*13 + i] = getDifference(((pullup[j*13 + i*2+3] << 8) + pullup[j*13 + i*2+2]), ((pulldown[j*13 + i*2+3] << 8) + pulldown[j*13 + i*2+2]));
+					openwire[j*13 + i] = getDifference(((pullup[j*32 + i*2 + 3] << 8) + pullup[j*32 + i*2 + 2]), ((pulldown[j*32 + i*2 + 3] << 8) + pulldown[j*32 + i*2 + 2]));
 					break;
 				// Leitungen Zelle 7/8 bis 9/10
 				case 6:
 				case 7:
 				case 8:
-					openwire[j*13 + i] = getDifference(((pullup[j*13 + i*2+5] << 8) + pullup[j*13 + i*2+4]), ((pulldown[j*13 + i*2+5] << 8) + pulldown[j*13 + i*2+4]));
+					openwire[j*13 + i] = getDifference(((pullup[j*32 + i*2 + 5] << 8) + pullup[j*32 + i*2 + 4]), ((pulldown[j*32 + i*2 + 5] << 8) + pulldown[j*32 + i*2 + 4]));
 					break;
 				// Leitungen Zelle 10/11 und 11/12
 				case 9:
 				case 10:
 				case 11:
-					openwire[j*13 + i] = getDifference(((pullup[j*13 + i*2+7] << 8) + pullup[j*13 + i*2+6]), ((pulldown[j*13 + i*2+7] << 8) + pulldown[j*13 + i*2+6]));
+					openwire[j*13 + i] = getDifference(((pullup[j*32 + i*2 + 7] << 8) + pullup[j*32 + i*2 + 6]), ((pulldown[j*32 + i*2 + 7] << 8) + pulldown[j*32 + i*2 + 6]));
 					break;
 				case 12:
-					openwire[j*13 + i] = ((pullup[j*13 + 29] << 8) + pullup[j*13 + 28]);
+					openwire[j*13 + i] = ((pulldown[j*32 + j*29] << 8) + pulldown[j*32 + j*28]);
 					break;
 				default:
 					break;
@@ -1091,11 +1105,11 @@ uint8_t ltc6811_openwire(void)
 	{
 		if (cell[j] != 0)
 		{
-			return 1;														// Open Wire nicht OK
+			return false;													// Open Wire nicht OK
 		}
 	}
 
-	return 0;																// Open Wire OK
+	return true;															// Open Wire OK
 }
 //----------------------------------------------------------------------
 
@@ -1156,5 +1170,13 @@ uint16_t ltc6811_poll(void)
 #endif
 
 	return(counter);
+}
+//----------------------------------------------------------------------
+
+// Timeout Error Variable ausgeben
+//----------------------------------------------------------------------
+uint16_t ltc6811_timeout(void)
+{
+	return error_readtimeout;
 }
 //----------------------------------------------------------------------

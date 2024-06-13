@@ -16,7 +16,7 @@
 
 // Include-Dateien einfuegen
 //----------------------------------------------------------------------
-
+#include "main.h"
 //----------------------------------------------------------------------
 
 // Definiere Debug Symbols
@@ -58,11 +58,20 @@ typedef enum LTC6811State_tag {
 #define LTC6811_UVOLT				2000									// Unterspannung einer Zelle		3.2 = 2000 * 16 * 100µV, Spannung = VUV * 16 * 100µV, VUV muss im Register stehen
 #define LTC6811_OVOLT				2625									// Ueberspannung einer Zelle		4.2 = 2625 * 16 * 100µV, Spannung = VOV * 16 * 100µV, VOV muss im Register stehen
 #define LTC6811_SOC					25200									// Summe der Zellspannungen an einem LTC6811	50.4 = 25200 * 20 * 100µV, Spannung = SC * 20 * 100µV, SC muss im Register stehen
-#define LTC6811_UTEMP				0										// Untertemperatur einer Zelle
-#define LTC6811_OTEMP				50										// Uebertemperatur einer Zelle
-#define LTC6811_DEVUTEMP			-20										// Untertemperatur des Chips
-#define LTC6811_DEVOTEMP			85										// Uebertemperatur des Chips
+#define LTC6811_UTEMP				45200									// Untertemperatur einer Zelle, 0°C
+#define LTC6811_OTEMP				13070									// Uebertemperatur einer Zelle, 65°C
+#define LTC6811_PCB_UTEMP			33000									// Untertemperatur der PCB, 0°C
+#define LTC6811_PCB_OTEMP			5760									// Uebertemperatur der PCB, 65°C
+#define LTC6811_DEVUTEMP			20475									// Untertemperatur des Chips, 0°C	ITMP * 100µV / 7500µV/°C - 273°C, 20475µV * 100µV / 7500µV/°C - 273°C = 0
+#define LTC6811_DEVOTEMP			25350									// Uebertemperatur des Chips, 65°C	ITMP * 100µV / 7500µV/°C - 273°C, 25350µV * 100µV / 7500µV/°C - 273°C = 65
 #define OPENWIRE_THRESHOLD			4000									// Openwire Threshold
+#define LTC6811_TIMEOUT				1800									// Timeout fuer Watchdog, 1.8s
+#define SEC_UVOLT					29850									// Second Referenzvoltage Untergrenze
+#define SEC_OVOLT					30150									// Second Referenzvoltage Obergrenze
+#define ANALOG_UVOLT				45000									// Analogvoltage Untergrenze
+#define ANALOG_OVOLT				55000									// Analogvoltage Obergrenze
+#define DIGITAL_UVOLT				27000									// Digitalvoltage Untergrenze
+#define DIGITAL_OVOLT				36000									// Digitalvoltage Obergrenze
 //----------------------------------------------------------------------
 
 // Command Codes definieren (Datasheet ltc6811 Page 49, Table 34)
@@ -224,17 +233,18 @@ void ltc6811_statemaschine(void);											// Auswertung State von LTC6811
 LTC6811_State get_ltc6811_state(void);										// Bekomme aktuellen State von LTC6811
 void ltc6811(uint16_t command);												// LTC6811 Commando
 void ltc6811_write(uint16_t command, uint8_t *data);						// Schreibfunktion LTC6811
-uint8_t ltc6811_read(uint16_t command, uint8_t *data);						// Lesefunktion LTC6811
+bool ltc6811_read(uint16_t command, uint8_t *data);							// Lesefunktion LTC6811
 uint16_t peccommand(uint16_t command);										// CRC Berechnung Command, 16 Bit
 uint16_t peclookup(uint8_t len,	uint8_t *data);								// CRC Berechnung Daten Array, 8 Bit
-uint8_t peccheck(uint8_t len, uint8_t *data);								// CRC Validieren und pruefen
+bool peccheck(uint8_t len, uint8_t *data);									// CRC Validieren und pruefen
 void ltc6811_init(void);													// Initialisiere LTC6811, Konfigurierung
 uint8_t ltc6811_check(void);												// Diagnose LTC6811, fuehrt alle Tests durch
-uint8_t ltc6811_test(uint16_t command);										// Diagnose Selbsttest Test 1 und 2
-uint8_t ltc6811_thermal(void);												// Diagnose Thermal Shutdown
-uint8_t ltc6811_diagn(void);												// Diagnose Multiplexer
-uint8_t ltc6811_openwire(void);												// Leitungscheck offene Leitung
+bool ltc6811_test(uint16_t command);										// Diagnose Selbsttest Test 1 und 2
+bool ltc6811_thermal(void);													// Diagnose Thermal Shutdown
+bool ltc6811_diagn(void);													// Diagnose Multiplexer
+bool ltc6811_openwire(void);												// Leitungscheck offene Leitung
 uint16_t ltc6811_poll(void);												// Poll Data nach Conversion
+uint16_t ltc6811_timeout(void);												// Rueckgabe welches Module timeout hat
 //----------------------------------------------------------------------
 //void init_crc(void);														// Wird benoetigt um Pec-Tabelle zu berechnen
 //----------------------------------------------------------------------

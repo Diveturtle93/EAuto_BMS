@@ -19,7 +19,7 @@
 #include "main.h"
 //----------------------------------------------------------------------
 
-// Definiere Chip-Select Leitung, LTC6811
+// Definiere ISO-SPI Enable Leitung, LTC6811
 //----------------------------------------------------------------------
 #define ISOSPI_ENABLE() (HAL_GPIO_WritePin(ISOSPI_EN_GPIO_Port, ISOSPI_EN_Pin, GPIO_PIN_SET))		// Iso SPI enable
 #define ISOSPI_DISABLE() (HAL_GPIO_WritePin(ISOSPI_EN_GPIO_Port, ISOSPI_EN_Pin, GPIO_PIN_RESET))	// Iso SPI disable

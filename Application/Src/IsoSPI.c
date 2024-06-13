@@ -22,7 +22,6 @@
 //----------------------------------------------------------------------
 #include "LTC6811.h"
 #include "millis.h"
-#include "error.h"
 //----------------------------------------------------------------------
 
 // Definiere Globale Variable
@@ -83,14 +82,14 @@ void IsoSPI_statemaschine(void)
 			break;
 
 		case IsoGetReady:
-			if (millis() - timeIsoSpiState > 1)
+			if (millis() > (timeIsoSpiState + 1))
 			{
 				IsoSpiState = IsoReady;
 			}
 			break;
 
 		case IsoReady:
-			if (millis() - timeIsoSpiState > 4)
+			if (millis() > (timeIsoSpiState + 4))
 			{
 				IsoSpiState = IsoIdle;
 			}
@@ -178,7 +177,7 @@ void IsoSPI_cmd(uint8_t* command)
 	if (((command[0] << 8) | command[1]) == STCOMM)
 	{
 		// 72 = 9 * 8 Bit Daten
-		for (uint8_t i = 0; i < 9; i++)
+		for (uint8_t i = 0; i < (9 * LTC6811_DEVICES); i++)
 		{
 			// Dummy-Byte uebertragen
 			HAL_SPI_Transmit(&hspi4, (uint8_t*) 0xAA, 1, HAL_MAX_DELAY);

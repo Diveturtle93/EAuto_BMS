@@ -58,7 +58,7 @@ BMSState BMS_state = {{Start, true, false, false, false}};
 static uint32_t timeError = 0, timeWarning = 0;
 
 // ADC Array
-static uint16_t ADC_VAL[7] = {0};
+static uint16_t ADC_VAL[8] = {0};
 
 // IMD Variablen fuer Timer
 static volatile uint16_t rising = 0, falling = 0;
@@ -89,6 +89,9 @@ int main(void)
 	// BMS Statemaschine Zeitvariablen
 	uint32_t timeStandby = 0, timeErrorLED = 0;
 //	uint32_t timeZyklus = 0;
+
+	// BMS Abfrage Zeitvariablen
+	uint32_t timeBMSWork = 0;
 
 	// BMS CAN-Bus Zeitvariable
 	uint8_t can_online = 0;
@@ -148,9 +151,13 @@ int main(void)
   MX_TIM4_Init();
   MX_SPI1_Init();
   MX_CAN3_Init();
-  MX_TIM6_Init();
   MX_RTC_Init();
   /* USER CODE BEGIN 2 */
+
+#ifdef DEBUG
+	#define MAINWHILE			"\nStarte While Schleife\n"
+	uartTransmit(MAINWHILE, sizeof(MAINWHILE));
+#endif
 
 //	HAL_PWR_EnableBkUpAccess();
 //	Backup = HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR0);
@@ -166,8 +173,12 @@ int main(void)
 	CANinit(RX_SIZE_16, TX_SIZE_16);
 	CAN_config();
 
-	system_out.PowerOn = true;
-	ISOSPI_ENABLE();
+	// System Selbsterhaltung einschalten
+	system_out.Power_On = true;
+
+	// BMS initialisieren
+	bms_init();
+	uartTransmit("BMS gestartet\n", 14);
 
 	// BMS Fehler zuruecksetzen bei Systemstart
 	system_out.AmsLimit = true;
@@ -175,15 +186,17 @@ int main(void)
 
 	for (uint8_t j = 0; j < ANZAHL_OUTPUT_PAKETE; j++)
 	{
-		CAN_Output_PaketListe[0].msg.buf[j] = 0;
-		CAN_Output_PaketListe[1].msg.buf[j] = 0;
-		CAN_Output_PaketListe[2].msg.buf[j] = 0;
-		CAN_Output_PaketListe[3].msg.buf[j] = 0;
-		CAN_Output_PaketListe[4].msg.buf[j] = 0;
-		CAN_Output_PaketListe[5].msg.buf[j] = 0;
-		CAN_Output_PaketListe[6].msg.buf[j] = 0;
+		CAN_Output_PaketListe[j].msg.buf[0] = 0;
+		CAN_Output_PaketListe[j].msg.buf[1] = 0;
+		CAN_Output_PaketListe[j].msg.buf[2] = 0;
+		CAN_Output_PaketListe[j].msg.buf[3] = 0;
+		CAN_Output_PaketListe[j].msg.buf[4] = 0;
+		CAN_Output_PaketListe[j].msg.buf[5] = 0;
+		CAN_Output_PaketListe[j].msg.buf[6] = 0;
+		CAN_Output_PaketListe[j].msg.buf[7] = 0;
 	}
 
+	// Nach erfolgreicher Initialisiserung aller Konfigurationen
 	BMS_state.State = Ready;
 	
 #ifdef DEBUG
@@ -214,10 +227,11 @@ int main(void)
 	  ADC_VAL[0] = ADC_STMTemperatur();
 	  ADC_VAL[1] = ADC_PCBTemperatur();
 	  ADC_VAL[2] = ADC_KL15();
-	  ADC_VAL[3] = ADC_Temp1();
-	  ADC_VAL[4] = ADC_Temp2();
-	  ADC_VAL[5] = ADC_Temp3();
-	  ADC_VAL[6] = ADC_Temp4();
+	  ADC_VAL[3] = ADC_KL30_Relais();
+	  ADC_VAL[4] = ADC_Temp1();
+	  ADC_VAL[5] = ADC_Temp2();
+	  ADC_VAL[6] = ADC_Temp3();
+	  ADC_VAL[7] = ADC_Temp4();
 
 	  // Sortiere CAN-Daten auf CAN-Buffer
 	  sortCAN();
@@ -370,6 +384,15 @@ int main(void)
 
 		  // Shutdown-Circuit checken
 		  checkSDC();
+		  
+		  // TODO: Zellspannungen und -temperaturen in CAN-Nachrichten schreiben
+		  // TODO: Timeout fuer LTC6811
+		  // BMS-Work Funktion nur alle 100ms aufrufen
+		  if (millis() > (timeBMSWork + BMS_WORK_TIME))
+		  {
+			  bms_work();
+			  timeBMSWork = millis();
+		  }
 	  }
 
 	  // Statemaschine keine Fehler
@@ -741,18 +764,18 @@ void sortCAN(void)
 	CAN_Output_PaketListe[3].msg.buf[1] = (ADC_VAL[0] >> 8) | (ADC_VAL[1] << 4);
 	CAN_Output_PaketListe[3].msg.buf[2] = (ADC_VAL[1] >> 4);
 	CAN_Output_PaketListe[3].msg.buf[3] = ADC_VAL[2];
-	CAN_Output_PaketListe[3].msg.buf[4] = (ADC_VAL[2] >> 8);
-	CAN_Output_PaketListe[3].msg.buf[5] = 0;
+	CAN_Output_PaketListe[3].msg.buf[4] = (ADC_VAL[2] >> 8) | (ADC_VAL[3] << 4);
+	CAN_Output_PaketListe[3].msg.buf[5] = (ADC_VAL[3] >> 4);
 	CAN_Output_PaketListe[3].msg.buf[6] = 0;
 	CAN_Output_PaketListe[3].msg.buf[7] = 0;
 
 	// Temperatureingaenge
-	CAN_Output_PaketListe[4].msg.buf[0] = ADC_VAL[3];
-	CAN_Output_PaketListe[4].msg.buf[1] = (ADC_VAL[3] >> 8) | (ADC_VAL[4] << 4);
-	CAN_Output_PaketListe[4].msg.buf[2] = (ADC_VAL[4] >> 4);
-	CAN_Output_PaketListe[4].msg.buf[3] = ADC_VAL[5];
-	CAN_Output_PaketListe[4].msg.buf[4] = (ADC_VAL[5] >> 8) | (ADC_VAL[6] << 4);
-	CAN_Output_PaketListe[4].msg.buf[5] = (ADC_VAL[6] >> 4);
+	CAN_Output_PaketListe[4].msg.buf[0] = ADC_VAL[4];
+	CAN_Output_PaketListe[4].msg.buf[1] = (ADC_VAL[4] >> 8) | (ADC_VAL[7] << 4);
+	CAN_Output_PaketListe[4].msg.buf[2] = (ADC_VAL[5] >> 4);
+	CAN_Output_PaketListe[4].msg.buf[3] = ADC_VAL[6];
+	CAN_Output_PaketListe[4].msg.buf[4] = (ADC_VAL[6] >> 8) | (ADC_VAL[7] << 4);
+	CAN_Output_PaketListe[4].msg.buf[5] = (ADC_VAL[7] >> 4);
 	CAN_Output_PaketListe[4].msg.buf[6] = 0;
 	CAN_Output_PaketListe[4].msg.buf[7] = 0;
 
