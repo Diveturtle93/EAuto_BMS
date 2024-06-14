@@ -33,7 +33,7 @@ void CAN_config(void)
 	CAN_Output_PaketListe[2] = CAN_Nachricht(BMS_CAN_DIGITAL_IN, 4, 200, 14);	// main.c
 	CAN_Output_PaketListe[3] = CAN_Nachricht(BMS_CAN_ANALOG_IN, 8, 500, 7);		// main.c
 	CAN_Output_PaketListe[4] = CAN_Nachricht(BMS_CAN_TEMPERATUR, 8, 500, 24);	// main.c
-	CAN_Output_PaketListe[5] = CAN_Nachricht(BMS_CAN_STATUS, 1, 200, 5);		// main.c
+	CAN_Output_PaketListe[5] = CAN_Nachricht(BMS_CAN_STATUS, 4, 200, 5);		// main.c
 	CAN_Output_PaketListe[6] = CAN_Nachricht(BMS_CAN_IMD, 5, 200, 12);			// main.c oder imd.c?
 	CAN_Output_PaketListe[7] = CAN_Nachricht(BMS_CAN_ZELLEN11, 8, 200, 28);		// batteriemanagement.c
 	CAN_Output_PaketListe[8] = CAN_Nachricht(BMS_CAN_ZELLEN12, 8, 200, 30);		// batteriemanagement.c

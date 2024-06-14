@@ -37,7 +37,7 @@ void imd_status(void)
 	sdc_in.IMD_OK_IN = HAL_GPIO_ReadPin(IMD_OK_IN_GPIO_Port, IMD_OK_IN_Pin);		// IMD OK einlesen
 
 	// Abfrage ob IMD Ok ist
-	if(sdc_in.IMD_OK_IN == 1)
+	if(sdc_in.IMD_OK_IN != 1)
 	{
 		// Ausgabe IMD OK kommend BMS
 		system_out.ImdOK = 1;

@@ -30,7 +30,9 @@
 void uartTransmit(const char *str, const size_t size)
 {
 	// Sende String mit Laenge "Size", "Size" muss bekannt sein
+#ifdef SHELL
 	HAL_UART_Transmit(&huart2, (uint8_t *)str, size, 1000);
+#endif
 }
 //----------------------------------------------------------------------
 
@@ -42,7 +44,9 @@ void uartTransmitNumber(const uint32_t number, const uint32_t base)
 
 	// Zahl umrechnen
 	utoa(number, str, base);												// Zahl umrechnen anhand der Basis "base"
+#ifdef SHELL
 	HAL_UART_Transmit(&huart2, (uint8_t *)str, strlen(str), 1000);			// Sende Zahlen
+#endif
 }
 //----------------------------------------------------------------------
 
@@ -50,23 +54,8 @@ void uartTransmitNumber(const uint32_t number, const uint32_t base)
 //----------------------------------------------------------------------
 void uartTransmitString(const char *str)
 {
+#ifdef SHELL
 	HAL_UART_Transmit(&huart2, (uint8_t *)str, sizeof(str), 1000);
-}
-//----------------------------------------------------------------------
-
-// Deinitialisieren des Uart2
-//----------------------------------------------------------------------
-void uartReInitBasicPolling(void)
-{
-	HAL_UART_DMAStop(&huart2);
-	HAL_UART_DeInit(&huart2);
-	HAL_UART_MspDeInit(&huart2);
-
-	HAL_UART_Init(&huart2);
-	HAL_UART_MspInit(&huart2);
-
-	HAL_UART_DMAStop(&huart2);
-	HAL_DMA_DeInit(huart2.hdmatx);
-	HAL_DMA_DeInit(huart2.hdmarx);
+#endif
 }
 //----------------------------------------------------------------------

@@ -25,7 +25,8 @@
 //----------------------------------------------------------------------
 #ifdef DEBUG
 //	#define DEBUG_BMS
-	#define DEBUG_BMS_WORK
+//	#define DEBUG_BMS_WORK
+//	#define DEBUG_ZYKLUS
 #endif
 //----------------------------------------------------------------------
 

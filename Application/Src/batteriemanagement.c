@@ -452,8 +452,12 @@ void bms_work(void)
 		bms_celltemperatur(bms_tempcount);
 		bms_readgpio(SECREF);
 		bms_ltc_status();
+
+#ifdef DEBUG_BMS_WORK
 		uartTransmitNumber(bms_ok(), 10);
 		uartTransmit("\n", 1);
+#endif
+
 	}
 	else
 	{

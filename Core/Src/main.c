@@ -54,11 +54,15 @@
 
 /* USER CODE BEGIN PV */
 // BMS Statevariable
-BMSState BMS_state = {{Start, true, false, false, false}};
+static BMSState BMS_state = {{Start, true, false, false, false}};
 static uint32_t timeError = 0, timeWarning = 0;
+static uint32_t longError = 0, longWarning = 0;
 
 // ADC Array
 static uint16_t ADC_VAL[8] = {0};
+
+// Fehler Speicher CAN-Bus
+uint8_t can_online = 0;
 
 // IMD Variablen fuer Timer
 static volatile uint16_t rising = 0, falling = 0;
@@ -70,6 +74,7 @@ void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
 void checkSDC(void);
 void sortCAN(void);
+void setState(uint8_t State);
 void setStatus(uint8_t Status);
 
 /* USER CODE END PFP */
@@ -88,13 +93,12 @@ int main(void)
   /* USER CODE BEGIN 1 */
 	// BMS Statemaschine Zeitvariablen
 	uint32_t timeStandby = 0, timeErrorLED = 0;
-//	uint32_t timeZyklus = 0;
+	uint32_t timeZyklus = 0, lasttimeZyklus = 0;
 
 	// BMS Abfrage Zeitvariablen
 	uint32_t timeBMSWork = 0;
 
 	// BMS CAN-Bus Zeitvariable
-	uint8_t can_online = 0;
 	uint32_t timeBAMO = 0, timeMOTOR = 0, timeStromHV = 0;
 
 	// Zeitvariable Precharge
@@ -105,6 +109,7 @@ int main(void)
 
 	// Anforderung Motorsteuergeraet Drive-Modus aktivieren
 	bool ActivDrive = false;
+	BMSState mStrg = {{Start, true, false, false, false}};
 
 	// IMD Variablen fuer Berechnung
 	uint32_t timer1Periode = 0, timeIMD = 0;
@@ -174,7 +179,7 @@ int main(void)
 	CAN_config();
 
 	// System Selbsterhaltung einschalten
-	system_out.Power_On = true;
+	system_out.PowerOn = true;
 
 	// BMS initialisieren
 	bms_init();
@@ -195,28 +200,30 @@ int main(void)
 		CAN_Output_PaketListe[j].msg.buf[6] = 0;
 		CAN_Output_PaketListe[j].msg.buf[7] = 0;
 	}
-
-	// Nach erfolgreicher Initialisiserung aller Konfigurationen
-	BMS_state.State = Ready;
 	
 #ifdef DEBUG
 	#define MAINWHILE			"\nStarte While Schleife\n"
 	uartTransmit(MAINWHILE, sizeof(MAINWHILE));
-
-	uartTransmit("Ready\n", 6);
 #endif
+
+	timeZyklus = millis();
+	// Nach erfolgreicher Initialisiserung aller Konfigurationen
+	setState(Ready);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-#ifdef DEBUG
-//	  uartTransmit("Zykluszeit:\t\t", 13);
-//	  uartTransmitNumber(millis() - timeZyklus, 10);
-//	  uartTransmit("\n", 1);
-//	  timeZyklus = millis();
+#ifdef DEBUG_ZYKLUS
+	  uartTransmit("Zykluszeit:\t\t", 13);
+	  uartTransmitNumber(millis() - timeZyklus, 10);
+	  uartTransmit("\n", 1);
 #endif
+
+	  lasttimeZyklus = timeZyklus;
+	  timeZyklus = millis();
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -286,6 +293,8 @@ int main(void)
 
 				  setStatus(StateNormal);
 
+				  mStrg.status = RxMessage.buf[0];
+
 				  break;
 			  }
 
@@ -293,7 +302,7 @@ int main(void)
 			  case MOTOR_CAN_DIGITAL_IN:
 			  {
 				  // TODO: Zuordnung Signal Bit
-				  // Abfrage Anlasser
+				  // Abfrage Anlasser, Default 1, Geschaltet 0
 				  if (~RxMessage.buf[2] & (1 << 7))
 				  {
 					  // Anlasser Pin von Motorsteuergeraet abspeichern
@@ -301,7 +310,7 @@ int main(void)
 				  }
 
 				  // Abrage ASR1
-				  if (RxMessage.buf[5] & (1 << 0))
+				  if ((RxMessage.buf[5] & (1 << 0)) && (mStrg.State & (ReadyToDrive & Drive)))
 				  {
 					  // DriveMode aktivieren
 					  ActivDrive = true;
@@ -333,30 +342,30 @@ int main(void)
 	  }
 
 #if BAMOCAR_AVAILIBLE == 1
-	  if ((mStrg_state.State > 1) && (millis() > (timeBAMO + CAN_TIMEOUT)))
+	  if ((BMS_state.State != Standby) && (millis() > (timeBAMO + CAN_TIMEOUT)))
 	  {
 		  can_online &= ~(1 << 0);
-		  longwarning |= (1 << 0);
+		  longWarning |= (1 << 0);
 
 		  setStatus(StateWarning);
 	  }
 #endif
 
 #if MOTOR_AVALIBLE == 1
-	  if ((mStrg_state.State > 1) && (millis() > (timeMOTOR + CAN_TIMEOUT)))
+	  if ((BMS_state.State != Standby) && (millis() > (timeMOTOR + CAN_TIMEOUT)))
 	  {
 		  can_online &= ~(1 << 1);
-		  longwarning |= (1 << 0);
+		  longWarning |= (1 << 1);
 
 		  setStatus(StateWarning);
 	  }
 #endif
 
 #if STROM_HV_AVAILIBLE == 1
-	  if ((mStrg_state.State > 1) && (millis() > (timeStromHV + CAN_TIMEOUT)))
+	  if ((BMS_state.State != Standby) && (millis() > (timeStromHV + CAN_TIMEOUT)))
 	  {
 		  can_online &= ~(1 << 2);
-		  longwarning |= (1 << 0);
+		  longWarning |= (1 << 2);
 
 		  setStatus(StateWarning);
 	  }
@@ -445,8 +454,7 @@ int main(void)
 		  // State Ready, Vorbereiten des Batteriemanagement
 		  case Ready:
 		  {
-			  uartTransmit("KL15\n", 5);
-			  BMS_state.State = KL15;
+			  setState(KL15);
 
 			  break;
 		  }
@@ -460,22 +468,16 @@ int main(void)
 				  // Solange kein kritischer Fehler auftritt
 				  if (!(BMS_state.CriticalError))
 				  {
-					  uartTransmit("Anlassen\n", 9);
-					  BMS_state.State = Anlassen;
-
-					  // Precharge Relais aktivieren
-					  highcurrent_out.PrechargeOut = true;
-					  timePrecharge = millis();
-
 					  system_out.AmsOK = true;
+
+					  setState(Anlassen);
 				  }
 			  }
 
 			  // Falls KL15 abfaellt und der Schluessel abgezogen wird
 			  if (system_in.KL15 == 1)
 			  {
-				  uartTransmit("Standby\n", 8);
-				  BMS_state.State = Standby;
+				  setState(Standby);
 				  timeStandby = millis();
 			  }
 
@@ -486,18 +488,23 @@ int main(void)
 		  case Anlassen:
 		  {
 			  // Wenn Anlassen aktiviert wird
-			  // TODO: Anlassen wird aktuell uebersprungen
-			  if (sdc_in.Anlassen == true)
+			  if (mStrg.State == Precharge)
 			  {
-				  uartTransmit("Precharge\n", 10);
-				  BMS_state.State = Precharge;
+				  // Solange kein kritischer Fehler auftritt
+				  if (!(BMS_state.CriticalError))
+				  {
+					  // Precharge Relais aktivieren
+					  highcurrent_out.PrechargeOut = true;
+
+					  setState(Precharge);
+					  timePrecharge = millis();
+				  }
 			  }
 
 			  // Falls KL15 abfaellt und der Schluessel abgezogen wird
 			  if (system_in.KL15 == 1)
 			  {
-				  uartTransmit("Standby\n", 8);
-				  BMS_state.State = Standby;
+				  setState(Standby);
 				  timeStandby = millis();
 			  }
 
@@ -518,13 +525,11 @@ int main(void)
 			  // Wenn Precharge angeschlossen ist
 			  if ((sdc_in.PrechargeIn == 0) && (millis() > (timePrecharge + 5000)))
 			  {
-				  uartTransmit("ReadyToDrive\n", 13);
-
 				  // HV+ Relais activieren
 //				  system_out.HV_P = true;
 				  HAL_GPIO_WritePin(PWM_HV_Charger_GPIO_Port, PWM_HV_Charger_Pin, GPIO_PIN_SET);
 
-				  BMS_state.State = ReadyToDrive;
+				  setState(ReadyToDrive);
 			  }
 
 			  // Falls KL15 abfaellt und der Schluessel abgezogen wird
@@ -536,8 +541,7 @@ int main(void)
 					  highcurrent_out.PrechargeOut = false;
 				  }
 
-				  uartTransmit("Standby\n", 8);
-				  BMS_state.State = Standby;
+				  setState(Standby);
 				  timeStandby = millis();
 			  }
 
@@ -554,13 +558,12 @@ int main(void)
 			  }
 
 			  // Sobald ActivDrive aktiviert ist in den Drive Modus gehen und Freigabe an Bamocar senden
-			  if (ActivDrive)
+			  if (ActivDrive && (highcurrent_out.PrechargeOut == false))
 			  {
-				  uartTransmit("Drive\n", 6);
-
 				  // Freigabe fuer Bamocar aktivieren
 				  system_out.Freigabe = true;
-				  BMS_state.State = Drive;
+
+				  setState(Drive);
 			  }
 
 			  // Falls KL15 abfaellt und der Schluessel abgezogen wird
@@ -569,8 +572,7 @@ int main(void)
 				  system_out.Freigabe = false;
 				  ActivDrive = false;
 
-				  uartTransmit("Standby\n", 8);
-				  BMS_state.State = Standby;
+				  setState(Standby);
 				  timeStandby = millis();
 			  }
 
@@ -586,9 +588,14 @@ int main(void)
 				  system_out.Freigabe = false;
 				  ActivDrive = false;
 
-				  uartTransmit("Standby\n", 8);
-				  BMS_state.State = Standby;
+				  setState(Standby);
 				  timeStandby = millis();
+			  }
+
+			  if (mStrg.State == KL15)
+			  {
+				  ActivDrive = false;
+				  setState(ReadyToDrive);
 			  }
 
 			  break;
@@ -600,14 +607,12 @@ int main(void)
 			  // Fuer 5min warten und BMS weiterhin aktiv halten
 			  if (millis() > (timeStandby + BMSTIME))
 			  {
-				  uartTransmit("Ausschalten\n", 12);
-				  BMS_state.State = Ausschalten;
+				  setState(Ausschalten);
 			  }
 			  // Falls innerhalb der 5min die KL15 wieder aktiviert wird
 			  else if (system_in.KL15 != 1)
 			  {
-				  uartTransmit("Ready\n", 6);
-				  BMS_state.State = Ready;
+				  setState(Ready);
 			  }
 
 			  // Fuer 5s warten bis BMS HV-Relais abschaltet, Anlassen zuruecksetzen
@@ -635,7 +640,7 @@ int main(void)
 		  // Falls kein State zutrifft, dann kritischer Fehler
 		  default:
 		  {
-			  uartTransmit("BMS Kritischer Fehler\n!", 24);
+			  uartTransmit("BMS Kritischer Fehler While\n!", 30);
 			  setStatus(CriticalError);
 
 			  break;
@@ -713,7 +718,7 @@ void checkSDC(void)
 	sdc_in.SDC_OK = true;
 
 	// Wenn angeschlossen und OK, Pin am uC ist 0, Wenn nicht Pin am uC ist 1
-	if (sdc_in.IMD_OK_IN != 1)
+	if (sdc_in.IMD_OK_IN == 1)
 	{
 		setStatus(StateError);
 		sdc_in.SDC_OK = false;
@@ -733,7 +738,7 @@ void checkSDC(void)
 
 	if (sdc_in.MotorSDC == 1)
 	{
-		setStatus(StateError);
+		setStatus(StateWarning);
 		sdc_in.SDC_OK = false;
 	}
 
@@ -781,6 +786,9 @@ void sortCAN(void)
 
 	// Batteriemanagement Status
 	CAN_Output_PaketListe[5].msg.buf[0] = BMS_state.status;
+	CAN_Output_PaketListe[5].msg.buf[1] = longWarning;
+	CAN_Output_PaketListe[5].msg.buf[2] = longError;
+	CAN_Output_PaketListe[5].msg.buf[3] = can_online;
 
 	// IMD Status
 	CAN_Output_PaketListe[6].msg.buf[0] = imd.status[0];
@@ -788,6 +796,81 @@ void sortCAN(void)
 	CAN_Output_PaketListe[6].msg.buf[2] = imd.status[2];
 	CAN_Output_PaketListe[6].msg.buf[3] = imd.status[3];
 	CAN_Output_PaketListe[6].msg.buf[4] = imd.status[4];
+}
+
+// Set Statemaschine
+void setState(uint8_t State)
+{
+	switch (State)
+	{
+		case Ready:
+		{
+			BMS_state.State = Ready;
+			uartTransmit("Ready\n", 6);
+
+			break;
+		}
+		case KL15:
+		{
+			BMS_state.State = KL15;
+			uartTransmit("KL15\n", 5);
+
+			break;
+		}
+		case Anlassen:
+		{
+			BMS_state.State = Anlassen;
+			uartTransmit("Anlassen\n", 9);
+
+			break;
+		}
+		case Precharge:
+		{
+			BMS_state.State = Precharge;
+			uartTransmit("Precharge\n", 10);
+
+			break;
+		}
+		case ReadyToDrive:
+		{
+			BMS_state.State = ReadyToDrive;
+			uartTransmit("ReadyToDrive\n", 13);
+
+			break;
+		}
+		case Drive:
+		{
+			BMS_state.State = Drive;
+			uartTransmit("Drive\n", 6);
+
+			break;
+		}
+		case Laden:
+		{
+			BMS_state.State = Laden;
+			uartTransmit("Laden\n", 6);
+
+			break;
+		}
+		case Standby:
+		{
+			BMS_state.State = Standby;
+			uartTransmit("Standby\n", 8);
+
+			break;
+		}
+		case Ausschalten:
+		{
+			BMS_state.State = Ausschalten;
+			uartTransmit("Ausschalten\n", 12);
+
+			break;
+		}
+		default:
+		{
+			break;
+		}
+	}
 }
 
 // Set Status der Statemaschine
@@ -803,8 +886,8 @@ void setStatus(uint8_t Status)
 				{
 					BMS_state.status = (Status | BMS_state.State);
 
-					longwarning = 0;
-					longerror = 0;
+					longWarning = 0;
+					longError = 0;
 				}
 
 				break;
@@ -841,6 +924,7 @@ void setStatus(uint8_t Status)
 		default:
 		{
 			BMS_state.status = (CriticalError | BMS_state.State);
+			uartTransmit("BMS Kritischer Fehler Statemaschine\n!", 36);
 			break;
 		}
 	}
