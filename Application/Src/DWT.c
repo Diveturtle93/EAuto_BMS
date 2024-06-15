@@ -8,6 +8,22 @@
 // Projekt	:	BatteriemanagementSystem
 //----------------------------------------------------------------------
 
+
+// Beispiel:
+/*
+	uint32_t DWT_count = 0, DWT_count1 = 0, DWT_count2 = 0, test = 0;
+
+	// Systick-Zaehler benutzen
+	DWT_Init();
+
+	DWT_count = DWT_CycCounterRead();
+	test = DWT_count;
+
+	uartTransmitNumber(test, 10);
+  	uartTransmit("\n", 1);
+  	DWT_CycCounterDis();							// Zaehler deaktivieren
+*/
+
 // Einfuegen der standard Include-Dateien
 //----------------------------------------------------------------------
 

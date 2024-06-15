@@ -28,6 +28,7 @@
 #include "app_info.h"
 #include "batteriemanagement.h"
 #include "CAN_Bus.h"
+#include "DWT.h"
 #include "error.h"
 #include "imd.h"
 #include "inputs.h"

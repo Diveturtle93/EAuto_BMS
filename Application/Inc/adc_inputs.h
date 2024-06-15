@@ -1,13 +1,4 @@
 //----------------------------------------------------------------------
-<<<<<<<< HEAD:Application/Inc/DWT.h
-// Titel	:	DWT.h
-//----------------------------------------------------------------------
-// Sprache	:	C
-// Datum	:	Jun 12, 2022
-// Version	:	1.0
-// Autor	:	Diveturtle93
-// Projekt	:	BatteriemanagementSystem
-========
 // Titel	:	adc_inputs.h
 //----------------------------------------------------------------------
 // Sprache	:	C
@@ -15,38 +6,10 @@
 // Version	:	1.0
 // Autor	:	Diveturtle93
 // Projekt	:	Motorsteuergeraet
->>>>>>>> develop:Application/Inc/adc_inputs.h
 //----------------------------------------------------------------------
 
 // Dateiheader definieren
 //----------------------------------------------------------------------
-<<<<<<<< HEAD:Application/Inc/DWT.h
-#ifndef INC_DWT_H_
-#define INC_DWT_H_
-//----------------------------------------------------------------------
-
-// Include-Dateien einfuegen
-//----------------------------------------------------------------------
-#include <stdint.h>
-//----------------------------------------------------------------------
-
-// ... definieren
-//----------------------------------------------------------------------
-
-//----------------------------------------------------------------------
-
-// Funktionen definieren
-//----------------------------------------------------------------------
-void DWT_Init(void);														// DWT Zaehler initialisieren
-void DWT_Enable(void);														// DWT Zaehler aktivieren
-void DWT_CycCounterEn(void);												// DWT Zaehler einschalten
-void DWT_CycCounterDis(void);												// DWT Zaehler ausschalten
-uint32_t DWT_CycCounterRead(void);											// DWT Zaehler auslesen
-void DWT_CycCounterClear(void);												// DWT Zaehler loeschen
-//----------------------------------------------------------------------
-
-#endif /* INC_DWT_H_ */
-========
 #ifndef INC_ADC_INPUTS_H_
 #define INC_ADC_INPUTS_H_
 //----------------------------------------------------------------------
@@ -77,5 +40,4 @@ uint16_t ADC_Temp4(void);
 //----------------------------------------------------------------------
 
 #endif /* INC_ADC_INPUTS_H_ */
->>>>>>>> develop:Application/Inc/adc_inputs.h
 //----------------------------------------------------------------------
