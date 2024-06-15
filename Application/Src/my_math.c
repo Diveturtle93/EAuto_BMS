@@ -21,6 +21,7 @@
 // Einfuegen der eigenen Include Dateien
 //----------------------------------------------------------------------
 #include "my_math.h"
+#include "BatteriemanagementSystem.h"
 //----------------------------------------------------------------------
 
 // Gleitenden Mittelwert berechnen, sehr Speicher arm

@@ -20,11 +20,18 @@
 #include <stdio.h>
 //----------------------------------------------------------------------
 
+// Definiere Debug Symbols
+//----------------------------------------------------------------------
+#ifdef DEBUG
+	#define SHELL
+#endif
+//----------------------------------------------------------------------
+
 // Funktionen definieren
 //----------------------------------------------------------------------
 void uartTransmit(const char *str, const size_t size);
+void uartTransmitString(const char *str);
 void uartTransmitNumber(const uint32_t number, const uint32_t base);
-void uartReInitBasicPolling(void);
 //----------------------------------------------------------------------
 
 #endif /* INC_BASICUART_H_ */

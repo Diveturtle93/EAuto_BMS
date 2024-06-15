@@ -21,6 +21,14 @@
 // Einfuegen der eigenen Include Dateien
 //----------------------------------------------------------------------
 #include "inputs.h"
+#include "BatteriemanagementSystem.h"
+//----------------------------------------------------------------------
+
+// Variablen einbinden
+//----------------------------------------------------------------------
+system_input_tag system_in;													// Variable fuer Systemeingaenge definieren
+sdc_in_tag sdc_in;															// Variable fuer SDC-Eingaenge definieren
+komfort_in_tag komfort_in;													// Variable fuer Komforteingaenge definieren
 //----------------------------------------------------------------------
 
 // Variablen einbinden
@@ -35,7 +43,6 @@ komfort_in_tag komfort_in;													// Variable fuer Komforteingaenge definie
 void readall_inputs(void)
 {
 	// Systemeingaenge einlesen
-	system_in.IMD_PWM = HAL_GPIO_ReadPin(IMD_PWM_GPIO_Port, IMD_PWM_Pin);						// Eingang IMD PWM
 	system_in.KL15 = HAL_GPIO_ReadPin(KL15_GPIO_Port, KL15_Pin);								// Eingang Auto an
 	system_in.Crash = HAL_GPIO_ReadPin(CRASH_GPIO_Port, CRASH_Pin);								// Crash Eingang
 	system_in.Wakeup = HAL_GPIO_ReadPin(HW_WAKE_GPIO_Port, HW_WAKE_Pin);						// Eingang Hardware Wakeup

@@ -100,8 +100,8 @@ void Error_Handler(void);
 #define SENSE_TEMP4_GPIO_Port GPIOA
 #define SENSE_PCB_Pin GPIO_PIN_7
 #define SENSE_PCB_GPIO_Port GPIOA
-#define GREEN_LED_Pin GPIO_PIN_2
-#define GREEN_LED_GPIO_Port GPIOB
+#define RED_LED_Pin GPIO_PIN_2
+#define RED_LED_GPIO_Port GPIOB
 #define PRECHARGE_OUT_Pin GPIO_PIN_13
 #define PRECHARGE_OUT_GPIO_Port GPIOF
 #define PRECHARGE_IN_Pin GPIO_PIN_15
@@ -122,8 +122,8 @@ void Error_Handler(void);
 #define ISOSPI_MOSI_GPIO_Port GPIOE
 #define ISOSPI_EN_Pin GPIO_PIN_15
 #define ISOSPI_EN_GPIO_Port GPIOE
-#define RED_LED_Pin GPIO_PIN_14
-#define RED_LED_GPIO_Port GPIOB
+#define GREEN_LED_Pin GPIO_PIN_14
+#define GREEN_LED_GPIO_Port GPIOB
 #define KL15_Pin GPIO_PIN_11
 #define KL15_GPIO_Port GPIOD
 #define PWM_HV_N_Pin GPIO_PIN_12
@@ -202,8 +202,21 @@ void Error_Handler(void);
 #define FREIGABE_GPIO_Port GPIOE
 #define INLET_GREEN_Pin GPIO_PIN_1
 #define INLET_GREEN_GPIO_Port GPIOE
-/* USER CODE BEGIN Private defines */
 
+/* USER CODE BEGIN Private defines */
+// Anzahl der CAN Output Pakete defineren
+//----------------------------------------------------------------------
+#define ANZAHL_OUTPUT_PAKETE			15									// Anzahl Sende Nachrichten
+//----------------------------------------------------------------------
+
+// Typedefine Boolean definieren
+//----------------------------------------------------------------------
+typedef enum
+{
+	false,
+	true,
+} bool;
+//----------------------------------------------------------------------
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
