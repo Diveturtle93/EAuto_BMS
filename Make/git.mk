@@ -26,7 +26,8 @@
 	@echo "" >> $@
 	@echo "// Git Tags-Infos definieren" >> $@
 	@echo "//----------------------------------------------------------------------" >> $@
-	@echo "#define GIT_LAST_TAG				\"$(shell git tag)\"" >> $@
+	@echo "#define GIT_TAGS					\"$(shell git tag)\"" >> $@
+	@echo "#define GIT_LAST_TAG				\"$(shell git describe --abbrev=0 --tags)\"" >> $@
 	@echo "#define GIT_TAG_COMMIT				\"$(shell git rev-list --tags --abbrev-commit)\"" >> $@
 	@echo "#define GIT_TAG_DIRTY				\"$(shell git describe)\"" >> $@
 	@echo "//----------------------------------------------------------------------" >> $@

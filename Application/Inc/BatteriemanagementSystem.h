@@ -226,7 +226,7 @@
 #define CAN_TIMEOUT									10000					// Zeit 10s bis CAN Timeout auftritt
 #define HVRELAISTIME								5000					// Zeit 5s bis HV-Relais ausgeschaltet wird nach wegnahme Freigabe
 #define ERROR_RESET									300000					// Zeit 5min bis Error Zurueckgesetzt werden kann
-#define WARNING_RESET								10000					// Zeit 10s bis Warning Zurueckgesetzt werden kann
+#define WARNING_RESET								30000					// Zeit 30s bis Warning Zurueckgesetzt werden kann
 #define BMS_WORK_TIME								100						// Zeitintervall fuer BMS-Abfrage
 //----------------------------------------------------------------------
 

@@ -26,7 +26,7 @@
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
-#include <math.h>			// TODO: Tauschen der Bibliothek
+#include <math.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -90,6 +90,7 @@ void setStatus(uint8_t Status);
   */
 int main(void)
 {
+
   /* USER CODE BEGIN 1 */
 	// BMS Statemaschine Zeitvariablen
 	uint32_t timeStandby = 0, timeErrorLED = 0;
@@ -151,6 +152,7 @@ int main(void)
   MX_GPIO_Init();
   MX_CAN1_Init();
   MX_SPI4_Init();
+  MX_USART2_UART_Init();
   MX_ADC1_Init();
   MX_TIM1_Init();
   MX_TIM4_Init();
@@ -186,6 +188,7 @@ int main(void)
 	uartTransmit("BMS gestartet\n", 14);
 
 	// BMS Fehler zuruecksetzen bei Systemstart
+	system_out.AmsOK = true;
 	system_out.AmsLimit = true;
 	system_out.ImdOK = true;
 

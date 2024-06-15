@@ -141,6 +141,7 @@ void collectSoftwareInfo(void)
 	#define STRING_GIT_COMMIT				"\nGit Commit:\t\t\t"
 	#define STRING_GIT_BRANCH				"\nGit Branch:\t\t\t"
 	#define STRING_GIT_HASH					"\nGit Hash:\t\t\t"
+	#define STRING_GIT_TAGS					"\nGit Branch Tags:\t\t"
 	#define STRING_GIT_LAST_TAG				"\nGit letzter Tags:\t\t"
 	#define STRING_GIT_TAG_COMMIT			"\nGit Tags commit:\t\t"
 	#define STRING_GIT_TAG_DIRTY			"\nGit Dirty commit:\t\t"
@@ -157,6 +158,9 @@ void collectSoftwareInfo(void)
 	uartTransmit(GIT_HASH, sizeof(GIT_HASH));								// Git Hash anzeigen
 
 	uartTransmit("\n", 1);													// Leerzeile einfuegen
+
+	uartTransmit(STRING_GIT_TAGS, sizeof(STRING_GIT_TAGS));
+	uartTransmit(GIT_TAGS, sizeof(GIT_TAGS));								// Git alle Tags des Branch anzeigen
 
 	uartTransmit(STRING_GIT_LAST_TAG, sizeof(STRING_GIT_LAST_TAG));
 	uartTransmit(GIT_LAST_TAG, sizeof(GIT_LAST_TAG));						// Git letzten Tags anzeigen
