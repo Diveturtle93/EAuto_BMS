@@ -29,9 +29,9 @@
 
 // Funktionen definieren
 //----------------------------------------------------------------------
-void uartTransmit(const char *str, const size_t size);
-void uartTransmitString(const char *str);
-void uartTransmitNumber(const uint32_t number, const uint32_t base);
+void uartTransmit (const char *str, const size_t size);
+void uartTransmitString (const char *str);
+void uartTransmitNumber (const uint32_t number, const uint32_t base);
 //----------------------------------------------------------------------
 
 #endif /* INC_BASICUART_H_ */

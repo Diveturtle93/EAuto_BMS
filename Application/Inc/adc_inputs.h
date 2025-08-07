@@ -29,14 +29,14 @@
 
 // Funktionen definieren
 //----------------------------------------------------------------------
-uint16_t ADC_STMTemperatur(void);
-uint16_t ADC_PCBTemperatur(void);
-uint16_t ADC_KL15(void);
+uint16_t ADC_STMTemperatur (void);
+uint16_t ADC_PCBTemperatur (void);
+uint16_t ADC_KL15 (void);
 uint16_t ADC_KL30_Relais (void);
-uint16_t ADC_Temp1(void);
+uint16_t ADC_Temp1 (void);
 uint16_t ADC_Temp2 (void);
-uint16_t ADC_Temp3(void);
-uint16_t ADC_Temp4(void);
+uint16_t ADC_Temp3 (void);
+uint16_t ADC_Temp4 (void);
 //----------------------------------------------------------------------
 
 #endif /* INC_ADC_INPUTS_H_ */

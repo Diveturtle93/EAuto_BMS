@@ -101,19 +101,19 @@ extern CAN_PaketTypeDef CAN_Output_PaketListe[ANZAHL_OUTPUT_PAKETE];
 
 // Funktionen definieren
 //----------------------------------------------------------------------
-void CANinit(RXQUEUE_TABLE rxSize, TXQUEUE_TABLE txSize);
-bool CANwrite(CAN_message_t *CAN_tx_msg, bool MB);
-uint8_t CAN_available(void);
-bool CANread(CAN_message_t *CAN_rx_msg);
-void CANwork(void);
-void CAN_config(void);
-bool isInitialized(void);
-void initializeBuffer(void);
-void initRingBuffer(RingbufferTypeDef *ring, volatile CAN_message_t *buffer, uint32_t size);
-bool addToRingBuffer(RingbufferTypeDef *ring, CAN_message_t *msg);
-bool removeFromRingBuffer(RingbufferTypeDef *ring, CAN_message_t *msg);
-bool isRingBufferEmpty(RingbufferTypeDef *ring);
-CAN_PaketTypeDef CAN_Nachricht(uint16_t id, uint8_t length, uint16_t sendeintervall, uint32_t sende_time);
+void CANinit (RXQUEUE_TABLE rxSize, TXQUEUE_TABLE txSize);
+bool CANwrite (CAN_message_t *CAN_tx_msg, bool MB);
+uint8_t CAN_available (void);
+bool CANread (CAN_message_t *CAN_rx_msg);
+void CANwork (void);
+void CAN_config (void);
+bool isInitialized (void);
+void initializeBuffer (void);
+void initRingBuffer (RingbufferTypeDef *ring, volatile CAN_message_t *buffer, uint32_t size);
+bool addToRingBuffer (RingbufferTypeDef *ring, CAN_message_t *msg);
+bool removeFromRingBuffer (RingbufferTypeDef *ring, CAN_message_t *msg);
+bool isRingBufferEmpty (RingbufferTypeDef *ring);
+CAN_PaketTypeDef CAN_Nachricht (uint16_t id, uint8_t length, uint16_t sendeintervall, uint32_t sende_time);
 //----------------------------------------------------------------------
 
 #endif /* INC_CAN_BUS_H_ */

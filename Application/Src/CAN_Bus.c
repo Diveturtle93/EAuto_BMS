@@ -44,7 +44,7 @@ CAN_PaketTypeDef CAN_Output_PaketListe[ANZAHL_OUTPUT_PAKETE];
 
 // Initialisiere und starte CAN-Bus
 //----------------------------------------------------------------------
-void CANinit(RXQUEUE_TABLE rxSize, TXQUEUE_TABLE txSize)
+void CANinit (RXQUEUE_TABLE rxSize, TXQUEUE_TABLE txSize)
 {
 	// Beende wenn CAN-Bus aktive ist
 	if (canIsActive)
@@ -67,7 +67,7 @@ void CANinit(RXQUEUE_TABLE rxSize, TXQUEUE_TABLE txSize)
 
 // Schreibe Nachricht auf CAN-Bus oder in den Ringbuffer
 //----------------------------------------------------------------------
-bool CANwrite(CAN_message_t *CAN_tx_msg, bool sendMB)
+bool CANwrite (CAN_message_t *CAN_tx_msg, bool sendMB)
 {
 	bool ret = true;
 	uint32_t TxMailbox;
@@ -120,7 +120,7 @@ bool CANwrite(CAN_message_t *CAN_tx_msg, bool sendMB)
 
 // Abfrage, ob CAN-Nachricht verfuegbar ist
 //----------------------------------------------------------------------
-uint8_t CAN_available(void)
+uint8_t CAN_available (void)
 {
 	if (rxRing.head >= rxRing.tail)
 		return rxRing.head - rxRing.tail;
@@ -150,7 +150,7 @@ bool CANread(CAN_message_t *CAN_rx_msg)
 
 //
 //----------------------------------------------------------------------
-void CANwork(void)
+void CANwork (void)
 {
 	for (uint8_t i = 0; i < ANZAHL_OUTPUT_PAKETE; i++)
 	{
@@ -171,7 +171,7 @@ void CANwork(void)
 
 // CAN Nachricht definieren, Datentyp anpassen
 //----------------------------------------------------------------------
-CAN_PaketTypeDef CAN_Nachricht(uint16_t id, uint8_t length, uint16_t sendeintervall, uint32_t sende_time)
+CAN_PaketTypeDef CAN_Nachricht (uint16_t id, uint8_t length, uint16_t sendeintervall, uint32_t sende_time)
 {
 	CAN_PaketTypeDef TxHeader;
 
@@ -186,7 +186,7 @@ CAN_PaketTypeDef CAN_Nachricht(uint16_t id, uint8_t length, uint16_t sendeinterv
 
 // Abfrage, ob Ringbuffer initialisiert ist
 //----------------------------------------------------------------------
-bool isInitialized(void)
+bool isInitialized (void)
 {
 	return rxBuffer != 0;
 }
@@ -194,7 +194,7 @@ bool isInitialized(void)
 
 // Initialisiere Ringbuffer
 //----------------------------------------------------------------------
-void initializeBuffer(void)
+void initializeBuffer (void)
 {
 	if (isInitialized())
 		return;
@@ -219,7 +219,7 @@ void initializeBuffer(void)
 
 // Initialisiere Ringbuffer
 //----------------------------------------------------------------------
-void initRingBuffer(RingbufferTypeDef *ring, volatile CAN_message_t *buffer, uint32_t size)
+void initRingBuffer (RingbufferTypeDef *ring, volatile CAN_message_t *buffer, uint32_t size)
 {
 	ring->buffer = buffer;
 	ring->size = size;
@@ -230,7 +230,7 @@ void initRingBuffer(RingbufferTypeDef *ring, volatile CAN_message_t *buffer, uin
 
 // Nachricht zum Ring hinzufuegen
 //----------------------------------------------------------------------
-bool addToRingBuffer(RingbufferTypeDef *ring, CAN_message_t *msg)
+bool addToRingBuffer (RingbufferTypeDef *ring, CAN_message_t *msg)
 {
 	uint16_t nextEntry;
 	nextEntry = (ring->head + 1) % ring->size;
@@ -251,7 +251,7 @@ bool addToRingBuffer(RingbufferTypeDef *ring, CAN_message_t *msg)
 
 // Nachricht von Ring entfernen
 //----------------------------------------------------------------------
-bool removeFromRingBuffer(RingbufferTypeDef *ring, CAN_message_t *msg)
+bool removeFromRingBuffer (RingbufferTypeDef *ring, CAN_message_t *msg)
 {
 	// Pruefen, ob Nachrichten im Ring sind
 	if (isRingBufferEmpty(ring) == true)
@@ -269,7 +269,7 @@ bool removeFromRingBuffer(RingbufferTypeDef *ring, CAN_message_t *msg)
 
 // Abfrage, ob Ringbuffer Nachrichten hat
 //----------------------------------------------------------------------
-bool isRingBufferEmpty(RingbufferTypeDef *ring)
+bool isRingBufferEmpty (RingbufferTypeDef *ring)
 {
 	if (ring->head == ring->tail)
 		return true;
@@ -283,7 +283,7 @@ bool isRingBufferEmpty(RingbufferTypeDef *ring)
 
 // Sendeinterrupt Mailbox 0
 //----------------------------------------------------------------------
-void HAL_CAN_TxMailbox0CompleteCallback(CAN_HandleTypeDef *CanHandler)
+void HAL_CAN_TxMailbox0CompleteCallback (CAN_HandleTypeDef *CanHandler)
 {
 	CAN_message_t txmsg;
 
@@ -302,7 +302,7 @@ void HAL_CAN_TxMailbox0CompleteCallback(CAN_HandleTypeDef *CanHandler)
 
 // Sendeinterrupt Mailbox 1
 //----------------------------------------------------------------------
-void HAL_CAN_TxMailbox1CompleteCallback(CAN_HandleTypeDef *CanHandler)
+void HAL_CAN_TxMailbox1CompleteCallback (CAN_HandleTypeDef *CanHandler)
 {
 	CAN_message_t txmsg;
 
@@ -321,7 +321,7 @@ void HAL_CAN_TxMailbox1CompleteCallback(CAN_HandleTypeDef *CanHandler)
 
 // Sendeinterrupt Mailbox 2
 //----------------------------------------------------------------------
-void HAL_CAN_TxMailbox2CompleteCallback(CAN_HandleTypeDef *CanHandler)
+void HAL_CAN_TxMailbox2CompleteCallback (CAN_HandleTypeDef *CanHandler)
 {
 	CAN_message_t txmsg;
 
@@ -340,7 +340,7 @@ void HAL_CAN_TxMailbox2CompleteCallback(CAN_HandleTypeDef *CanHandler)
 
 // Empfanginterrupt FIFO0
 //----------------------------------------------------------------------
-void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *CanHandler)
+void HAL_CAN_RxFifo0MsgPendingCallback (CAN_HandleTypeDef *CanHandler)
 {
 	CAN_message_t rxmsg;
 	CAN_RxHeaderTypeDef RxHeader;
@@ -378,7 +378,7 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *CanHandler)
 
 // RX IRQ Handler
 //----------------------------------------------------------------------
-void CAN3_RX0_IRQHandler(void)
+void CAN3_RX0_IRQHandler (void)
 {
 	HAL_CAN_IRQHandler(&hcan3);
 }
@@ -386,7 +386,7 @@ void CAN3_RX0_IRQHandler(void)
 
 // TX IRQ Handler
 //----------------------------------------------------------------------
-void CAN3_TX_IRQHandler(void)
+void CAN3_TX_IRQHandler (void)
 {
 	HAL_CAN_IRQHandler(&hcan3);
 }

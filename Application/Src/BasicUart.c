@@ -27,10 +27,10 @@
 
 // Uart2 Transmit Funktion
 //----------------------------------------------------------------------
-void uartTransmit(const char *str, const size_t size)
+void uartTransmit (const char *str, const size_t size)
 {
-	// Sende String mit Laenge "Size", "Size" muss bekannt sein
 #ifdef SHELL
+	// Sende String mit Laenge "Size", "Size" muss bekannt sein
 	HAL_UART_Transmit(&huart2, (uint8_t *)str, size, 1000);
 #endif
 }
@@ -38,13 +38,15 @@ void uartTransmit(const char *str, const size_t size)
 
 // Uart2 Transmit Nummer Funktion
 //----------------------------------------------------------------------
-void uartTransmitNumber(const uint32_t number, const uint32_t base)
+void uartTransmitNumber (const uint32_t number, const uint32_t base)
 {
+#ifdef SHELL
 	char str[11];
 
 	// Zahl umrechnen
 	utoa(number, str, base);												// Zahl umrechnen anhand der Basis "base"
-#ifdef SHELL
+
+	// Sende Nummer als String
 	HAL_UART_Transmit(&huart2, (uint8_t *)str, strlen(str), 1000);			// Sende Zahlen
 #endif
 }
@@ -52,9 +54,10 @@ void uartTransmitNumber(const uint32_t number, const uint32_t base)
 
 // Uart2 Transmit String Funktion
 //----------------------------------------------------------------------
-void uartTransmitString(const char *str)
+void uartTransmitString (const char *str)
 {
 #ifdef SHELL
+	// Sende String
 	HAL_UART_Transmit(&huart2, (uint8_t *)str, sizeof(str), 1000);
 #endif
 }

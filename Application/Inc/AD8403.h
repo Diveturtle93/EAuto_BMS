@@ -76,13 +76,13 @@
 
 // Funktionen definieren
 //----------------------------------------------------------------------
-void initAD8403(void);														// Initialisiere AD8403
-void setPoti(uint8_t addresse, uint8_t Data);								// Poti mit Daten fuellen
-void setAllPoti(uint8_t Data);												// Alle Potis mit gleichen Daten fuellen
-void PotiOff(uint8_t addresse);												// Poti ausschalten
-void AllPotiOff(void);														// Alle Potis ausschalten
-void AllPotiOn(void);														// Alle Potis einschalten
-void AllPotiMidscale(void);													// Alle Potis auf halbe Stellung
+void initAD8403 (void);														// Initialisiere AD8403
+void setPoti (uint8_t addresse, uint8_t Data);								// Poti mit Daten fuellen
+void setAllPoti (uint8_t Data);												// Alle Potis mit gleichen Daten fuellen
+void PotiOff (uint8_t addresse);											// Poti ausschalten
+void AllPotiOff (void);														// Alle Potis ausschalten
+void AllPotiOn (void);														// Alle Potis einschalten
+void AllPotiMidscale (void);												// Alle Potis auf halbe Stellung
 //----------------------------------------------------------------------
 
 #endif /* INC_AD8403_H_ */

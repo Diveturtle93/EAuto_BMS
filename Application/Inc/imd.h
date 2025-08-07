@@ -68,7 +68,7 @@ extern imd_tag imd;															// Variable fuer IMD Eigenschaften definieren
 
 // Funktionen definieren
 //----------------------------------------------------------------------
-void imd_status(void);														// IMD OK einlesen
+void imd_status (void);														// IMD OK einlesen
 //----------------------------------------------------------------------
 
 #endif /* INC_IMD_H_ */

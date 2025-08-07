@@ -21,7 +21,7 @@
 
 // Hal Error auswerten und ausgeben
 //----------------------------------------------------------------------
-void hal_error(uint8_t status)
+void hal_error (uint8_t status)
 {
 #ifdef DEBUG_HAL
 	if (status == HAL_OK) {													// HAL OK
@@ -42,7 +42,7 @@ void hal_error(uint8_t status)
 
 // Diagnose Funktion falls ein Software Fehler auftritt
 //----------------------------------------------------------------------
-void software_error(uint8_t errorcode)
+void software_error (uint8_t errorcode)
 {
 	__disable_irq();														// Interrupts deaktivieren
 
@@ -72,7 +72,7 @@ void software_error(uint8_t errorcode)
 
 // Diagnose Funktion falls ein Fehler auftritt (Nur Debugzwecke)
 //----------------------------------------------------------------------
-void software_error_debug(uint8_t errorcode)
+void software_error_debug (uint8_t errorcode)
 {
 	// Schalte Fehler LED ein
 	leuchten_out.RedLed = 1;												// Setze Variable
@@ -103,7 +103,7 @@ void software_error_debug(uint8_t errorcode)
 // Core Clock := Maximalfrequenz
 // Im String #GRN# oder #RED# oder #ORG# erscheint die Nachricht in einer Farbe
 //----------------------------------------------------------------------
-void ITM_SendString(char *text)
+void ITM_SendString (char *text)
 {
 #ifdef DEBUG_SWO
 	// So lange *text != '\0', also ungleich dem "String-Endezeichen(Terminator)"
@@ -118,7 +118,7 @@ void ITM_SendString(char *text)
 
 // Debug Nummer ueber SWO senden
 //----------------------------------------------------------------------
-void ITM_SendNumber(long number)
+void ITM_SendNumber (long number)
 {
 #ifdef DEBUG_SWO
 	// Variablen definieren
@@ -158,7 +158,7 @@ void ITM_SendNumber(long number)
 
 // Debug Float ueber SWO senden
 //----------------------------------------------------------------------
-void ITM_SendFloat(double number, int digits)
+void ITM_SendFloat (double number, int digits)
 {
 #ifdef DEBUG_SWO
 	int i = 0;

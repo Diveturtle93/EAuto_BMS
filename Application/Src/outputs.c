@@ -34,7 +34,7 @@ komfort_out_tag komfort_out;																		// Variable fuer Komfortausgaenge 
 
 // Initialisiere alle Ausgangsstrukturen auf default Werte
 //----------------------------------------------------------------------
-void init_outputs(void)
+void init_outputs (void)
 {
 	// Schreibe alle Variablen auf Null
 	system_out.systemoutput = SYSTEM_OUTPUT;														// Alle System Ausgaenge auf null setzen
@@ -46,7 +46,7 @@ void init_outputs(void)
 
 // Schreibe alle Ausgaenge auf default Werte
 //----------------------------------------------------------------------
-void writeall_outputs(void)
+void writeall_outputs (void)
 {
 	// Schreibe System Ausgaenge
 	HAL_GPIO_WritePin(AMS_LIMIT_GPIO_Port, AMS_LIMIT_Pin, system_out.AmsLimit);						// Batteriemanagement-System Strom limitiert
@@ -82,7 +82,7 @@ void writeall_outputs(void)
 
 // Schreibe alle LED-Ausgaenge auf default Werte
 //----------------------------------------------------------------------
-void writeled_outputs(void)
+void writeled_outputs (void)
 {
 	leuchten_out.ledoutput = 0;
 
@@ -98,7 +98,7 @@ void writeled_outputs(void)
 
 // Teste Platinen LEDs
 //----------------------------------------------------------------------
-void testPCB_Leds(void)
+void testPCB_Leds (void)
 {
 	// Leds Testen
     HAL_GPIO_WritePin(BLUE_LED_GPIO_Port, BLUE_LED_Pin, GPIO_PIN_SET);								// Blaue LED Platine setzen
@@ -118,7 +118,7 @@ void testPCB_Leds(void)
 
 // Teste alle externen LEDs, Inlet
 //----------------------------------------------------------------------
-void testInletLeds(void)
+void testInletLeds (void)
 {
 	// Leds Testen
 	HAL_GPIO_WritePin(INLET_RED_GPIO_Port, INLET_RED_Pin, GPIO_PIN_SET);							// Red Inlet LED setzen
@@ -133,7 +133,7 @@ void testInletLeds(void)
 //----------------------------------------------------------------------
 
 // Teste Cockpit LEDs
-void testCockpitLeds(void)
+void testCockpitLeds (void)
 {
 	HAL_GPIO_WritePin(AKKU_LED_GPIO_Port, AKKU_LED_Pin, GPIO_PIN_SET);								// Akku LED Kombiinstrument setzen, Ladekontrollleuchte an
 	HAL_Delay(1000);
@@ -143,7 +143,7 @@ void testCockpitLeds(void)
 
 // Ladekontroll LED setzen
 //----------------------------------------------------------------------
-void setLadekontrolle(void)
+void setLadekontrolle (void)
 {
 	// Status Ladekontrolle setzen
 	leuchten_out.AkkuErrorLed = 1;
@@ -155,7 +155,7 @@ void setLadekontrolle(void)
 
 // Ladekontroll LED zuruecksetzen
 //----------------------------------------------------------------------
-void resetLadekontrolle(void)
+void resetLadekontrolle (void)
 {
 	// Status Ladekontrolle zuruecksetzen
 	leuchten_out.AkkuErrorLed = 0;
@@ -167,7 +167,7 @@ void resetLadekontrolle(void)
 
 // Selbsterhaltung einschalten
 //----------------------------------------------------------------------
-void setPowerOn(void)
+void setPowerOn (void)
 {
 	// Status PowerOn setzen
 	system_out.PowerOn = 1;

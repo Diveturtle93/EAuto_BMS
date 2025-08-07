@@ -77,7 +77,7 @@ const uint16_t pec15Table[256] = {
 
 // Setze Statemaschine von LTC6811
 //----------------------------------------------------------------------
-void set_ltc6811_state(LTC6811_State newState)
+void set_ltc6811_state (LTC6811_State newState)
 {
 	Ltc6811State = newState;												// Neuen Status setzen
 	timeLtc6811State = millis();											// Zeit speichern
@@ -127,7 +127,7 @@ void set_ltc6811_state(LTC6811_State newState)
 
 // Statemaschine von LTC6811
 //----------------------------------------------------------------------
-void ltc6811_statemaschine(void)
+void ltc6811_statemaschine (void)
 {
 	// Messzeit feststellen, Messzeit immer fuer alle Zellen + GPIOs (Das ist eine Abschaetzung zur sicheren Seite)
 	uint32_t measurementDuration; // in us
@@ -232,6 +232,7 @@ void ltc6811_statemaschine(void)
 
 			}
 
+			// TODO: Muss das hier??
 			// Wenn die Referenz zuerst eingeschaltet werden muss, dauert die Messung 5ms (t_Refup) laenger
 			measurementDuration = measurementDuration + 5;					// ms
 
@@ -274,7 +275,7 @@ void ltc6811_statemaschine(void)
 
 // Bekomme aktuellen State LTC6811
 //----------------------------------------------------------------------
-LTC6811_State get_ltc6811_state(void)
+LTC6811_State get_ltc6811_state (void)
 {
 	// Statemaschine abfragen
 	ltc6811_statemaschine();
@@ -286,7 +287,7 @@ LTC6811_State get_ltc6811_state(void)
 
 // Broadcast Command
 //----------------------------------------------------------------------
-void ltc6811(uint16_t command)
+void ltc6811 (uint16_t command)
 {
 	// Debug Nachricht
 #ifdef DEBUG_LTC6811
@@ -337,7 +338,7 @@ void ltc6811(uint16_t command)
 
 // Broadcast Write Command
 //----------------------------------------------------------------------
-void ltc6811_write(uint16_t command, uint8_t* data)
+void ltc6811_write (uint16_t command, uint8_t* data)
 {
 	// Debug Nachricht
 #ifdef DEBUG_LTC6811
@@ -406,7 +407,7 @@ void ltc6811_write(uint16_t command, uint8_t* data)
 
 // Broadcast Read Command
 //----------------------------------------------------------------------
-bool ltc6811_read(uint16_t command, uint8_t* data)
+bool ltc6811_read (uint16_t command, uint8_t* data)
 {
 	// Debug Nachricht
 #ifdef DEBUG_LTC6811
@@ -515,7 +516,7 @@ bool ltc6811_read(uint16_t command, uint8_t* data)
 
 // Pec Command bauen
 //----------------------------------------------------------------------
-uint16_t peccommand(uint16_t command)
+uint16_t peccommand (uint16_t command)
 {
 	// Variable definieren
 	uint8_t pec[2];															// pec = Zwischenspeicher 16-Bit Command in 2x 8-Bit Bytes
@@ -531,7 +532,7 @@ uint16_t peccommand(uint16_t command)
 
 // Pec kalculieren (Datasheet ltc6811 Page 76, Datasheet ltc6811 Page 72)
 //----------------------------------------------------------------------
-uint16_t peclookup(uint8_t len,	uint8_t *data)								// len = Anzahl Byte, data = Daten fuer die Pec ausgewaehlt wird
+uint16_t peclookup (uint8_t len,	uint8_t *data)								// len = Anzahl Byte, data = Daten fuer die Pec ausgewaehlt wird
 {
 	// Variable definieren
 	uint16_t remainder, addr;												// remainder = Zwischenspeicher Pec, addr = Zwischenspeicher Addresse
@@ -557,7 +558,7 @@ uint16_t peclookup(uint8_t len,	uint8_t *data)								// len = Anzahl Byte, data
 uint16_t test[256];
 // CRC Tabelle berechnen (Datasheet ltc6811 Page 76)
 //----------------------------------------------------------------------
-void init_crc(void)
+void init_crc (void)
 {
 	uint16_t test_crc = 0x4599;
 	uint16_t remainder;
@@ -583,7 +584,7 @@ void init_crc(void)
 
 // Validiere Pec von Daten
 //----------------------------------------------------------------------
-bool peccheck(uint8_t len, uint8_t *data)
+bool peccheck (uint8_t len, uint8_t *data)
 {
 	// Variable definieren
 	uint16_t pec = peclookup(len, data);
@@ -603,7 +604,7 @@ bool peccheck(uint8_t len, uint8_t *data)
 
 // Initialisiere LTC6811, Schreibe Config in Konfigurationsregister
 //----------------------------------------------------------------------
-void ltc6811_init(void)
+void ltc6811_init (void)
 {
 	// Setze Konfiguration
 	ltc6811_Conf.ADCOPT = 0;												// Setze ADC Mode option, 0 = default
@@ -637,13 +638,13 @@ void ltc6811_init(void)
 	samplingMode = MD73;
 
 	// Schreibe Konfiguration in Register am LTC6811
-	ltc6811_write(WRCFG, &ltc6811_Conf.ltc6811_configuration[0]);
+	ltc6811_write(WRCFG, &ltc6811_Conf.configuration[0]);
 }
 //----------------------------------------------------------------------
 
 // LTC6811 Status auslesen und auswerten
 //----------------------------------------------------------------------
-uint8_t ltc6811_check(void)
+uint8_t ltc6811_check (void)
 {
 	// Debug Nachricht
 #ifdef DEBUG_LTC6811
@@ -654,7 +655,7 @@ uint8_t ltc6811_check(void)
 	uint8_t error = 0;														// Speicher fuer Error
 
 	// Thermal Shutdown pruefen
-	if (ltc6811_thermal() != 1)
+	if (ltc6811_thermal() != true)
 	{
 		error |= (1 << 0);													// Thermal Shutdown nicht Ok
 
@@ -665,7 +666,7 @@ uint8_t ltc6811_check(void)
 	}
 
 	// Selbsttest 1 Digitale Filter
-	if (ltc6811_test(ST1 | MD73) != 1)
+	if (ltc6811_test(ST1 | MD73) != true)
 	{
 		error |= (1 << 1);													// Selbsttest 1 nicht bestanden
 
@@ -677,7 +678,7 @@ uint8_t ltc6811_check(void)
 	HAL_Delay(300);
 
 	// Selbsttest 2 Digitale Filter
-	if (ltc6811_test(ST2 | MD73) != 1)
+	if (ltc6811_test(ST2 | MD73) != true)
 	{
 		error |= (1 << 2);													// Selbsttest 2 nicht bestanden
 
@@ -689,7 +690,7 @@ uint8_t ltc6811_check(void)
 	HAL_Delay(300);
 
 	// Selbsttest Multiplexer
-	if (ltc6811_diagn() != 1)
+	if (ltc6811_diagn() != true)
 	{
 		error |= (1 << 3);													// Multiplexertest nicht bestanden
 
@@ -701,7 +702,7 @@ uint8_t ltc6811_check(void)
 	HAL_Delay(300);
 
 	// Open Wire Check durchfuehren
-	if (ltc6811_openwire() != 1)
+	if (ltc6811_openwire() != true)
 	{
 		error |= (1 << 4);													// Open-Wire Test nicht bestanden
 
@@ -725,7 +726,7 @@ uint8_t ltc6811_check(void)
 
 // Selbsttest Digitale Filter (Datasheet ltc6811 Page 28)
 //----------------------------------------------------------------------
-bool ltc6811_test(uint16_t command)
+bool ltc6811_test (uint16_t command)
 {
 	// Debug Nachricht
 #ifdef DEBUG_LTC6811
@@ -904,7 +905,7 @@ bool ltc6811_test(uint16_t command)
 
 // Selbstdiagnose Thermal Shutdown Test (Datasheet ltc6811 Page 30)
 //----------------------------------------------------------------------
-bool ltc6811_thermal(void)
+bool ltc6811_thermal (void)
 {
 	// Debug Nachricht
 #ifdef DEBUG_LTC6811
@@ -949,7 +950,7 @@ bool ltc6811_thermal(void)
 
 // Selbstdiagnose Multiplexer (Datasheet ltc6811 Page 27)
 //----------------------------------------------------------------------
-bool ltc6811_diagn(void)
+bool ltc6811_diagn (void)
 {
 	// Debug Nachricht
 #ifdef DEBUG_LTC6811
@@ -983,7 +984,7 @@ bool ltc6811_diagn(void)
 
 // LTC6811 Openwire check (Datasheet ltc6811 Page 29)
 //----------------------------------------------------------------------
-bool ltc6811_openwire(void)
+bool ltc6811_openwire (void)
 {
 	// Debug Nachricht
 #ifdef DEBUG_LTC6811
@@ -1034,34 +1035,36 @@ bool ltc6811_openwire(void)
 			// Auswahl welche Leitung
 			switch (i)
 			{
-				// Leitungen Zelle 1/2 bis 3/4
+				// Leitung C0; Zelle 1
 				case 0:
 					openwire[j*13 + i] = ((pullup[j*32 + 1] << 8) + pullup[j*32]);
 					break;
+				// Leitungen C1, C2; Zelle 1/2, 2/3
 				case 1:
 				case 2:
 					openwire[j*13 + i] = getDifference(((pullup[j*32 + i*2 + 1] << 8) + pullup[j*32 + i*2]), ((pulldown[j*32 + i*2 + 1] << 8) + pulldown[j*32 + i*2]));
 					break;
-				// Leitungen Zelle 4/5 bis 6/7
+				// Leitungen C3, C4, C5; Zelle 3/4 4/5, 5/6
 				case 3:
 				case 4:
 				case 5:
 					openwire[j*13 + i] = getDifference(((pullup[j*32 + i*2 + 3] << 8) + pullup[j*32 + i*2 + 2]), ((pulldown[j*32 + i*2 + 3] << 8) + pulldown[j*32 + i*2 + 2]));
 					break;
-				// Leitungen Zelle 7/8 bis 9/10
+				// Leitungen C6, C7, C8; Zelle 6/7, 7/8, 8/9
 				case 6:
 				case 7:
 				case 8:
 					openwire[j*13 + i] = getDifference(((pullup[j*32 + i*2 + 5] << 8) + pullup[j*32 + i*2 + 4]), ((pulldown[j*32 + i*2 + 5] << 8) + pulldown[j*32 + i*2 + 4]));
 					break;
-				// Leitungen Zelle 10/11 und 11/12
+				// Leitungen C9, C10, C11; Zelle 9/10, 10/11, 11/12
 				case 9:
 				case 10:
 				case 11:
 					openwire[j*13 + i] = getDifference(((pullup[j*32 + i*2 + 7] << 8) + pullup[j*32 + i*2 + 6]), ((pulldown[j*32 + i*2 + 7] << 8) + pulldown[j*32 + i*2 + 6]));
 					break;
+				// Leitung C12, Zelle 12
 				case 12:
-					openwire[j*13 + i] = ((pulldown[j*32 + j*29] << 8) + pulldown[j*32 + j*28]);
+					openwire[j*13 + i] = ((pulldown[j*32 + 29] << 8) + pulldown[j*32 + 28]);
 					break;
 				default:
 					break;
@@ -1115,7 +1118,7 @@ bool ltc6811_openwire(void)
 
 // LTC6811 Polling Daten
 //----------------------------------------------------------------------
-uint16_t ltc6811_poll(void)
+uint16_t ltc6811_poll (void)
 {
 	// Debug Nachricht
 #ifdef DEBUG_LTC6811
@@ -1175,7 +1178,7 @@ uint16_t ltc6811_poll(void)
 
 // Timeout Error Variable ausgeben
 //----------------------------------------------------------------------
-uint16_t ltc6811_timeout(void)
+uint16_t ltc6811_timeout (void)
 {
 	return error_readtimeout;
 }

@@ -70,16 +70,25 @@
 
 //----------------------------------------------------------------------
 #if TISCHAUFBAU == 1
-#warning "Programm ist fuer Tischaufbau kompiliert!!"
+	#warning "Programm ist fuer Tischaufbau kompiliert!!"
 #else
-#warning "Programm ist fuer Auto kompiliert!!"
+	#warning "Programm ist fuer Auto kompiliert!!"
 #endif
 //----------------------------------------------------------------------
 
+// Definiere Konstante fuer vorderen und hinteren Akkukasten
 //----------------------------------------------------------------------
-// TODO:
+#define BMS_VORNE									1						// 0 = Nicht vorne, 1 = vorne
+#define BMS_HINTEN									0						// 0 = Nicht hinten, 1 = hinten
+//----------------------------------------------------------------------
+#if (BMS_VORNE == 1 && BMS_HINTEN == 1)
+	#error "BMS kann nicht fuer hinten und vornde gleichzeitig kompiliert werden!!!"
+#endif
+//----------------------------------------------------------------------
 
 // Definiere Statemaschine Typedefines
+//----------------------------------------------------------------------
+// TODO:
 //----------------------------------------------------------------------
 
 // CAN-IDs definieren
@@ -204,21 +213,21 @@
 #define STROM_HV_CAN_U3								0x524					// Aktuelle Spannung U3
 #define STROM_HV_CAN_T								0x525					// Aktuelle Temperatur
 #define STROM_HV_CAN_W								0x526					// Power (U1 x I)
-#define STROM_HV_CAN_AS								0x527					// Gesamtstromvrbrauch
+#define STROM_HV_CAN_AS								0x527					// Gesamtstromverbrauch
 #define STROM_HV_CAN_WH								0x528					// Gesamtenergie (U1 x I)
 //----------------------------------------------------------------------
 // Stromsensor LV-Kreis
 //----------------------------------------------------------------------
 //#define STROM_LV_COMMAND_RX							0x412					// Befehl an Stromsensor senden
 //#define STROM_LV_COMMAND_TX							0x512					// Befehl von Stromsensor empfanden
-//#define STROM_LV_CAN_I								0x521					// Aktueller Stromverbrauch
-//#define STROM_LV_CAN_U1								0x522					// Aktuelle Spannung U1
-//#define STROM_LV_CAN_U2								0x523					// Aktuelle Spannung U2
-//#define STROM_LV_CAN_U3								0x524					// Aktuelle Spannung U3
-//#define STROM_LV_CAN_T								0x525					// Aktuelle Temperatur
-//#define STROM_LV_CAN_W								0x526					// Power (U1 x I)
-//#define STROM_LV_CAN_AS								0x527					// Gesamtstromvrbrauch
-//#define STROM_LV_CAN_WH								0x528					// Gesamtenergie (U1 x I)
+//#define STROM_LV_CAN_I								0x531					// Aktueller Stromverbrauch
+//#define STROM_LV_CAN_U1								0x532					// Aktuelle Spannung U1
+//#define STROM_LV_CAN_U2								0x533					// Aktuelle Spannung U2
+//#define STROM_LV_CAN_U3								0x534					// Aktuelle Spannung U3
+//#define STROM_LV_CAN_T								0x535					// Aktuelle Temperatur
+//#define STROM_LV_CAN_W								0x536					// Power (U1 x I)
+//#define STROM_LV_CAN_AS								0x537					// Gesamtstromverbrauch
+//#define STROM_LV_CAN_WH								0x538					// Gesamtenergie (U1 x I)
 //----------------------------------------------------------------------
 
 //
@@ -261,7 +270,7 @@ typedef union
 		uint8_t CriticalError : 1;											// Statemaschine kritischer Error
 	};
 
-	uint8_t status;									// 1 Byte
+	uint8_t Status;									// 1 Byte
 } BMSState;
 //----------------------------------------------------------------------
 

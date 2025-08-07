@@ -109,15 +109,15 @@ extern komfort_out_tag komfort_out;											// Variable fuer Komfortausgaenge 
 
 // Funktionen definieren
 //----------------------------------------------------------------------
-void init_outputs(void);													// Initialisiere Ausgaenge
-void writeall_outputs(void);												// Schreibe alle Ausgaenge
-void writeled_outputs(void);												// Schreibe alle LED-Ausgaenge
-void testPCB_Leds(void);													// Teste PCB LEDs fuer je 1s
-void testInletLeds(void);													// Teste Inlet LEDs fuer je 1s
-void testCockpitLeds(void);													// Teste Cockpit LEDs fuer je 1s
-void setLadekontrolle(void);												// Ladekontrolle setzen
-void resetLadekontrolle(void);												// Ladekontrolle zuruecksetzen
-void setPowerOn(void);														// Selbsterhaltung setzen
+void init_outputs (void);													// Initialisiere Ausgaenge
+void writeall_outputs (void);												// Schreibe alle Ausgaenge
+void writeled_outputs (void);												// Schreibe alle LED-Ausgaenge
+void testPCB_Leds (void);													// Teste PCB LEDs fuer je 1s
+void testInletLeds (void);													// Teste Inlet LEDs fuer je 1s
+void testCockpitLeds (void);												// Teste Cockpit LEDs fuer je 1s
+void setLadekontrolle (void);												// Ladekontrolle setzen
+void resetLadekontrolle (void);												// Ladekontrolle zuruecksetzen
+void setPowerOn (void);														// Selbsterhaltung setzen
 //----------------------------------------------------------------------
 
 #endif /* INC_OUTPUTS_H_ */

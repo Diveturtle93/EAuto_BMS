@@ -24,7 +24,7 @@
 #include "BatteriemanagementSystem.h"
 //----------------------------------------------------------------------
 
-void app_info(void)
+void app_info (void)
 {
   	// Teste serielle Schnittstelle
 	#define START_STRING_UART		"!--- Batteriemanagement-System ---!\n"

@@ -26,7 +26,7 @@
 
 // Funktion millis (ms)
 //----------------------------------------------------------------------
-uint32_t millis(void)
+uint32_t millis (void)
 {
 	return HAL_GetTick();
 }

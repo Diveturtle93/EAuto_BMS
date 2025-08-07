@@ -161,11 +161,6 @@ int main(void)
   MX_RTC_Init();
   /* USER CODE BEGIN 2 */
 
-#ifdef DEBUG
-	#define MAINWHILE			"\nStarte While Schleife\n"
-	uartTransmit(MAINWHILE, sizeof(MAINWHILE));
-#endif
-
 //	HAL_PWR_EnableBkUpAccess();
 //	Backup = HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR0);
 //	HAL_PWR_DisableBkUpAccess();
@@ -184,12 +179,21 @@ int main(void)
 	system_out.PowerOn = true;
 
 	// BMS initialisieren
-	bms_init();
-	uartTransmit("BMS gestartet\n", 14);
+	if (bms_init() != false)
+	{
+		uartTransmit("BMS gestartet\n", 14);
+		system_out.AmsOK = true;
+		system_out.AmsLimit = true;
+	}
+	else
+	{
+		uartTransmit("BMS konnte nicht gestartet werden\n", 34);
+		system_out.AmsOK = false;
+		system_out.AmsLimit = false;
+		setStatus(StateError);
+	}
 
-	// BMS Fehler zuruecksetzen bei Systemstart
-	system_out.AmsOK = true;
-	system_out.AmsLimit = true;
+	// IMD Fehler zuruecksetzen bei Systemstart
 	system_out.ImdOK = true;
 
 	for (uint8_t j = 0; j < ANZAHL_OUTPUT_PAKETE; j++)
@@ -296,7 +300,7 @@ int main(void)
 
 				  setStatus(StateNormal);
 
-				  mStrg.status = RxMessage.buf[0];
+				  mStrg.Status = RxMessage.buf[0];
 
 				  break;
 			  }
@@ -383,6 +387,7 @@ int main(void)
 
 		  // BMS zuruecksetzen, das kein HV mehr eingeschaltet werden kann
 		  system_out.Freigabe = false;
+		  system_out.AmsLimit = false;
 		  system_out.AmsOK = false;
 		  system_out.Recuperation = false;
 		  sdc_in.Anlassen = false;
@@ -457,7 +462,11 @@ int main(void)
 		  // State Ready, Vorbereiten des Batteriemanagement
 		  case Ready:
 		  {
-			  setState(KL15);
+			  // Solange kein kritischer Fehler auftritt
+			  if (!(BMS_state.CriticalError))
+			  {
+				  setState(KL15);
+			  }
 
 			  break;
 		  }
@@ -788,7 +797,7 @@ void sortCAN(void)
 	CAN_Output_PaketListe[4].msg.buf[7] = 0;
 
 	// Batteriemanagement Status
-	CAN_Output_PaketListe[5].msg.buf[0] = BMS_state.status;
+	CAN_Output_PaketListe[5].msg.buf[0] = BMS_state.Status;
 	CAN_Output_PaketListe[5].msg.buf[1] = longWarning;
 	CAN_Output_PaketListe[5].msg.buf[2] = longError;
 	CAN_Output_PaketListe[5].msg.buf[3] = can_online;
@@ -883,11 +892,11 @@ void setStatus(uint8_t Status)
 	{
 		case StateNormal:
 		{
-			if (BMS_state.status & StateWarning)
+			if (BMS_state.Status & StateWarning)
 			{
 				if (millis() > (timeWarning + WARNING_RESET))
 				{
-					BMS_state.status = (Status | BMS_state.State);
+					BMS_state.Status = (Status | BMS_state.State);
 
 					longWarning = 0;
 					longError = 0;
@@ -900,11 +909,11 @@ void setStatus(uint8_t Status)
 		{
 			timeWarning = millis();
 
-			if (BMS_state.status & StateError)
+			if (BMS_state.Status & StateError)
 			{
 				if (millis() > (timeError + ERROR_RESET))
 				{
-					BMS_state.status = (StateWarning | BMS_state.State);
+					BMS_state.Status = (StateWarning | BMS_state.State);
 				}
 
 				break;
@@ -914,19 +923,15 @@ void setStatus(uint8_t Status)
 		{
 			timeError = millis();
 
-			if (BMS_state.status & CriticalError)
+			if (BMS_state.Status & CriticalError)
 			{
 				break;
 			}
 		}
 		case CriticalError:
-		{
-			BMS_state.status = (Status | BMS_state.State);
-			break;
-		}
 		default:
 		{
-			BMS_state.status = (CriticalError | BMS_state.State);
+			BMS_state.Status = (CriticalError | BMS_state.State);
 			uartTransmit("BMS Kritischer Fehler Statemaschine\n!", 36);
 			break;
 		}

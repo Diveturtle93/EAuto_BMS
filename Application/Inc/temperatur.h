@@ -66,11 +66,11 @@
 
 // Funktionen definieren
 //----------------------------------------------------------------------
-float temperatur_PCB(uint16_t value);										// PCB Temperatur BMS-Master
-float temperatur_STM(uint16_t value);										// STM32 internal Temperatur
-float temperatur_Temp(uint16_t value);										// Temperatursensor BMS-Master
-float temperatur_PCB_Slave(uint16_t value);									// PCB Temperatur BMS-Slave
-float temperatur_Cell_Temp(uint16_t value);									// Zelltemperatur BMS
+float temperatur_PCB (uint16_t value);										// PCB Temperatur BMS-Master
+float temperatur_STM (uint16_t value);										// STM32 internal Temperatur
+float temperatur_Temp (uint16_t value);										// Temperatursensor BMS-Master
+float temperatur_PCB_Slave (uint16_t value);								// PCB Temperatur BMS-Slave
+float temperatur_Cell_Temp (uint16_t value);								// Zelltemperatur BMS
 //----------------------------------------------------------------------
 
 #endif /* INC_TEMPERATUR_H_ */

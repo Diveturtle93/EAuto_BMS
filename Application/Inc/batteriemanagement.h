@@ -40,7 +40,9 @@
 // BMS Errors definieren
 //----------------------------------------------------------------------
 #define BMSError								false
+#define BMSWarning								false
 #define BMSNoError								true
+//----------------------------------------------------------------------
 // Zellen haben Unterspannung
 //----------------------------------------------------------------------
 #define Cell1Undervoltage						0
@@ -55,6 +57,7 @@
 #define Cell10Undervoltage						9
 #define Cell11Undervoltage						10
 #define Cell12Undervoltage						11
+//----------------------------------------------------------------------
 // Zellen haben Ueberspannung
 //----------------------------------------------------------------------
 #define Cell1Overvoltage						12
@@ -88,6 +91,7 @@
 #define Cell14Undertemperatur					37
 #define Cell15Undertemperatur					38
 #define Cell16Undertemperatur					39
+//----------------------------------------------------------------------
 // Zellen haben Uebertemperatur
 //----------------------------------------------------------------------
 #define Cell1Overtemperatur						40
@@ -114,26 +118,30 @@
 #define BMS_ReadTimeOut							60
 //----------------------------------------------------------------------
 
+//----------------------------------------------------------------------
+#define BMS_ERROR_TRESHOLD						5
+//----------------------------------------------------------------------
+
 // Funktionen definieren
 //----------------------------------------------------------------------
-void bms_init(void);														// Initialisier BMS
-void bms_cellspannung(uint8_t cell);										// Lese einen Zellblock ein
-void bms_cellspannungen(void);												// Lese alle Zellspannungen ein
-void bms_celltemperatur(uint8_t tempsensor);								// Lese Zelltemperatur ein
-void bms_celltemperaturen(void);											// Lese alle Zelltemperaturen ein
-void bms_readgpio(uint8_t gpio);											// Lese GPIO des LTC ein
-void bms_ltc_status(void);													// Lese IC Status ein
-void bms_volt_temp(uint8_t tempsensor);										// Messe Zellspannungen und zwei Temperaturen
-void bms_volt_SOC(void);													// Messe Zellspannungen und Sum of Cells
-void bms_work(void);														// Fuehre BMS Operation durch
-bool bms_ok(void);															// Pruefe ob BMS OK ist
-void bms_Vminmax(void);														// Minimal- und Maximalspannung ermitteln
-void bms_Tminmax(void);														// Minimal- und Maximaltemperatur ermitteln
-void bms_MSvoltage(void);													// Module- / Stackspannung berechnen
+bool bms_init (void);														// Initialisier BMS
+void bms_cellspannung (uint8_t cell);										// Lese einen Zellblock ein
+void bms_cellspannungen (void);												// Lese alle Zellspannungen ein
+void bms_celltemperatur (uint8_t tempsensor);								// Lese Zelltemperatur ein
+void bms_celltemperaturen (void);											// Lese alle Zelltemperaturen ein
+void bms_readgpio (uint8_t gpio);											// Lese GPIO des LTC ein
+void bms_ltc_status (void);													// Lese IC Status ein
+void bms_volt_temp (uint8_t tempsensor);									// Messe Zellspannungen und zwei Temperaturen
+void bms_volt_SOC (void);													// Messe Zellspannungen und Sum of Cells
+void bms_work (void);														// Fuehre BMS Operation durch
+bool bms_ok (void);															// Pruefe ob BMS OK ist
+void bms_Vminmax (void);													// Minimal- und Maximalspannung ermitteln
+void bms_Tminmax (void);													// Minimal- und Maximaltemperatur ermitteln
+void bms_MSvoltage (void);													// Module- / Stackspannung berechnen
 //----------------------------------------------------------------------
 
 //----------------------------------------------------------------------
-extern uint16_t cellvoltage[LTC6811_DEVICES][12];							// Array fuer gemessene Zellspannungen
+extern uint16_t cellvoltage[LTC6811_DEVICES][LTC6811_CELLS];				// Array fuer gemessene Zellspannungen
 extern uint16_t celltemperature[LTC6811_DEVICES][LTC1380_DEVICES * LTC1380_SENSORES];// Array fuer gemessene Zelltemperaturen
 //----------------------------------------------------------------------
 

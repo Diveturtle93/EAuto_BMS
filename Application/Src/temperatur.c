@@ -26,7 +26,7 @@
 
 // ADC-Wert in Temperatur umrechnen, NTC auf der PCB
 //----------------------------------------------------------------------
-float temperatur_PCB(uint16_t value)
+float temperatur_PCB (uint16_t value)
 {
 	float resistor = 0.0, temperatur = 0.0;
 
@@ -41,7 +41,7 @@ float temperatur_PCB(uint16_t value)
 
 // ADC-Wert in Temperatur umrechnen, STM interner Temperatursensor
 //----------------------------------------------------------------------
-float temperatur_STM(uint16_t value)
+float temperatur_STM (uint16_t value)
 {
 	float temperatur = 0.0;
 	temperatur = (float)((TEMP110 - TEMP30) / ((float)(*TEMP110_CAL_VALUE) - (float)(*TEMP30_CAL_VALUE)) * ((float)value - (float)(*TEMP30_CAL_VALUE)) + TEMP30);
@@ -52,7 +52,7 @@ float temperatur_STM(uint16_t value)
 
 // ADC-Wert in Temperatur umrechnen, Externe Temperatursensoren Temp1 - Temp4
 //----------------------------------------------------------------------
-float temperatur_Temp(uint16_t value)
+float temperatur_Temp (uint16_t value)
 {
 	float resistor = 0.0, temperatur = 0.0;
 
@@ -67,7 +67,7 @@ float temperatur_Temp(uint16_t value)
 
 // ADC-Wert in Temperatur umrechnen, PCB Temperatur BMS-Slave
 //----------------------------------------------------------------------
-float temperatur_PCB_Slave(uint16_t value)
+float temperatur_PCB_Slave (uint16_t value)
 {
 	float resistor = 0.0, temperatur = 0.0;
 
@@ -81,7 +81,7 @@ float temperatur_PCB_Slave(uint16_t value)
 
 // ADC-Wert in Temperatur umrechnen, Externe Temperatursensoren Temp1 - Temp4
 //----------------------------------------------------------------------
-float temperatur_Cell_Slave(uint16_t value)
+float temperatur_Cell_Slave (uint16_t value)
 {
 	float resistor = 0.0, temperatur = 0.0;
 

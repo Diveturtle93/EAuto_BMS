@@ -26,7 +26,7 @@
 
 // Initialisiere AD8403
 //----------------------------------------------------------------------
-void initAD8403(void)
+void initAD8403 (void)
 {
 	// Setze AD8403 Shutdown Pin
 	AD8403_SHDN_ENABLE();
@@ -44,7 +44,7 @@ void initAD8403(void)
 
 // Setze Potentiometer Wert
 //----------------------------------------------------------------------
-void setPoti(uint8_t addresse, uint8_t Data)
+void setPoti (uint8_t addresse, uint8_t Data)
 {
 	// Variable definieren
 	uint8_t tmp[2] = {0};
@@ -66,7 +66,7 @@ void setPoti(uint8_t addresse, uint8_t Data)
 
 // Setze alle Potis mit den selben Werten
 //----------------------------------------------------------------------
-void setAllPoti(uint8_t Data)
+void setAllPoti (uint8_t Data)
 {
 	// Setze jedes Poti einzeln
 	setPoti(AD8403_MUX0, Data);												// Setze Poti 1
@@ -78,7 +78,7 @@ void setAllPoti(uint8_t Data)
 
 // Schalte Poti aus
 //----------------------------------------------------------------------
-void PotiOff(uint8_t addresse)
+void PotiOff (uint8_t addresse)
 {
 	// Setze ausgewaehltes Poti auf Terminal B
 	setPoti(addresse, 255);													// Setze Poti auf 255, Auswahl ueber Addresse
@@ -87,7 +87,7 @@ void PotiOff(uint8_t addresse)
 
 // Schalte alle Potis aus
 //----------------------------------------------------------------------
-void AllPotiOff(void)
+void AllPotiOff (void)
 {
 	// Schalte Wiper auf Terminal B, Open circuit Terminal A
 	AD8403_SHDN_DISABLE();													// Setze SHDN auf Low
@@ -96,7 +96,7 @@ void AllPotiOff(void)
 
 // Schalte alle Potis an
 //----------------------------------------------------------------------
-void AllPotiOn(void)
+void AllPotiOn (void)
 {
 	// Schalte Wiper auf Wert im Register
 	AD8403_SHDN_ENABLE();													// Setze SHDN auf High
@@ -105,7 +105,7 @@ void AllPotiOn(void)
 
 // Schalte alle Potis auf halbe Stellung, Midscale
 //----------------------------------------------------------------------
-void AllPotiMidscale(void)
+void AllPotiMidscale (void)
 {
 	// Schalte Wiper mittlere Stellung, halb A, halb B
 	AD8403_RS_DISABLE();													// Setze RS auf Low

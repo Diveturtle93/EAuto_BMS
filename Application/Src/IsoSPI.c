@@ -32,7 +32,7 @@ uint32_t timeIsoSpiState;													// Time Variable fuer State
 
 // Setze Statemaschine IsoSPI
 //----------------------------------------------------------------------
-void set_IsoSpiState(IsoSpi_State newState)
+void set_IsoSpiState (IsoSpi_State newState)
 {
 	IsoSpiState = newState;													// Neuen Status setzen
 	timeIsoSpiState = millis();												// Zeit speichern
@@ -74,7 +74,7 @@ void set_IsoSpiState(IsoSpi_State newState)
 
 // Setze Statemaschine ISOSpi
 //----------------------------------------------------------------------
-void IsoSPI_statemaschine(void)
+void IsoSPI_statemaschine (void)
 {
 	switch (IsoSpiState)
 	{
@@ -109,7 +109,7 @@ void IsoSPI_statemaschine(void)
 
 // Bekomme aktuellen State ISOSpi
 //----------------------------------------------------------------------
-IsoSpi_State get_IsoSpiState(void)
+IsoSpi_State get_IsoSpiState (void)
 {
 	// Statemaschine abfragen
 	IsoSPI_statemaschine();
@@ -121,7 +121,7 @@ IsoSpi_State get_IsoSpiState(void)
 
 // Wakeup LTC6811 idle
 //----------------------------------------------------------------------
-void IsoSPI_wakeup(void)
+void IsoSPI_wakeup (void)
 {
 	// Debug Nachricht
 #ifdef DEBUG_ISOSPI
@@ -154,7 +154,7 @@ void IsoSPI_wakeup(void)
 
 // Sende Command
 //----------------------------------------------------------------------
-void IsoSPI_cmd(uint8_t* command)
+void IsoSPI_cmd (uint8_t* command)
 {
 	// Debug Nachricht
 #ifdef DEBUG_ISOSPI
@@ -209,7 +209,7 @@ void IsoSPI_cmd(uint8_t* command)
 
 // Sende Daten
 //----------------------------------------------------------------------
-void IsoSPI_transmit(uint8_t* command, uint8_t* data)
+void IsoSPI_transmit (uint8_t* command, uint8_t* data)
 {
 	// Debug Nachricht
 #ifdef DEBUG_ISOSPI
@@ -256,7 +256,7 @@ void IsoSPI_transmit(uint8_t* command, uint8_t* data)
 
 // Lese Daten
 //----------------------------------------------------------------------
-void IsoSPI_read(uint8_t* command, uint8_t* data)
+void IsoSPI_read (uint8_t* command, uint8_t* data)
 {
 	// Debug Nachricht
 #ifdef DEBUG_ISOSPI

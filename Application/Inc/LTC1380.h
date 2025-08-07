@@ -54,9 +54,9 @@
 
 // Funktionen definieren
 //----------------------------------------------------------------------
-void ltc1380_write(uint8_t Address, uint8_t Channel);						// Kanal eines ICs auswaehlen
-void ltc1380_off(uint8_t Address);											// Alle Kanaele eines ICs ausschalten
-void ltc1380_alloff(void);													// Alle Kanaele aller ICs ausschalten
+void ltc1380_write (uint8_t Address, uint8_t Channel);						// Kanal eines ICs auswaehlen
+void ltc1380_off (uint8_t Address);											// Alle Kanaele eines ICs ausschalten
+void ltc1380_alloff (void);													// Alle Kanaele aller ICs ausschalten
 //----------------------------------------------------------------------
 
 #endif /* INC_LTC1380_H_ */

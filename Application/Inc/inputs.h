@@ -94,8 +94,8 @@ extern komfort_in_tag komfort_in;											// Variable fuer Komforteingaenge de
 
 // Funktionen definieren
 //----------------------------------------------------------------------
-void readall_inputs(void);													// Lese alle Eingaenge
-void read_sdc(void);														// Lese alle Pins vom SDC
+void readall_inputs (void);													// Lese alle Eingaenge
+void read_sdc (void);														// Lese alle Pins vom SDC
 //void read_
 //----------------------------------------------------------------------
 

@@ -26,7 +26,7 @@
 
 // Kanal auswaehlen
 //----------------------------------------------------------------------
-void ltc1380_write(uint8_t Address, uint8_t Channel)
+void ltc1380_write (uint8_t Address, uint8_t Channel)
 {
 	// Debug Nachricht
 #ifdef DEBUG_LTC1380
@@ -81,7 +81,7 @@ void ltc1380_write(uint8_t Address, uint8_t Channel)
 
 // Alle Kanaele eines ICs ausschalten
 //----------------------------------------------------------------------
-void ltc1380_off(uint8_t Address)
+void ltc1380_off (uint8_t Address)
 {
 	// Debug Nachricht
 #ifdef DEBUG_LTC1380
@@ -132,7 +132,7 @@ void ltc1380_off(uint8_t Address)
 
 // Alle Kanaele aller ICs ausschalten
 //----------------------------------------------------------------------
-void ltc1380_alloff(void)
+void ltc1380_alloff (void)
 {
 	// Debug Nachricht
 #ifdef DEBUG_LTC1380

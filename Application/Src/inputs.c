@@ -33,7 +33,7 @@ komfort_in_tag komfort_in;													// Variable fuer Komforteingaenge definie
 
 // Lese alle Eingaenge
 //----------------------------------------------------------------------
-void readall_inputs(void)
+void readall_inputs (void)
 {
 	// Systemeingaenge einlesen
 	system_in.KL15 = HAL_GPIO_ReadPin(KL15_GPIO_Port, KL15_Pin);								// Eingang Auto an
@@ -56,7 +56,7 @@ void readall_inputs(void)
 
 // Lese alle Shutdown-Circuit Eingaenge
 //----------------------------------------------------------------------
-void read_sdc(void)
+void read_sdc (void)
 {
 	// SDC-Eingaenge einlesen
 	sdc_in.IMD_OK_IN = HAL_GPIO_ReadPin(IMD_OK_IN_GPIO_Port, IMD_OK_IN_Pin);					// IMD OK, Akku

@@ -31,7 +31,7 @@
 
 // Collects hardware information from microcontroller and prints it
 //----------------------------------------------------------------------
-void collectHardwareInfo(void)
+void collectHardwareInfo (void)
 {
 	#define STRING_STM_DEVICE_ID			"\nSTM32 Device ID:\t\t"
 	#define STRING_STM_REVISION				"\nSTM32 Revision ID:\t\t"
@@ -87,7 +87,7 @@ void collectHardwareInfo(void)
 
 // Collects Version information from Middleware and prints it
 //----------------------------------------------------------------------
-void collectMiddlewareInfo(void)
+void collectMiddlewareInfo (void)
 {
 	#define STRING_CMSIS_VERSION			"\nCMSIS Version:\t\t\t"
 	#define STRING_HAL_VERSION				"\nHAL Version:\t\t\t"
@@ -136,7 +136,7 @@ void collectMiddlewareInfo(void)
 
 // Collects Software information and prints it
 //----------------------------------------------------------------------
-void collectSoftwareInfo(void)
+void collectSoftwareInfo (void)
 {
 	#define STRING_GIT_COMMIT				"\nGit Commit:\t\t\t"
 	#define STRING_GIT_BRANCH				"\nGit Branch:\t\t\t"
@@ -185,7 +185,7 @@ void collectSoftwareInfo(void)
 
 // Collects Git count information and prints it
 //----------------------------------------------------------------------
-void collectGitcounts(void)
+void collectGitcounts (void)
 {
 	#define STRING_GIT_TAG_DIRTY_COUNT		"\nGit Dirty count:\t\t"
 	#define STRING_GIT_OVERALL_COMMIT_COUNT	"\nGit Overall count:\t\t"
@@ -237,7 +237,7 @@ void collectSystemInfo(void)
 
 // Collects Reset source Flag microcontroller
 //----------------------------------------------------------------------
-reset_reason readResetSource(void)
+reset_reason readResetSource (void)
 {
 	reset_reason reset_flags = STARTUP;
 
@@ -292,7 +292,7 @@ reset_reason readResetSource(void)
 
 // Print reset source from microcontroller
 //----------------------------------------------------------------------
-void printResetSource(reset_reason reset_flags)
+void printResetSource (reset_reason reset_flags)
 {
 	if (reset_flags == STARTUP)												// Regulaerer Start
 	{

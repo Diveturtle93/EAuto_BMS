@@ -31,7 +31,7 @@ imd_tag imd;																		// Variable fuer IMD Eigenschaften definieren
 
 // IMD Status einlesen
 //----------------------------------------------------------------------
-void imd_status(void)
+void imd_status (void)
 {
 	// Einlesen von IMD Ok Pin
 	sdc_in.IMD_OK_IN = HAL_GPIO_ReadPin(IMD_OK_IN_GPIO_Port, IMD_OK_IN_Pin);		// IMD OK einlesen

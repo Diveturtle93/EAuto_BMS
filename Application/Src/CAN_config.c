@@ -26,7 +26,7 @@
 
 // Konfiguriere CAN Nachrichten
 //----------------------------------------------------------------------
-void CAN_config(void)
+void CAN_config (void)
 {
 	CAN_Output_PaketListe[0] = CAN_Nachricht(BMS_CAN_SAFETY, 6, 100, 17);		// main.c
 	CAN_Output_PaketListe[1] = CAN_Nachricht(BMS_CAN_DIGITAL_OUT, 5, 200, 13);	// main.c
