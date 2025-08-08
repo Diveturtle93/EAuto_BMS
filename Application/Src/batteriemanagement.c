@@ -62,6 +62,7 @@ uint16_t PCB_Temperature[LTC6811_DEVICES] = {0};							// Array fuer PCB Tempera
 //----------------------------------------------------------------------
 bool bms_init (void)
 {
+	// Variablen definieren
 	uint8_t error = 0, count = 0;
 
   	// IsoSPI einschalten, Isolierte Spannungsversorgung IsoSPI und HV-Precharge Messung einschalten
@@ -146,18 +147,23 @@ bool bms_init (void)
 //----------------------------------------------------------------------
 void bms_cellspannung (uint8_t cell)
 {
+	// Variablen definieren
 	uint8_t data[32 * LTC6811_DEVICES];
 
+	// Starte Zellmessung
 	ltc6811(ADCVC | MD73 | cell);
 
+	// Daten einlesen, Auswahl Zelle
 	switch (cell)
 	{
+		// Zelle 1 - 3 und 7 - 9
 		case 1:
 		case 2:
 		case 3:
 			ltc6811_read(RDCVA, &data[0]);
 			ltc6811_read(RDCVC, &data[16 * LTC6811_DEVICES]);
 			break;
+		// Zell 4 - 6 und  10 - 12
 		case 4:
 		case 5:
 		case 6:
@@ -169,6 +175,7 @@ void bms_cellspannung (uint8_t cell)
 	}
 
 	// TODO: sortiere Zellspannungen
+	// Daten sortieren fuer alle Zellen
 	for (uint8_t i = 0; i < LTC6811_DEVICES; i++)
 	{
 		/*for (uint8_t j = 0; j < 12; j++)
@@ -197,6 +204,8 @@ void bms_cellspannung (uint8_t cell)
 					break;
 			}
 		}*/
+
+		// Daten sortieren fuer gewaehlte Zellen
 		switch (cell)
 		{
 			case 1:
@@ -227,36 +236,45 @@ void bms_cellspannung (uint8_t cell)
 //----------------------------------------------------------------------
 void bms_cellspannungen (void)
 {
+	// Variablen definieren
 	uint8_t data[32 * LTC6811_DEVICES];
 
+	// Starte Zellmessung
 	ltc6811(ADCVC | MD73);
 
+	// Daten einlesen
 	ltc6811_read(RDCVA, &data[0]);
 	ltc6811_read(RDCVB, &data[8 * LTC6811_DEVICES]);
 	ltc6811_read(RDCVC, &data[16 * LTC6811_DEVICES]);
 	ltc6811_read(RDCVD, &data[24 * LTC6811_DEVICES]);
 
+	// Daten bearbeiten, pro Modul
 	for (uint8_t i = 0; i < LTC6811_DEVICES; i++)
 	{
+		// Daten fuer Zelle bearbeiten
 		for (uint8_t j = 0; j < LTC6811_CELLS; j++)
 		{
 			switch (j)
 			{
+				// Zelle 1 - 3
 				case 0:
 				case 1:
 				case 2:
 					cellvoltage[i][j] = ((data[i*8 + j*2 + 1] << 8) | data[i*8 + j*2]);
 					break;
+				// Zelle 4 - 6
 				case 3:
 				case 4:
 				case 5:
 					cellvoltage[i][j] = ((data[(LTC6811_DEVICES+i)*8 + (j-3)*2 + 1] << 8) | data[(LTC6811_DEVICES+i)*8+ (j-3)*2]);
 					break;
+				// Zelle 7 - 9
 				case 6:
 				case 7:
 				case 8:
 					cellvoltage[i][j] = ((data[(LTC6811_DEVICES*2+i)*8 + (j-6)*2 + 1] << 8) | data[(LTC6811_DEVICES*2+i)*8 + (j-6)*2]);
 					break;
+				// Zelle 10 - 12
 				case 9:
 				case 10:
 				case 11:
@@ -290,9 +308,11 @@ void bms_celltemperatur (uint8_t tempsensor)
 		// Pro GPIO, Max 2
 		for (uint8_t j = 0; j < LTC1380_DEVICES; j++)
 		{
+			// GPIO 1 und 2
 			celltemperature[i][tempsensor + j*8] = ((data[i*8 + j*2 + 1] << 8) | data[i*8 + j*2]);	// LTC GPIO 0 und 1, Byte 0 bis 3 des Registers
 		}
 
+		// GPIO 3
 		PCB_Temperature[i] = ((data[i*8 + 4 + 1] << 8) | data[i*8 + 4]);	// LTC GPIO 2, Byte 4 und 5 des Registers
 	}
 }
@@ -302,26 +322,35 @@ void bms_celltemperatur (uint8_t tempsensor)
 //----------------------------------------------------------------------
 void bms_readgpio (uint8_t gpio)
 {
+	// Variablen definieren
 	uint8_t data[16 * LTC6811_DEVICES];
 
+	// Starte GPIO Messung
 	ltc6811(ADAX | MD73 | gpio);
 
+	// Daten einlesen
 	ltc6811_read(RDAUXA, &data[0]);
 	ltc6811_read(RDAUXB, &data[8 * LTC6811_DEVICES]);
 
+	// Daten bearbeiten, pro Modul
 	for (uint8_t i = 0; i < LTC6811_DEVICES; i++)
 	{
+		// GPIO waehlen
 		switch (gpio)
 		{
+			// GPIO 1 und 2
 			case 1:
 			case 2:
 				break;
+			// GPIO 3
 			case 3:
 				PCB_Temperature[i] = ((data[i*8 + 4 + 1] << 8) | data[i*8 + 4]);// LTC GPIO 2, Byte 4 und 5 des Registers
 				break;
+			// GPIO 4 und 5
 			case 4:
 			case 5:
 				break;
+			// Sekundaerspannung
 			case 6:
 				LTC6811_secref[i] = ((data[i*8 + 8*LTC6811_DEVICES + 4 + 1] << 8) | data[i*8 + 8*LTC6811_DEVICES + 4]);	// LTC Sec Referenzspannung einlesen, Byte 6 und 7 des Registers
 				break;
@@ -336,23 +365,30 @@ void bms_readgpio (uint8_t gpio)
 //----------------------------------------------------------------------
 void bms_ltc_status (void)
 {
+	// Variablen definieren
 	uint8_t data[16 * LTC6811_DEVICES];
 
+	// Starte Status Messung
 	ltc6811(ADSTAT | MD73);
+
+	// Daten einlesen
 	ltc6811_read(RDSTATA, &data[0]);
 	ltc6811_read(RDSTATB, &data[8 * LTC6811_DEVICES]);
 
-
+	// Daten bearbeiten, pro Modul
 	for (uint8_t i = 0; i < LTC6811_DEVICES; i++)
 	{
+		// Variablen zuruecksetzen
 		LTC6811_undervolt[i] = 0;
 		LTC6811_overvolt[i] = 0;
 
+		// Statusdaten abspeichern
 		LTC6811_soc[i] = ((data[i*8 + 1] << 8) | data[i*8]);
 		LTC6811_Temperature[i] = ((data[i*8 + 3] << 8) | data[i*8 + 2]);
 		LTC6811_analogvolt[i] = ((data[i*8 + 5] << 8) | data[i*8 + 4]);
 		LTC6811_digitalvolt[i] = ((data[i*8 + 8*LTC6811_DEVICES + 1] << 8) | data[i*8 + 8*LTC6811_DEVICES]);
 
+		// Unter- / Ueberspannungswerte sortieren
 		for (uint8_t j = 0; j < 3; j++)
 		{
 			for (uint8_t k = 0; k <= 3; k++)
@@ -362,6 +398,7 @@ void bms_ltc_status (void)
 			}
 		}
 
+		// Statusbit Thermalshutdown verarbeiten
 		if (data[i*8 + 8*LTC6811_DEVICES + 5] & 0x01)
 		{
 			LTC6811_ThermalShutdown |= (1 << i);

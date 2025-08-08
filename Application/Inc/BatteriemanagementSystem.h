@@ -60,11 +60,12 @@
 
 // Motorsteuergeraet vorhanden
 //----------------------------------------------------------------------
-#define MOTOR_AVALIBLE								1						// 0 = Nicht vorhanden, 1 = vorhanden
+#define MOTOR_AVAILIBLE								0						// 0 = Nicht vorhanden, 1 = vorhanden
+#define IMD_AVAILIBLE								0						// 0 = Nicht vorhanden, 1 = vorhanden
 #define BAMOCAR_AVAILIBLE							0						// 0 = Nicht vorhanden, 1 = vorhanden
 #define STROM_HV_AVAILIBLE							0						// 0 = Nicht vorhanden, 1 = vorhanden
 #define STROM_LV_AVAILIBLE							0						// 0 = Nicht vorhanden, 1 = vorhanden
-#define KOMBIINSTRUMENT_AVALIBLE					1						// 0 = Nicht vorhanden, 1 = vorhanden
+#define KOMBIINSTRUMENT_AVALIBLE					0						// 0 = Nicht vorhanden, 1 = vorhanden
 //----------------------------------------------------------------------
 
 

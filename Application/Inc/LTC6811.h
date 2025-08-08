@@ -24,6 +24,7 @@
 #ifdef DEBUG
 //	#define DEBUG_ISOSPI
 //	#define DEBUG_LTC6811
+//	#define DEBUG_LTC6811_PEC
 #endif
 //----------------------------------------------------------------------
 

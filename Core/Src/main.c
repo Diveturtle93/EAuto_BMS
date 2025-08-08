@@ -139,7 +139,7 @@ int main(void)
 	HAL_Delay(3000);
 #endif
 
-#if MOTOR_AVALIBLE == 0
+#if MOTOR_AVAILIBLE != 1
 	#if TISCHAUFBAU == 1
 		sdc_in.Anlassen = true;
 	#endif
@@ -291,7 +291,7 @@ int main(void)
 			  }
 #endif
 
-#if MOTOR_AVALIBLE == 1
+#if MOTOR_AVAILIBLE == 1
 			  // Motorsteuergeraet Status ID
 			  case MOTOR_CAN_STATUS:
 			  {
@@ -358,7 +358,7 @@ int main(void)
 	  }
 #endif
 
-#if MOTOR_AVALIBLE == 1
+#if MOTOR_AVAILIBLE == 1
 	  if ((BMS_state.State != Standby) && (millis() > (timeMOTOR + CAN_TIMEOUT)))
 	  {
 		  can_online &= ~(1 << 1);
@@ -729,30 +729,39 @@ void checkSDC(void)
 {
 	sdc_in.SDC_OK = true;
 
-	// Wenn angeschlossen und OK, Pin am uC ist 0, Wenn nicht Pin am uC ist 1
+#if IMD_AVAILIBLE == 1
+	// IMD abfragen, wenn angeschlossen und OK, Pin am uC ist 0, Wenn nicht Pin am uC ist 1
 	if (sdc_in.IMD_OK_IN == 1)
 	{
 		setStatus(StateError);
 		sdc_in.SDC_OK = false;
 	}
+#endif
 
+#if BAMOCAR_AVAILIBLE == 1
+	// HV-Stecker abfragen
 	if (sdc_in.HVIL == 1)
 	{
 		setStatus(StateError);
 		sdc_in.SDC_OK = false;
 	}
 
+	// BTB-Eingang abfragen
 	if (sdc_in.BTB_SDC == 1)
 	{
 		setStatus(StateError);
 		sdc_in.SDC_OK = false;
 	}
+#endif
 
+#if MOTOR_AVAILIBLE == 1
+	// Motor-Eingang abfragen
 	if (sdc_in.MotorSDC == 1)
 	{
 		setStatus(StateWarning);
 		sdc_in.SDC_OK = false;
 	}
+#endif
 
 	if (sdc_in.SDC_OK == 1)
 	{
@@ -929,6 +938,10 @@ void setStatus(uint8_t Status)
 			}
 		}
 		case CriticalError:
+		{
+			BMS_state.Status = (Status | BMS_state.State);
+			break;
+		}
 		default:
 		{
 			BMS_state.Status = (CriticalError | BMS_state.State);

@@ -438,6 +438,7 @@ bool ltc6811_read (uint16_t command, uint8_t* data)
 	{
 		// Variante 1, Pec berechnen und pruefen, ob richtiger Pec mitgesendet wurde
 #ifdef DEBUG_LTC6811
+	#ifdef DEBUG_LTC6811_PEC
 		tmp = ((data[i + 6] << 8) + data[i + 7]);
 		pec = peclookup(6, &data[i*8]);
 
@@ -451,6 +452,7 @@ bool ltc6811_read (uint16_t command, uint8_t* data)
 			uartTransmitNumber(pec, 16);
 			uartTransmit("\n", 1);
 		}
+	#endif
 #endif
 
 		// Variante 2, Daten inklusive Pec mit durch Peccheck pruefen, ob Ergebnis gleich 0 ist
@@ -462,6 +464,7 @@ bool ltc6811_read (uint16_t command, uint8_t* data)
 			error_readtimeout |= (1 << i);									// Fehler abspeichern
 
 #ifdef DEBUG_LTC6811
+	#ifdef DEBUG_LTC6811_PEC
 			uartTransmit("Pec Error2: ", 11);
 			uartTransmitNumber(i + 1, 10);
 			uartTransmit(" ", 1);
@@ -469,6 +472,7 @@ bool ltc6811_read (uint16_t command, uint8_t* data)
 			uartTransmit(" ", 1);
 			uartTransmitNumber(pec, 16);
 			uartTransmit("\n", 1);
+	#endif
 #endif
 		}
 		else
