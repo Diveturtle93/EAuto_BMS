@@ -217,6 +217,7 @@ int main(void)
 	// Nach erfolgreicher Initialisiserung aller Konfigurationen
 	setState(Ready);
 
+	ltc6811_validate_balance();
   /* USER CODE END 2 */
 
   /* Infinite loop */

@@ -1187,3 +1187,157 @@ uint16_t ltc6811_timeout (void)
 	return error_readtimeout;
 }
 //----------------------------------------------------------------------
+
+// Balancing validieren
+//----------------------------------------------------------------------
+bool ltc6811_validate_balance (void)
+{
+	// Variablen definieren
+	uint16_t result[12 * LTC6811_DEVICES] = {0};							// Speicher Differenz
+	uint8_t cell[32 * LTC6811_DEVICES] = {0};								// Speicher Zelle ohne Discharge Schalter
+	uint8_t celldchg[32 * LTC6811_DEVICES] = {0};							// Speicher Zelle mit Discharge Schalter
+	uint8_t sdata[6 * LTC6811_DEVICES] = {0};								// Speicher S Register
+	ltc6811_configuration_tag conf_temp = {0};								// Zwischenspeicher LTC6811 Konfiguration
+
+	// Balancing Einstellungen zwischen speichern
+	conf_temp.configuration[4] = ltc6811_Conf.configuration[4];				// Zwischenspeichern der Konfiguration fuer DCC Wert
+	conf_temp.configuration[5] = ltc6811_Conf.configuration[5];				// Zwischenspeichern der Konfiguration fuer DCC Wert
+
+	// Balancing reseten
+	ltc6811_Conf.configuration[4] = 0;
+	ltc6811_Conf.configuration[5] &= 0xF0;
+
+	// Setze Konfigurationsregister
+	ltc6811_write(WRCFG, &ltc6811_Conf.configuration[0]);
+
+	// Zuruecksetzen S-Register
+	ltc6811(CLRSCTRL);
+
+	// Starte AD-Wandlung
+	ltc6811(ADCVC | MD73);
+
+	// Lese Spannungen
+	ltc6811_read(RDCVA, &cell[0]);
+	ltc6811_read(RDCVB, &cell[8 * LTC6811_DEVICES]);
+	ltc6811_read(RDCVC, &cell[16 * LTC6811_DEVICES]);
+	ltc6811_read(RDCVD, &cell[24 * LTC6811_DEVICES]);
+
+	// Durchschalten der S-Ausgaenge und Messen der Spannungen
+	for (uint8_t i = 0; i < 3; i++)
+	{
+		for (uint8_t j = 0; j < 2; j++)
+		{
+			// S-Ausgang auswaehlen
+			switch (j)
+			{
+				case 0:
+				{
+					sdata[i] = 0x08;
+					sdata[i + 3] = 0x08;
+					break;
+				}
+				case 1:
+				{
+					sdata[i] = 0x80;
+					sdata[i + 3] = 0x80;
+					break;
+				}
+				default:
+					break;
+			}
+
+			// Daten schreiben und Messung starten
+			ltc6811_write(WRSCTRL, &sdata[0]);
+			ltc6811(ADCVC | MD73 | ((i*2 + j + 1) & 0x07));
+
+			// S-Daten zuruecksetzen
+			sdata[i] = 0;
+			sdata[i + 3] = 0;
+		}
+	}
+
+	// S-Register zuruecksetzen
+	ltc6811(CLRSCTRL);
+
+	// Lese Spannungen
+	ltc6811_read(RDCVA, &celldchg[0]);
+	ltc6811_read(RDCVB, &celldchg[8 * LTC6811_DEVICES]);
+	ltc6811_read(RDCVC, &celldchg[16 * LTC6811_DEVICES]);
+	ltc6811_read(RDCVD, &celldchg[24 * LTC6811_DEVICES]);
+
+	// Daten bearbeiten, Differenz bilden, pro Modul
+	for (uint8_t j = 0; j < LTC6811_DEVICES; j++)
+	{
+		// Daten fuer Zelle bearbeiten
+		for (uint8_t i = 0; i < LTC6811_CELLS; i++)
+		{
+			// Auswahl welcher Schalter
+			switch (i)
+			{
+				// Schalter 1 - 3
+				case 0:
+				case 1:
+				case 2:
+					result[j*12 + i] = getDifference(((cell[j*32 + i*2 + 1] << 8) + cell[j*32 + i*2]), ((celldchg[j*32 + i*2 + 1] << 8) + celldchg[j*32 + i*2]));
+					break;
+				// Schalter 4 - 6
+				case 3:
+				case 4:
+				case 5:
+					result[j*12 + i] = getDifference(((cell[j*32 + i*2 + 3] << 8) + cell[j*32 + i*2 + 2]), ((celldchg[j*32 + i*2 + 3] << 8) + celldchg[j*32 + i*2 + 2]));
+					break;
+				// Schalter 7 - 9
+				case 6:
+				case 7:
+				case 8:
+					result[j*12 + i] = getDifference(((cell[j*32 + i*2 + 5] << 8) + cell[j*32 + i*2 + 4]), ((celldchg[j*32 + i*2 + 5] << 8) + celldchg[j*32 + i*2 + 4]));
+					break;
+				// Schalter 10 - 12
+				case 9:
+				case 10:
+				case 11:
+					result[j*12 + i] = getDifference(((cell[j*32 + i*2 + 7] << 8) + cell[j*32 + i*2 + 6]), ((celldchg[j*32 + i*2 + 7] << 8) + celldchg[j*32 + i*2 + 6]));
+					break;
+				default:
+					break;
+			}
+		}
+	}
+
+	// Balancing Werte zuruecksetzen
+	ltc6811_Conf.configuration[4] = conf_temp.configuration[4];				// Konfiguration fuer DCC Wert zuruecksetzen
+	ltc6811_Conf.configuration[5] = conf_temp.configuration[5];				// Konfiguration fuer DCC Wert zuruecksetzen
+
+	// Schreibe Konfiguration
+	ltc6811_write(WRCFG, &ltc6811_Conf.configuration[0]);
+
+#ifdef DEBUG_LTC6811_VALID_BALANCING
+	for (uint8_t j = 0; j < LTC6811_DEVICES; j++)
+	{
+		for (uint8_t i = 0; i < LTC6811_CELLS; i++)
+		{
+			uartTransmitNumber(result[j*12 + i], 10);
+			uartTransmit(", ", 2);
+		}
+	}
+	uartTransmit("\n", 1);
+#endif
+
+	// Schleife zum Pruefen der Daten, pro Modul
+	for (uint8_t j = 0; j < LTC6811_DEVICES; j++)
+	{
+		// pro Zelle
+		for (uint8_t i = 0; i < LTC6811_CELLS; i++)
+		{
+			// Vergleiche Messdaten mit Threshold
+			// TODO: Threshold Wert ermitteln und neue Konstante anlegen
+			if (result[j*12 + i] > OPENWIRE_THRESHOLD)
+			{
+				return false;
+			}
+		}
+	}
+
+	return true;
+}
+//----------------------------------------------------------------------
