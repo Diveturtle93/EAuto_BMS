@@ -34,7 +34,7 @@ ltc6811_configuration_tag ltc6811_Conf;										// LTC6811 Configurations Regis
 static LTC6811_State Ltc6811State;											// Statusvariable Statemaschine
 static uint32_t timeLtc6811State;											// Time Variable fuer State
 uint16_t samplingMode = MD73;												// Sampling Mode fuer LTC6811 Messung
-static uint16_t error_readtimeout = 0xFFFF;									// Fehler fuer Timeout, default alle fehlerhaft
+static uint16_t error_readtimeout = 0x0001;									// Fehler fuer Timeout, default alle fehlerhaft
 //----------------------------------------------------------------------
 
 // Pec Lookuptabelle definieren
@@ -608,8 +608,13 @@ bool peccheck (uint8_t len, uint8_t *data)
 
 // Initialisiere LTC6811, Schreibe Config in Konfigurationsregister
 //----------------------------------------------------------------------
-void ltc6811_init (void)
+bool ltc6811_init (void)
 {
+	// Variablen definieren
+	bool error = false;														// Fehlervariable, wenn zuruecklesen der Register fehlerhaft
+	uint8_t count = 0;														// Fehlerzaehler
+	uint8_t tmp_data[8 * LTC6811_DEVICES];									// Zwischenspeicher Daten + Pec CRC
+
 	// Setze Konfiguration
 	ltc6811_Conf.ADCOPT = 0;												// Setze ADC Mode option, 0 = default
 	ltc6811_Conf.REFON = 0;													// Setze Referenzspannung, 0 = default, 0 = Shutdown after Conversion, 1 = Shutdown after Watchdog timeout
@@ -639,10 +644,54 @@ void ltc6811_init (void)
 	ltc6811_Conf.DCTO = 0;													// Balancing Timer zuruecksetzen
 
 	// Sampling Mode setzen
+	// TODO: samplingMode einmal global setzen, nicht immer beim uebermitteln von Commands
 	samplingMode = MD73;
 
 	// Schreibe Konfiguration in Register am LTC6811
 	ltc6811_write(WRCFG, &ltc6811_Conf.configuration[0]);
+
+	// Config-Register zuruecklesen
+	do
+	{
+		// Register einlesen, true = Pec OK, false = Pec nOK
+		if ((error = ltc6811_read(RDCFG, &tmp_data[0])) != false)
+		{
+			// Register Werte pruefen, pro Modul
+			for (uint8_t j = 0; j < LTC6811_DEVICES; j++)
+			{
+				// Werte in Register prufen
+				for (uint8_t i = 1; i < 6; i++)
+				{
+					if (ltc6811_Conf.configuration[i] != tmp_data[j*8 + i])
+					{
+#ifdef DEBUG
+						software_error_debug(ERROR_LTC6811_INITIALTEST);
+#else
+						software_error(ERROR_LTC6811_INITIALTEST);
+#endif
+					}
+				}
+			}
+		}
+		else
+		{
+			count++;
+		}
+
+		// Wenn Fehler zum 10.ten mal auftritt, dann Fehler ausgeben
+		if (count >= 10)
+		{
+#ifdef DEBUG
+			software_error_debug(ERROR_LTC6811_INITIALTEST);
+#else
+			software_error(ERROR_LTC6811_INITIALTEST);
+#endif
+			return false;
+		}
+	}
+	while ((error != true) && (count <= 10));
+
+	return true;
 }
 //----------------------------------------------------------------------
 
@@ -769,7 +818,7 @@ bool ltc6811_test (uint16_t command)
 	if (command & MD2714)													// Wenn Sampling Frequenz = MD2714
 	{
 		// Wenn ADCOPT gesetzt
-		if (ltc6811_Conf.ADCOPT == 1)
+		if (ltc6811_Conf.ADCOPT == true)
 		{
 			// Wenn Selbsttest 1 gewaehlt
 			if (command == ST1)
@@ -1192,6 +1241,11 @@ uint16_t ltc6811_timeout (void)
 //----------------------------------------------------------------------
 bool ltc6811_validate_balance (void)
 {
+	// Debug Nachricht
+#ifdef DEBUG_LTC6811
+	ITM_SendString("Mosfets am LTC6811 validieren\n");
+#endif
+
 	// Variablen definieren
 	uint16_t result[12 * LTC6811_DEVICES] = {0};							// Speicher Differenz
 	uint8_t cell[32 * LTC6811_DEVICES] = {0};								// Speicher Zelle ohne Discharge Schalter

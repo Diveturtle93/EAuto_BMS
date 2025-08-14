@@ -42,7 +42,7 @@ uint8_t bms_readerror_count = 0;											// Variable fuer Fehlerzaehler beim a
 
 // Definiere Zellenarray Spannungen
 //----------------------------------------------------------------------
-uint16_t cellvoltage[LTC6811_DEVICES][12] = {0};							// Array fuer gemessene Zellspannungen
+uint16_t cellvoltage[LTC6811_DEVICES][LTC6811_CELLS] = {0};					// Array fuer gemessene Zellspannungen
 uint32_t modulvoltage[LTC6811_DEVICES] = {0};								// Array fuer gemessene Modulspannung
 uint16_t mincellvoltage[LTC6811_DEVICES + 1] = {0};							// Array fuer Minimalspannungen
 uint16_t maxcellvoltage[LTC6811_DEVICES + 1] = {0};							// Array fuer Maximalspannungen
@@ -88,7 +88,7 @@ bool bms_init (void)
 	// TODO: Bei Fehler nicht in Endlosschleife gehen. Ggf. Slaves neustarten. Status muss auf CAN-Bus vorhanden sein
 	do
 	{
-		if ((error = ltc6811_check()) != 0)									// LTC6804 Selftest durchfuehren
+		if ((error = ltc6811_check()) != 0)									// LTC6811 Selftest durchfuehren
 		{
 			#define LTC6811_FAILED	"Selbsttest LTC6811 fehlerhaft\n"
 			uartTransmit(LTC6811_FAILED, sizeof(LTC6811_FAILED));			// Ausgabe bei Fehlerhaftem Selbsttest
@@ -309,11 +309,11 @@ void bms_celltemperatur (uint8_t tempsensor)
 		for (uint8_t j = 0; j < LTC1380_DEVICES; j++)
 		{
 			// GPIO 1 und 2
-			celltemperature[i][tempsensor + j*8] = ((data[i*8 + j*2 + 1] << 8) | data[i*8 + j*2]);	// LTC GPIO 0 und 1, Byte 0 bis 3 des Registers
+			celltemperature[i][tempsensor + j*8] = ((data[i*8 + j*2 + 1] << 8) | data[i*8 + j*2]);	// LTC GPIO 1 und 2, Byte 0 bis 3 des Registers
 		}
 
 		// GPIO 3
-		PCB_Temperature[i] = ((data[i*8 + 4 + 1] << 8) | data[i*8 + 4]);	// LTC GPIO 2, Byte 4 und 5 des Registers
+		PCB_Temperature[i] = ((data[i*8 + 4 + 1] << 8) | data[i*8 + 4]);	// LTC GPIO 3, Byte 4 und 5 des Registers
 	}
 }
 //----------------------------------------------------------------------
@@ -344,7 +344,7 @@ void bms_readgpio (uint8_t gpio)
 				break;
 			// GPIO 3
 			case 3:
-				PCB_Temperature[i] = ((data[i*8 + 4 + 1] << 8) | data[i*8 + 4]);// LTC GPIO 2, Byte 4 und 5 des Registers
+				PCB_Temperature[i] = ((data[i*8 + 4 + 1] << 8) | data[i*8 + 4]);// LTC GPIO 3, Byte 4 und 5 des Registers
 				break;
 			// GPIO 4 und 5
 			case 4:
@@ -550,7 +550,7 @@ void bms_work (void)
 
 #ifdef DEBUG_BMS_WORK
 		uartTransmitNumber(bms_ok(), 10);
-		uartTransmit("\n", 1);
+		uartTransmit(", ", 2);
 #endif
 
 	}
@@ -584,24 +584,24 @@ void bms_work (void)
 	// Temperaturen
 	for (uint8_t i = 0; i < 4; i++)
 	{
-		CAN_Output_PaketListe[10+i].msg.buf[0] = celltemperature[0][0+i*4];
-		CAN_Output_PaketListe[10+i].msg.buf[1] = (celltemperature[0][0+i*4]>>8);
-		CAN_Output_PaketListe[10+i].msg.buf[2] = celltemperature[0][1+i*4];
-		CAN_Output_PaketListe[10+i].msg.buf[3] = (celltemperature[0][1+i*4]>>8);
-		CAN_Output_PaketListe[10+i].msg.buf[4] = celltemperature[0][2+i*4];
-		CAN_Output_PaketListe[10+i].msg.buf[5] = (celltemperature[0][2+i*4]>>8);
-		CAN_Output_PaketListe[10+i].msg.buf[6] = celltemperature[0][3+i*4];
-		CAN_Output_PaketListe[10+i].msg.buf[7] = (celltemperature[0][3+i*4]>>8);
+		CAN_Output_PaketListe[31+i].msg.buf[0] = celltemperature[0][0+i*4];
+		CAN_Output_PaketListe[31+i].msg.buf[1] = (celltemperature[0][0+i*4]>>8);
+		CAN_Output_PaketListe[31+i].msg.buf[2] = celltemperature[0][1+i*4];
+		CAN_Output_PaketListe[31+i].msg.buf[3] = (celltemperature[0][1+i*4]>>8);
+		CAN_Output_PaketListe[31+i].msg.buf[4] = celltemperature[0][2+i*4];
+		CAN_Output_PaketListe[31+i].msg.buf[5] = (celltemperature[0][2+i*4]>>8);
+		CAN_Output_PaketListe[31+i].msg.buf[6] = celltemperature[0][3+i*4];
+		CAN_Output_PaketListe[31+i].msg.buf[7] = (celltemperature[0][3+i*4]>>8);
 	}
 
 	// Stackvoltage
-	CAN_Output_PaketListe[14].msg.buf[0] = stackvoltage;
-	CAN_Output_PaketListe[14].msg.buf[1] = (stackvoltage >> 8);
-	CAN_Output_PaketListe[14].msg.buf[2] = (stackvoltage >> 16);
-	CAN_Output_PaketListe[14].msg.buf[3] = (stackvoltage >> 24);
+	CAN_Output_PaketListe[63].msg.buf[0] = stackvoltage;
+	CAN_Output_PaketListe[63].msg.buf[1] = (stackvoltage >> 8);
+	CAN_Output_PaketListe[63].msg.buf[2] = (stackvoltage >> 16);
+	CAN_Output_PaketListe[63].msg.buf[3] = (stackvoltage >> 24);
 
 #ifdef DEBUG_BMS_WORK
-	if (bms_tempcount == LTC1380_SENSORES)
+	if (bms_tempcount == 0)
 	{
 		for (uint8_t i = 0; i < LTC6811_DEVICES; i++)
 		{
@@ -619,10 +619,17 @@ void bms_work (void)
 
 			uartTransmitNumber(PCB_Temperature[i], 10);
 			uartTransmit(", ", 2);
+			uartTransmitNumber(LTC6811_Temperature[i], 10);
+			uartTransmit(", ", 2);
 			uartTransmitNumber(LTC6811_soc[i], 10);
 			uartTransmit("\n", 1);
 		}
-		uartTransmit("\n", 1);
+
+		// Wenn mehrere Module angeschlossen sind, zusaetzlichen Zeilenumbruch ausgeben
+		if (LTC6811_DEVICES > 1)
+		{
+			uartTransmit("\n", 1);
+		}
 	}
 #endif
 }
@@ -809,6 +816,13 @@ bool bms_ok (void)
 			bms_warning[LTC6811_DEVICES] &= ~(1 << i);
 		}
 	}
+
+#ifdef DEBUG_BMS_OK
+	uartTransmitNumber(bms_error[0], 10);
+	uartTransmit(", ", 2);
+	uartTransmitNumber(bms_warning[0], 10);
+	uartTransmit("\n", 1);
+#endif
 
 	// Auswertung ob in BMS ein Fehler oder Warnung vorhanden, Rueckgabe False / True
 	if (bms_error[LTC6811_DEVICES] != 0)

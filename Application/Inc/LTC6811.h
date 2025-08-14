@@ -58,7 +58,7 @@ typedef enum LTC6811State_tag {
 //----------------------------------------------------------------------
 #define LTC6811_DEVICES				1										// Anzahl Chips im Daisy-Chain
 #define LTC6811_CELLS				12										// Anzahl Zellen pro Chip
-#define LTC6811_UVOLT				2000									// Unterspannung einer Zelle		3.2 = 2000 * 16 * 100µV, Spannung = VUV * 16 * 100µV, VUV muss im Register stehen
+#define LTC6811_UVOLT				625										// Unterspannung einer Zelle		3.2 = 2000 * 16 * 100µV, Spannung = VUV * 16 * 100µV, VUV muss im Register stehen
 #define LTC6811_OVOLT				2625									// Ueberspannung einer Zelle		4.2 = 2625 * 16 * 100µV, Spannung = VOV * 16 * 100µV, VOV muss im Register stehen
 #define LTC6811_SOC					25200									// Summe der Zellspannungen an einem LTC6811	50.4 = 25200 * 20 * 100µV, Spannung = SC * 20 * 100µV, SC muss im Register stehen
 #define LTC6811_UTEMP				45200									// Untertemperatur einer Zelle, 0°C
@@ -72,7 +72,7 @@ typedef enum LTC6811State_tag {
 #define SEC_UVOLT					29850									// Second Referenzvoltage Untergrenze
 #define SEC_OVOLT					30150									// Second Referenzvoltage Obergrenze
 #define ANALOG_UVOLT				45000									// Analogvoltage Untergrenze
-#define ANALOG_OVOLT				55000									// Analogvoltage Obergrenze
+#define ANALOG_OVOLT				59000									// Analogvoltage Obergrenze
 #define DIGITAL_UVOLT				27000									// Digitalvoltage Untergrenze
 #define DIGITAL_OVOLT				36000									// Digitalvoltage Obergrenze
 //----------------------------------------------------------------------
@@ -240,7 +240,7 @@ bool ltc6811_read (uint16_t command, uint8_t *data);						// Lesefunktion LTC681
 uint16_t peccommand (uint16_t command);										// CRC Berechnung Command, 16 Bit
 uint16_t peclookup (uint8_t len,	uint8_t *data);							// CRC Berechnung Daten Array, 8 Bit
 bool peccheck (uint8_t len, uint8_t *data);									// CRC Validieren und pruefen
-void ltc6811_init (void);													// Initialisiere LTC6811, Konfigurierung
+bool ltc6811_init (void);													// Initialisiere LTC6811, Konfigurierung
 uint8_t ltc6811_check (void);												// Diagnose LTC6811, fuehrt alle Tests durch
 bool ltc6811_test (uint16_t command);										// Diagnose Selbsttest Test 1 und 2
 bool ltc6811_thermal (void);												// Diagnose Thermal Shutdown
@@ -249,6 +249,7 @@ bool ltc6811_openwire (void);												// Leitungscheck offene Leitung
 uint16_t ltc6811_poll (void);												// Poll Data nach Conversion
 uint16_t ltc6811_timeout (void);											// Rueckgabe welches Module timeout hat
 bool ltc6811_validate_balance (void);										// Validieren der Balancer Mosfets
+void ltc6811_balance (uint8_t cell);										// Balancen der Zellen
 //----------------------------------------------------------------------
 //void init_crc(void);														// Wird benoetigt um Pec-Tabelle zu berechnen
 //----------------------------------------------------------------------
@@ -258,7 +259,7 @@ bool ltc6811_validate_balance (void);										// Validieren der Balancer Mosfet
 typedef union __ltc6811_configuration_tag {
 	struct {
 		uint8_t ADCOPT : 1;													// ADC Mode Option
-		uint8_t SWTRD : 1;													// SWT Pin
+		uint8_t DTEN : 1;													// DTEN Pin
 		uint8_t REFON : 1;													// Reference voltage shutdown
 		uint8_t LTC_GPIO1 : 1;												// GPIO 1
 		uint8_t LTC_GPIO2 : 1;												// GPIO 2
