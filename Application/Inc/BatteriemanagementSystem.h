@@ -89,11 +89,6 @@
 #endif
 //----------------------------------------------------------------------
 
-// Definiere Statemaschine Typedefines
-//----------------------------------------------------------------------
-// TODO:
-//----------------------------------------------------------------------
-
 // CAN-IDs definieren
 //----------------------------------------------------------------------
 // Batteriemanagement-System neu
@@ -237,44 +232,7 @@
 //----------------------------------------------------------------------
 #define CAN_TIMEOUT									10000					// Zeit 10s bis CAN Timeout auftritt
 #define HVRELAISTIME								5000					// Zeit 5s bis HV-Relais ausgeschaltet wird nach wegnahme Freigabe
-#define ERROR_RESET									300000					// Zeit 5min bis Error Zurueckgesetzt werden kann
-#define WARNING_RESET								30000					// Zeit 30s bis Warning Zurueckgesetzt werden kann
 #define BMS_WORK_TIME								100						// Zeitintervall fuer BMS-Abfrage
-//----------------------------------------------------------------------
-
-// Definiere Statemaschine Typedefines
-//----------------------------------------------------------------------
-typedef enum
-{
-	Start,																	// 0 Starte Batteriemanagement
-	Ready,																	// 1 Batteriemanagement gestartet
-	KL15,																	// 2 KL15 aktiv
-	Anlassen,																// 3 Anlasser betaetigt
-	Precharge,																// 4 Precharge Fahrzeug
-	ReadyToDrive,															// 5 Batteriemanagement bereit fuer Fahrmodus
-	Drive,																	// 6 Fahrzeug im Fahrmodus
-	Standby,																// 7 Auto wird abgeschaltet, Zeitverzoegerung bis Batteriemanagement ausgeht
-	Ausschalten,															// 8 Batteriemanagement ausschalten
-	Laden,																	// 9 Lademodus
-	StateNormal = 0x10,														// 16 Normalzustand
-	StateWarning = 0x20,													// 32 Warnung
-	StateError = 0x40,														// 64 Fehler
-	CriticalError = 0x80,													// 128 Critischer Fehler
-} states;
-//----------------------------------------------------------------------
-typedef union
-{
-	struct
-	{
-		uint8_t State : 4;													// State der Statemaschine
-		uint8_t Normal : 1;													// Statemaschine Normal
-		uint8_t Warning : 1;												// Statemaschine Warning
-		uint8_t Error : 1;													// Statemaschine Error
-		uint8_t CriticalError : 1;											// Statemaschine kritischer Error
-	};
-
-	uint8_t Status;									// 1 Byte
-} BMSState;
 //----------------------------------------------------------------------
 
 #endif /* INC_BATTERIEMANAGEMENTSYSTEM_H_ */

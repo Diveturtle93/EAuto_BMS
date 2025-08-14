@@ -53,11 +53,6 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-// BMS Statevariable
-static BMSState BMS_state = {{Start, true, false, false, false}};
-static uint32_t timeError = 0, timeWarning = 0;
-static uint32_t longError = 0, longWarning = 0;
-
 // ADC Array
 static uint16_t ADC_VAL[8] = {0};
 
@@ -110,7 +105,7 @@ int main(void)
 
 	// Anforderung Motorsteuergeraet Drive-Modus aktivieren
 	bool ActivDrive = false;
-	BMSState mStrg = {{Start, true, false, false, false}};
+	Statemaschine mStrg = {{Start, true, false, false, false}};
 
 	// IMD Variablen fuer Berechnung
 	uint32_t timer1Periode = 0, timeIMD = 0;
@@ -278,7 +273,7 @@ int main(void)
 
 		  switch (RxMessage.id)
 		  {
-#if BAMOCAR_AVAILIBLE == 1
+#if BAMOCAR_AVAILABLE == 1
 			  // Bamocar ID
 			  case BAMOCAR_CAN_RX:
 			  {
@@ -291,7 +286,7 @@ int main(void)
 			  }
 #endif
 
-#if MOTOR_AVAILIBLE == 1
+#if MOTOR_AVAILABLE == 1
 			  // Motorsteuergeraet Status ID
 			  case MOTOR_CAN_STATUS:
 			  {
@@ -327,7 +322,7 @@ int main(void)
 			  }
 #endif
 
-#if STROM_HV_AVAILIBLE == 1
+#if STROM_HV_AVAILABLE == 1
 			  // Stromsensor
 			  case STROM_HV_CAN_I:
 			  {
@@ -348,8 +343,8 @@ int main(void)
 		  }
 	  }
 
-#if BAMOCAR_AVAILIBLE == 1
-	  if ((BMS_state.State != Standby) && (millis() > (timeBAMO + CAN_TIMEOUT)))
+#if BAMOCAR_AVAILABLE == 1
+	  if ((BMSstate.State != Standby) && (millis() > (timeBAMO + CAN_TIMEOUT)))
 	  {
 		  can_online &= ~(1 << 0);
 		  longWarning |= (1 << 0);
@@ -358,8 +353,8 @@ int main(void)
 	  }
 #endif
 
-#if MOTOR_AVAILIBLE == 1
-	  if ((BMS_state.State != Standby) && (millis() > (timeMOTOR + CAN_TIMEOUT)))
+#if MOTOR_AVAILABLE == 1
+	  if ((BMSstate.State != Standby) && (millis() > (timeMOTOR + CAN_TIMEOUT)))
 	  {
 		  can_online &= ~(1 << 1);
 		  longWarning |= (1 << 1);
@@ -368,8 +363,8 @@ int main(void)
 	  }
 #endif
 
-#if STROM_HV_AVAILIBLE == 1
-	  if ((BMS_state.State != Standby) && (millis() > (timeStromHV + CAN_TIMEOUT)))
+#if STROM_HV_AVAILABLE == 1
+	  if ((BMSstate.State != Standby) && (millis() > (timeStromHV + CAN_TIMEOUT)))
 	  {
 		  can_online &= ~(1 << 2);
 		  longWarning |= (1 << 2);
@@ -383,7 +378,7 @@ int main(void)
 	  {
 		  // Setze BMS Error Critical und Status auf Ready
 		  setStatus(CriticalError);
-		  BMS_state.State = Ready;
+		  BMSstate.State = Ready;
 
 		  // BMS zuruecksetzen, das kein HV mehr eingeschaltet werden kann
 		  system_out.Freigabe = false;
@@ -394,7 +389,7 @@ int main(void)
 	  }
 
 	  // Wenn Statemaschine nicht im Standby ist
-	  if (BMS_state.State != Standby)
+	  if (BMSstate.State != Standby)
 	  {
 		  // Schreibe alle CAN-Nachrichten auf BUS, wenn nicht im Standby
 		  CANwork();
@@ -413,7 +408,7 @@ int main(void)
 	  }
 
 	  // Statemaschine keine Fehler
-	  if (BMS_state.Normal)
+	  if (BMSstate.Normal)
 	  {
 		  leuchten_out.RedLed = false;
 		  leuchten_out.GreenLed = true;
@@ -422,7 +417,7 @@ int main(void)
 	  }
 
 	  // Statemaschine hat Warnungen
-	  if (BMS_state.Warning)
+	  if (BMSstate.Warning)
 	  {
 		  if (millis() > (timeErrorLED + 1000))
 		  {
@@ -435,7 +430,7 @@ int main(void)
 	  }
 
 	  // Statemaschine hat Error
-	  if (BMS_state.Error)
+	  if (BMSstate.Error)
 	  {
 		  if (millis() > (timeErrorLED + 1000))
 		  {
@@ -448,7 +443,7 @@ int main(void)
 	  }
 
 	  // Statemaschine hat Kritische Fehler
-	  if (BMS_state.CriticalError)
+	  if (BMSstate.CriticalError)
 	  {
 		  leuchten_out.RedLed = true;
 		  leuchten_out.GreenLed = false;
@@ -457,13 +452,13 @@ int main(void)
 	  }
 
 	  // Statemaschine vom Batteriemanagement-System
-	  switch(BMS_state.State)
+	  switch(BMSstate.State)
 	  {
 		  // State Ready, Vorbereiten des Batteriemanagement
 		  case Ready:
 		  {
 			  // Solange kein kritischer Fehler auftritt
-			  if (!(BMS_state.CriticalError))
+			  if (!(BMSstate.CriticalError))
 			  {
 				  setState(KL15);
 			  }
@@ -478,7 +473,7 @@ int main(void)
 			  if (sdc_in.Anlassen == true)
 			  {
 				  // Solange kein kritischer Fehler auftritt
-				  if (!(BMS_state.CriticalError))
+				  if (!(BMSstate.CriticalError))
 				  {
 					  system_out.AmsOK = true;
 
@@ -503,7 +498,7 @@ int main(void)
 			  if (mStrg.State == Precharge)
 			  {
 				  // Solange kein kritischer Fehler auftritt
-				  if (!(BMS_state.CriticalError))
+				  if (!(BMSstate.CriticalError))
 				  {
 					  // Precharge Relais aktivieren
 					  highcurrent_out.PrechargeOut = true;
@@ -806,7 +801,7 @@ void sortCAN(void)
 	CAN_Output_PaketListe[4].msg.buf[7] = 0;
 
 	// Batteriemanagement Status
-	CAN_Output_PaketListe[5].msg.buf[0] = BMS_state.Status;
+	CAN_Output_PaketListe[5].msg.buf[0] = BMSstate.Status;
 	CAN_Output_PaketListe[5].msg.buf[1] = longWarning;
 	CAN_Output_PaketListe[5].msg.buf[2] = longError;
 	CAN_Output_PaketListe[5].msg.buf[3] = can_online;
@@ -817,138 +812,6 @@ void sortCAN(void)
 	CAN_Output_PaketListe[6].msg.buf[2] = imd.status[2];
 	CAN_Output_PaketListe[6].msg.buf[3] = imd.status[3];
 	CAN_Output_PaketListe[6].msg.buf[4] = imd.status[4];
-}
-
-// Set Statemaschine
-void setState(uint8_t State)
-{
-	switch (State)
-	{
-		case Ready:
-		{
-			BMS_state.State = Ready;
-			uartTransmit("Ready\n", 6);
-
-			break;
-		}
-		case KL15:
-		{
-			BMS_state.State = KL15;
-			uartTransmit("KL15\n", 5);
-
-			break;
-		}
-		case Anlassen:
-		{
-			BMS_state.State = Anlassen;
-			uartTransmit("Anlassen\n", 9);
-
-			break;
-		}
-		case Precharge:
-		{
-			BMS_state.State = Precharge;
-			uartTransmit("Precharge\n", 10);
-
-			break;
-		}
-		case ReadyToDrive:
-		{
-			BMS_state.State = ReadyToDrive;
-			uartTransmit("ReadyToDrive\n", 13);
-
-			break;
-		}
-		case Drive:
-		{
-			BMS_state.State = Drive;
-			uartTransmit("Drive\n", 6);
-
-			break;
-		}
-		case Laden:
-		{
-			BMS_state.State = Laden;
-			uartTransmit("Laden\n", 6);
-
-			break;
-		}
-		case Standby:
-		{
-			BMS_state.State = Standby;
-			uartTransmit("Standby\n", 8);
-
-			break;
-		}
-		case Ausschalten:
-		{
-			BMS_state.State = Ausschalten;
-			uartTransmit("Ausschalten\n", 12);
-
-			break;
-		}
-		default:
-		{
-			break;
-		}
-	}
-}
-
-// Set Status der Statemaschine
-void setStatus(uint8_t Status)
-{
-	switch (Status & 0xF0)
-	{
-		case StateNormal:
-		{
-			if (BMS_state.Status & StateWarning)
-			{
-				if (millis() > (timeWarning + WARNING_RESET))
-				{
-					BMS_state.Status = (Status | BMS_state.State);
-
-					longWarning = 0;
-					longError = 0;
-				}
-
-				break;
-			}
-		}
-		case StateWarning:
-		{
-			timeWarning = millis();
-
-			if (BMS_state.Status & StateError)
-			{
-				if (millis() > (timeError + ERROR_RESET))
-				{
-					BMS_state.Status = (StateWarning | BMS_state.State);
-				}
-
-				break;
-			}
-		}
-		case StateError:
-		{
-			timeError = millis();
-
-			if (BMS_state.Status & CriticalError)
-			{
-				break;
-			}
-		}
-		case CriticalError:
-		{
-			BMS_state.Status = (Status | BMS_state.State);
-			break;
-		}
-		default:
-		{
-			BMS_state.Status = (CriticalError | BMS_state.State);
-			uartTransmit("BMS Kritischer Fehler Statemaschine\n!", 36);
-			break;
-		}
-	}
 }
 
 // Timer Interrupt

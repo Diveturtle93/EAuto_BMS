@@ -15,7 +15,7 @@
 
 // Einfuegen der STM Include-Dateien
 //----------------------------------------------------------------------
-#include "stm32f7xx_hal.h"
+#include "main.h"
 //----------------------------------------------------------------------
 
 // Einfuegen der eigenen Include Dateien
