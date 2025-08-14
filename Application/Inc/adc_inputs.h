@@ -19,16 +19,9 @@
 #define DEBUG_ADC_INPUTS
 //----------------------------------------------------------------------
 
-// Konstanten definieren
-//----------------------------------------------------------------------
-//#define TEMP_SENSOR_AVG_SLOPE_MV_PER_CELSIUS			2.5f
-//#define TEMP_SENSOR_VOLTAGE_MV_AT_25					760.0f
-//#define ADC_REFERENCE_VOLTAGE_MV						3300.0f
-//#define ADC_MAX_OUTPUT_VALUE							4095.0f
-//----------------------------------------------------------------------
-
 // Funktionen definieren
 //----------------------------------------------------------------------
+uint16_t readADC (uint8_t channel);
 uint16_t ADC_STMTemperatur (void);
 uint16_t ADC_PCBTemperatur (void);
 uint16_t ADC_KL15 (void);

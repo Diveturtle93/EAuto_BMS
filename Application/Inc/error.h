@@ -24,21 +24,22 @@
 
 // Festlegen der Fehlercodes
 //----------------------------------------------------------------------
-#define ERROR_NONE								0
-#define ERROR_LTC6811_THERMAL					1
-#define ERROR_LTC6811_TEST1						2
-#define ERROR_LTC6811_TEST2						3
-#define ERROR_LTC6811_DIAGN						4
-#define ERROR_LTC6811_OPENWIRE					5
-#define ERROR_LTC6811_OVERVOLT					6
-#define ERROR_LTC6811_UNDERVOLT					7
-#define ERROR_LTC6811_INITIALTEST				8
-#define ERROR_SDC_BTB							10
-#define ERROR_SDC_MOTOR							11
-#define ERROR_SDC_HVIL							12
-#define ERROR_IMD								13
-#define ERROR_AMS								14
-#define ERROR_ADC								15
+#define ERROR_NONE								0							// Kein Fehler
+#define ERROR_LTC6811_THERMAL					1							// LTC6811 Temperaturfehler
+#define ERROR_LTC6811_TEST1						2							// LTC6811 Test 1 fehlerhaft
+#define ERROR_LTC6811_TEST2						3							// LTC6811 Test 2 fehlerhaft
+#define ERROR_LTC6811_DIAGN						4							// LTC6811 Diagnosebit fehlerhaft
+#define ERROR_LTC6811_OPENWIRE					5							// LTC6811 OpenWire fehlerhaft
+#define ERROR_LTC6811_OVERVOLT					6							// LTC6811 Ueberspannungsfehler
+#define ERROR_LTC6811_UNDERVOLT					7							// LTC6811 Unterspannungsfehler
+#define ERROR_LTC6811_INITIALTEST				8							// LTC6811 Initialtest fehlerhaft
+#define ERROR_LTC6811_COMM_TIMEOUT				9							// LTC6811 Kommunikationsfehler
+#define ERROR_SDC_BTB							10							// Kein BTB
+#define ERROR_SDC_MOTOR							11							// Kein Motorsteuergeraet
+#define ERROR_SDC_HVIL							12							// Keine HV-Stecker
+#define ERROR_IMD								13							// IMD Fehler
+#define ERROR_AMS								14							// AMS Fehler
+#define ERROR_ADC								15							// ADC Fehler
 //----------------------------------------------------------------------
 
 // Funktionen definieren
