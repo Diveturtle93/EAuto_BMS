@@ -1,50 +1,49 @@
 //----------------------------------------------------------------------
-// Titel	:	BasicUart.h
+// Titel	:	ResetReason.h
 //----------------------------------------------------------------------
 // Sprache	:	C
-// Datum	:	16.01.2021
+// Datum	:	16.05.2025
 // Version	:	1.0
 // Autor	:	Diveturtle93
-// Projekt	:	Basic Uart
+// Projekt	:	ResetReason
 //----------------------------------------------------------------------
 
 // Dateiheader definieren
 //----------------------------------------------------------------------
-#ifndef INC_BASICUART_H_
-#define INC_BASICUART_H_
+#ifndef INC_RESETREASON_H_
+#define INC_RESETREASON_H_
 //----------------------------------------------------------------------
 
 // Einfuegen der standard Include-Dateien
 //----------------------------------------------------------------------
-#include <stdint.h>
-#include <stdio.h>
+
 //----------------------------------------------------------------------
 
-// Definiere Debug Symbols
-//----------------------------------------------------------------------
-#ifdef DEBUG
-	#define SHELL
-#endif
+// Definiere TypeDefines
 //----------------------------------------------------------------------
 
-// Typedefines definieren
+// Reset Reasons definieren
 //----------------------------------------------------------------------
 typedef enum
 {
-	UART_OK		= 0x00,
-	UART_ERROR	= 0xFF,
-} uart_status;
+	STARTUP = 0x00,															// Normal Startup
+	IWDGRST1 = 0x01,														// Reset durch Independent Watchdog
+	WWDGRST1 = 0x02,														// Reset durch Window Watchdog
+	LPWRRST1 = 0x04,														// Reset durch CPU
+	BORRST1 = 0x08,															// Reset durch Brown-Out
+	OBLRST1 = 0x08,															// Reset durch Option Byte Loader
+	PORRST1 = 0x10,															// Reset durch Power Down, Power On
+	SFTRST1 = 0x20,															// Reset durch Software
+	PINRST1 = 0x40,															// Reset durch Reset-Pin
+} reset_reason;
 //----------------------------------------------------------------------
 
 // Funktionen definieren
 //----------------------------------------------------------------------
-void uartTransmit (const char *str, const size_t size);						// Sende Zeichenkette der Laenge "size"
-void uartTransmitNumber (const uint32_t number, const uint32_t base);		// Sende Nummer mit Basis "base"
-void uartTransmitString (const char *str);									// Sende String, Laenge wird ermittelt
-void uartTransmitChar (const char str);										// Sende einzelnes Zeichen
-uart_status uartReceive (uint8_t *data, uint16_t length);					// Empfange Daten
-void uartReInitBasicPolling (void);											// Deinitialisiere Uart
+void printResetSource (reset_reason reset_flags);							// Schreibt Systemreset auf Uart
+reset_reason readResetSource (void);										// Wertet Systemreset aus
 //----------------------------------------------------------------------
 
-#endif /* INC_BASICUART_H_ */
+
+#endif /* INC_RESETREASON_H_ */
 //----------------------------------------------------------------------

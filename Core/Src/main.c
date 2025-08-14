@@ -26,11 +26,11 @@
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
-#include <math.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "BatteriemanagementSystem.h"
+#include <math.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -729,7 +729,7 @@ void checkSDC(void)
 {
 	sdc_in.SDC_OK = true;
 
-#if IMD_AVAILIBLE == 1
+#if IMD_AVAILABLE == 1
 	// IMD abfragen, wenn angeschlossen und OK, Pin am uC ist 0, Wenn nicht Pin am uC ist 1
 	if (sdc_in.IMD_OK_IN == 1)
 	{
@@ -738,7 +738,7 @@ void checkSDC(void)
 	}
 #endif
 
-#if BAMOCAR_AVAILIBLE == 1
+#if BAMOCAR_AVAILABLE == 1
 	// HV-Stecker abfragen
 	if (sdc_in.HVIL == 1)
 	{
@@ -754,7 +754,7 @@ void checkSDC(void)
 	}
 #endif
 
-#if MOTOR_AVAILIBLE == 1
+#if MOTOR_AVAILABLE == 1
 	// Motor-Eingang abfragen
 	if (sdc_in.MotorSDC == 1)
 	{
@@ -1000,8 +1000,7 @@ void Error_Handler(void)
 	}
   /* USER CODE END Error_Handler_Debug */
 }
-
-#ifdef  USE_FULL_ASSERT
+#ifdef USE_FULL_ASSERT
 /**
   * @brief  Reports the name of the source file and the source line number
   *         where the assert_param error has occurred.

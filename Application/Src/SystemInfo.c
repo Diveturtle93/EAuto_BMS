@@ -5,7 +5,7 @@
 // Datum	:	16.01.2021
 // Version	:	1.0
 // Autor	:	Diveturtle93
-// Projekt	:	Batteriemanagement-System
+// Projekt	:	SystemInfo
 //----------------------------------------------------------------------
 
 // Einfuegen der standard Include-Dateien
@@ -23,7 +23,6 @@
 
 // Einfuegen der STM Include-Dateien
 //----------------------------------------------------------------------
-#include "stm32f7xx_hal.h"
 //#include "cmsis_os.h"														//Collect Information from RTOS CMSIS LAYER
 //#include "task.h"															//Collect Information from RTOS
 //----------------------------------------------------------------------
@@ -89,16 +88,46 @@ void collectHardwareInfo (void)
 //----------------------------------------------------------------------
 void collectMiddlewareInfo (void)
 {
-	#define STRING_CMSIS_VERSION			"\nCMSIS Version:\t\t\t"
+	#define STRING_CORTEX_CMSIS_VERSION		"\nCortex CMSIS Version:\t\t"
+	#define STRING_STM_CMSIS_VERSION		"\nSTM32F7 CMSIS Version:\t\t"
 	#define STRING_HAL_VERSION				"\nHAL Version:\t\t\t"
 	#define STRING_RTOS_CMSIS_VERSION		"\nRTOS CMSIS Version:\t\t"
 	#define STRING_RTOS_VERSION				"\nRTOS Version:\t\t\t"
 
-	uartTransmit(STRING_CMSIS_VERSION, sizeof(STRING_CMSIS_VERSION));
-	uartTransmitNumber(__CM7_CMSIS_VERSION_MAIN, 10);						// CMSIS Version anzeigen
+	uartTransmit(STRING_CORTEX_CMSIS_VERSION, sizeof(STRING_CORTEX_CMSIS_VERSION));
+	uartTransmitNumber(__CM_CMSIS_VERSION_MAIN, 10);						// Cortex CMSIS Version anzeigen, Main Version
 	uartTransmit(".", 1);
-	uartTransmitNumber(__CM7_CMSIS_VERSION_SUB, 10);						// CMSIS Version anzeigen
+	uartTransmitNumber(__CM_CMSIS_VERSION_SUB, 10);							// Cortex CMSIS Version anzeigen, Sub Version
 
+	uartTransmit(STRING_STM_CMSIS_VERSION, sizeof(STRING_STM_CMSIS_VERSION));
+
+#ifdef STM32F1
+	uartTransmitNumber(__STM32F1_CMSIS_VERSION_MAIN, 10);					// CMSIS Version anzeigen, Main Version
+	uartTransmit(".", 1);
+	uartTransmitNumber(__STM32F1_CMSIS_VERSION_SUB1, 10);					// CMSIS Version anzeigen, Sub1 Version
+	uartTransmit(".", 1);
+	uartTransmitNumber(__STM32F1_CMSIS_VERSION_SUB2, 10);					// CMSIS Version anzeigen, Sub2 Version
+	uartTransmit(".", 1);
+	uartTransmitNumber(__STM32F1_CMSIS_VERSION_RC, 10);						// CMSIS Version anzeigen, Release candidate
+#endif
+
+#ifdef STM32F7
+	uartTransmitNumber(__STM32F7_CMSIS_VERSION_MAIN, 10);					// CMSIS Version anzeigen, Main Version
+	uartTransmit(".", 1);
+	uartTransmitNumber(__STM32F7_CMSIS_VERSION_SUB1, 10);					// CMSIS Version anzeigen, Sub1 Version
+	uartTransmit(".", 1);
+	uartTransmitNumber(__STM32F7_CMSIS_VERSION_SUB2, 10);					// CMSIS Version anzeigen, Sub2 Version
+#endif
+
+#ifdef STM32G0
+	uartTransmitNumber(__STM32G0_CMSIS_VERSION_MAIN, 10);					// CMSIS Version anzeigen, Main Version
+	uartTransmit(".", 1);
+	uartTransmitNumber(__STM32G0_CMSIS_VERSION_SUB1, 10);					// CMSIS Version anzeigen, Sub1 Version
+	uartTransmit(".", 1);
+	uartTransmitNumber(__STM32G0_CMSIS_VERSION_SUB2, 10);					// CMSIS Version anzeigen, Sub2 Version
+	uartTransmit(".", 1);
+	uartTransmitNumber(__STM32G0_CMSIS_VERSION_RC, 10);						// CMSIS Version anzeigen, Release candidate
+#endif
 
 	uartTransmit(STRING_HAL_VERSION, sizeof(STRING_HAL_VERSION));			// Hal Version anzeigen
 	uartTransmitNumber((uint32_t)((HAL_GetHalVersion() >> 24) & 0xFF), 10);
@@ -138,6 +167,10 @@ void collectMiddlewareInfo (void)
 //----------------------------------------------------------------------
 void collectSoftwareInfo (void)
 {
+	#define STRING_BUILD_DATE				"\nBuild Date:\t\t\t"
+	#define STRING_BUILD_TIME				"\nBuild Time:\t\t\t"
+	#define STRING_GIT_BUILD_DATE			"\nGit Build Date:\t\t\t"
+	#define STRING_GIT_BUILD_TIME			"\nGit Build Time:\t\t\t"
 	#define STRING_GIT_COMMIT				"\nGit Commit:\t\t\t"
 	#define STRING_GIT_BRANCH				"\nGit Branch:\t\t\t"
 	#define STRING_GIT_HASH					"\nGit Hash:\t\t\t"
@@ -145,8 +178,22 @@ void collectSoftwareInfo (void)
 	#define STRING_GIT_LAST_TAG				"\nGit letzter Tags:\t\t"
 	#define STRING_GIT_TAG_COMMIT			"\nGit Tags commit:\t\t"
 	#define STRING_GIT_TAG_DIRTY			"\nGit Dirty commit:\t\t"
-	#define STRING_BUILD_DATE				"\nBuild Date:\t\t\t"
-	#define STRING_BUILD_TIME				"\nBuild Time:\t\t\t"
+
+	uartTransmit(STRING_BUILD_DATE, sizeof(STRING_BUILD_DATE));
+	uartTransmit(BUILD_DATE, sizeof(BUILD_DATE));							// Kompilierdatum anzeigen
+
+	uartTransmit(STRING_BUILD_TIME, sizeof(STRING_BUILD_TIME));
+	uartTransmit(BUILD_TIME, sizeof(BUILD_TIME));							// Kompilierzeit anzeigen
+
+	uartTransmit("\n", 1);													// Leerzeile einfuegen
+
+	uartTransmit(STRING_GIT_BUILD_DATE, sizeof(STRING_GIT_BUILD_DATE));
+	uartTransmit(GIT_BUILD_DATE, sizeof(GIT_BUILD_DATE));					// Git Kompilierdatum anzeigen von git.h
+
+	uartTransmit(STRING_GIT_BUILD_TIME, sizeof(STRING_GIT_BUILD_TIME));
+	uartTransmit(GIT_BUILD_TIME, sizeof(GIT_BUILD_TIME));					// GIt Kompilierzeit anzeigen von git.h
+
+	uartTransmit("\n", 1);													// Leerzeile einfuegen
 
 	uartTransmit(STRING_GIT_COMMIT, sizeof(STRING_GIT_COMMIT));
 	uartTransmit(GIT_COMMIT, sizeof(GIT_COMMIT));							// Git Commit anzeigen
@@ -172,14 +219,6 @@ void collectSoftwareInfo (void)
 	uartTransmit(GIT_TAG_DIRTY, sizeof(GIT_TAG_DIRTY));						// Git Dirty Commit anzeigen
 
 	uartTransmit("\n", 1);													// Leerzeile einfuegen
-
-	uartTransmit(STRING_BUILD_DATE, sizeof(STRING_BUILD_DATE));
-	uartTransmit(BUILD_DATE, sizeof(BUILD_DATE));							// Kompilierdatum anzeigen
-
-	uartTransmit(STRING_BUILD_TIME, sizeof(STRING_BUILD_TIME));
-	uartTransmit(BUILD_TIME, sizeof(BUILD_TIME));							// Kompilierzeit anzeigen
-
-	uartTransmit("\n", 1);													// Leerzeile einfuegen
 }
 //----------------------------------------------------------------------
 
@@ -191,7 +230,7 @@ void collectGitcounts (void)
 	#define STRING_GIT_OVERALL_COMMIT_COUNT	"\nGit Overall count:\t\t"
 	#define STRING_GIT_BRANCH_COMMIT_COUNT	"\nGit Branch commit count:\t"
 	#define STRING_GIT_ACTIVE_BRANCHES		"\nGit active Branches:\t\t"
-	#define STRING_GIT_TAG_COUNT			"\nGit Tags count:\t\t"
+	#define STRING_GIT_TAG_COUNT			"\nGit Tags count:\t\t\t"
 
 	uartTransmit(STRING_GIT_TAG_DIRTY_COUNT, sizeof(STRING_GIT_TAG_DIRTY_COUNT));
 	uartTransmit(GIT_TAG_DIRTY_COUNT, sizeof(GIT_TAG_DIRTY_COUNT));			// Git zaehle Dirty commits nach letztem Tags und Anzahl anzeigen
@@ -202,10 +241,10 @@ void collectGitcounts (void)
 	uartTransmit(STRING_GIT_BRANCH_COMMIT_COUNT, sizeof(STRING_GIT_BRANCH_COMMIT_COUNT));
 	uartTransmit(GIT_BRANCH_COMMIT_COUNT, sizeof(GIT_BRANCH_COMMIT_COUNT));	// Git Branch Commits zaehken und Anzahl anzeigen
 
-	uartTransmit(STRING_GIT_LAST_TAG, sizeof(STRING_GIT_LAST_TAG));
+	uartTransmit(STRING_GIT_ACTIVE_BRANCHES, sizeof(STRING_GIT_ACTIVE_BRANCHES));
 	uartTransmit(GIT_ACTIVE_BRANCHES, sizeof(GIT_ACTIVE_BRANCHES));			// Git aktive Branches zaehlen und Anzahl anzeigen
 
-	uartTransmit(STRING_GIT_TAG_COMMIT, sizeof(STRING_GIT_TAG_COMMIT));
+	uartTransmit(STRING_GIT_TAG_COUNT, sizeof(STRING_GIT_TAG_COUNT));
 	uartTransmit(GIT_TAG_COUNT, sizeof(GIT_TAG_COUNT));						// Git Tags zaehlen und Anzahl anzeigen
 }
 //----------------------------------------------------------------------
@@ -232,113 +271,5 @@ void collectSystemInfo(void)
 	collectGitcounts();														// Sammelt Git count Informationen und gibt diese ueber Uart aus
 
 	uartTransmit("\n\n\n", 3);
-}
-//----------------------------------------------------------------------
-
-// Collects Reset source Flag microcontroller
-//----------------------------------------------------------------------
-reset_reason readResetSource (void)
-{
-	reset_reason reset_flags = STARTUP;
-
-	// Pruefe Reset Flag Internen Watchdog
-	if (__HAL_RCC_GET_FLAG(RCC_FLAG_IWDGRST) == true)
-	{
-		reset_flags += IWDG1;
-	}
-
-	// Pruefe Reset Flag Window Watchdog
-	if (__HAL_RCC_GET_FLAG(RCC_FLAG_WWDGRST) == true)
-	{
-		reset_flags += WWDG1;
-	}
-
-	// Pruefe Reset Flag Low Power Reset
-	if (__HAL_RCC_GET_FLAG(RCC_FLAG_LPWRRST) == true)
-	{
-		reset_flags += CPURST1;
-	}
-
-	// Pruefe Reset Flag Brown Out Reset
-	if (__HAL_RCC_GET_FLAG(RCC_FLAG_BORRST) == true)
-	{
-		reset_flags += BORST1;
-	}
-
-	// Pruefe Reset Flag Power On Reset
-	if (__HAL_RCC_GET_FLAG(RCC_FLAG_PORRST) == true)
-	{
-		reset_flags += PORST1;
-	}
-
-	// Pruefe Reset Flag Software Reset
-	if (__HAL_RCC_GET_FLAG(RCC_FLAG_SFTRST) == true)
-	{
-		reset_flags += SFTRST1;
-	}
-
-	// Pruefe Reset Flag Pin-Reset
-	if (__HAL_RCC_GET_FLAG(RCC_FLAG_PINRST) == true)
-	{
-		reset_flags += PINRST1;
-	}
-
-	// Loesche alle Reset Flags
-	__HAL_RCC_CLEAR_RESET_FLAGS();
-
-	return reset_flags;
-}
-//----------------------------------------------------------------------
-
-// Print reset source from microcontroller
-//----------------------------------------------------------------------
-void printResetSource (reset_reason reset_flags)
-{
-	if (reset_flags == STARTUP)												// Regulaerer Start
-	{
-		uartTransmit("Regular Start\r\n", 15);
-	}
-	else
-	{
-		if (reset_flags & IWDG1)											// Interner watchdog Reset
-		{
-			uartTransmit("Interner Watchdog Reset\n", 24);
-		}
-
-		if (reset_flags & WWDG1)											// Window watchdog Reset
-		{
-			uartTransmit("Window Watchdog Reset\n", 22);
-		}
-
-		if (reset_flags & CPURST1)											// CPU Reset
-		{
-			uartTransmit("CPU Reset\n", 10);
-		}
-
-		if (reset_flags & BORST1)											// Brown out Reset
-		{
-			uartTransmit("Brown Out Reset\n", 16);
-		}
-
-		if (reset_flags & PORST1)											// Power on Reset / Power down Reser
-		{
-			uartTransmit("Power On Reset\n", 15);
-		}
-
-		if (reset_flags & SFTRST1)											// Software Reset
-		{
-			uartTransmit("Software Reset\n", 15);
-		}
-
-		if (reset_flags & PINRST1)											// NRST pin
-		{
-			uartTransmit("PIN Reset\n", 10);
-		}
-
-		if (reset_flags & RMVF1)											// NRST pin
-		{
-			uartTransmit("RMVF\n", 5);
-		}
-	}
 }
 //----------------------------------------------------------------------

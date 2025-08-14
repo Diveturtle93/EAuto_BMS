@@ -43,8 +43,8 @@
 	@echo "" >> $@
 	@echo "// Build Zeit definieren" >> $@
 	@echo "//----------------------------------------------------------------------" >> $@
-	@echo "#define BUILD_DATE					\"$(shell date +"%Y-%m-%d")\"" >> $@
-	@echo "#define BUILD_TIME					\"$(shell date +"%H:%M:%S")\"" >> $@
+	@echo "#define GIT_BUILD_DATE				\"$(shell date +"%b %d %Y")\"" >> $@
+	@echo "#define GIT_BUILD_TIME				\"$(shell date +"%H:%M:%S")\"" >> $@
 	@echo "//----------------------------------------------------------------------" >> $@
 	@echo "#endif /* _GIT_H_ */" >> $@
 	@echo "//----------------------------------------------------------------------" >> $@
