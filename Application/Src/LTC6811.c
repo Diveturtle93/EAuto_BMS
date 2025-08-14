@@ -1395,3 +1395,15 @@ bool ltc6811_validate_balance (void)
 	return true;
 }
 //----------------------------------------------------------------------
+
+// Zelle balancieren
+//----------------------------------------------------------------------
+void ltc6811_balance (uint8_t cell)
+{
+	// Test Zelle 1
+	ltc6811_Conf.DCC1 = 1;
+
+	// Schreibe Daten
+	ltc6811_write(WRCFG, &ltc6811_Conf.configuration[0]);
+}
+//----------------------------------------------------------------------

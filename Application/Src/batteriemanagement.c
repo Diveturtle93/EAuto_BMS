@@ -221,7 +221,7 @@ void bms_cellspannung (uint8_t cell)
 			case 6:
 			{
 				cellvoltage[i][cell-1] = ((data[(LTC6811_DEVICES+i)*8 + ((cell-1)-3)*2 + 1] << 8) | data[(LTC6811_DEVICES+i)*8 + ((cell-1)-3)*2]);
-				cellvoltage[i][cell-1+6] = ((data[(LTC6811_DEVICES*2+i)*8 + ((cell-1)-9)*2 + 1] << 8) | data[(LTC6811_DEVICES*2+i)*8 + ((cell-1)-9)*2]);
+				cellvoltage[i][cell-1+6] = ((data[(LTC6811_DEVICES*3+i)*8 + ((cell-1)-9)*2 + 1] << 8) | data[(LTC6811_DEVICES*3+i)*8 + ((cell-1)-9)*2]);
 				break;
 			}
 			default:
@@ -297,7 +297,7 @@ void bms_celltemperatur (uint8_t tempsensor)
 	// Analogmultiplexer einstellen und Messung starten
 	ltc1380_write(LTC1380_MUX0, tempsensor);								// Adresse und Kanal auf Multiplexer setzen
 	ltc1380_write(LTC1380_MUX2, tempsensor);								// Adresse und Kanal auf Multiplexer setzen
-	ltc6811(ADAX | MD73);													// Messung fuer GPIOs starten
+	ltc6811(ADCVAX | MD73);													// Messung fuer GPIOs starten
 	
 	// Daten einlesen
 	ltc6811_read(RDAUXA, &data[0]);
@@ -620,6 +620,12 @@ void bms_work (void)
 			uartTransmitNumber(PCB_Temperature[i], 10);
 			uartTransmit(", ", 2);
 			uartTransmitNumber(LTC6811_Temperature[i], 10);
+			uartTransmit(", ", 2);
+			uartTransmitNumber(LTC6811_analogvolt[i], 10);
+			uartTransmit(", ", 2);
+			uartTransmitNumber(LTC6811_digitalvolt[i], 10);
+			uartTransmit(", ", 2);
+			uartTransmitNumber(LTC6811_secref[i], 10);
 			uartTransmit(", ", 2);
 			uartTransmitNumber(LTC6811_soc[i], 10);
 			uartTransmit("\n", 1);
