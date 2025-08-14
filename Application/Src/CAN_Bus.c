@@ -22,7 +22,6 @@
 // Einfuegen der eigenen Include Dateien
 //----------------------------------------------------------------------
 #include "CAN_Bus.h"
-#include "BasicUart.h"
 #include "millis.h"
 //----------------------------------------------------------------------
 

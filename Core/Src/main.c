@@ -312,6 +312,7 @@ int main(void)
 				  }
 
 				  // Abrage ASR1
+				  // FIXME: Pruefen ob wirklich in State ReadyToDrive oder Drive umgeschaltet wird. Nicht das Precharge oder Standby auch einen einfluss haben
 				  if ((RxMessage.buf[5] & (1 << 0)) && (mStrg.State & (ReadyToDrive & Drive)))
 				  {
 					  // DriveMode aktivieren
@@ -380,10 +381,11 @@ int main(void)
 		  setStatus(CriticalError);
 		  BMSstate.State = Ready;
 
-		  // BMS zuruecksetzen, das kein HV mehr eingeschaltet werden kann
+		  // BMS zuruecksetzen, dass kein HV mehr eingeschaltet werden kann
 		  system_out.Freigabe = false;
 		  system_out.AmsLimit = false;
 		  system_out.AmsOK = false;
+		  system_out.ImdOK = false;
 		  system_out.Recuperation = false;
 		  sdc_in.Anlassen = false;
 	  }

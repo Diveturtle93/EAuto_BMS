@@ -228,7 +228,7 @@
 //#define STROM_LV_CAN_WH								0x538					// Gesamtenergie (U1 x I)
 //----------------------------------------------------------------------
 
-//
+// Zeit Konstanten festlegen
 //----------------------------------------------------------------------
 #define CAN_TIMEOUT									10000					// Zeit 10s bis CAN Timeout auftritt
 #define HVRELAISTIME								5000					// Zeit 5s bis HV-Relais ausgeschaltet wird nach wegnahme Freigabe
