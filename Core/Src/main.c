@@ -107,8 +107,17 @@ int main(void)
 	bool ActivDrive = false;
 	Statemaschine mStrg = {{Start, true, false, false, false}};
 
+	// Stromsensor Nachrichten definieren
+	stromsensor_ivtmod current;
+	stromsensor_ivtmod voltage1;
+	stromsensor_ivtmod voltage2;
+	stromsensor_ivtmod voltage3;
+
 	// IMD Variablen fuer Berechnung
 	uint32_t timer1Periode = 0, timeIMD = 0;
+
+	// Testvariablen
+	uint32_t zweisekunden = 0, temp;
 
 	// Backup Data, stored in RTC_Backup Register
 //	uint32_t Backup = 0xFFFF;
@@ -324,14 +333,54 @@ int main(void)
 #endif
 
 #if STROM_HV_AVAILABLE == 1
-			  // Stromsensor
+			  // Stromwert
 			  case STROM_HV_CAN_I:
 			  {
+				  // Speichern wenn verfuegbar, Zeit zuruecksetzen
 				  can_online |= (1 << 2);
 				  timeStromHV = millis();
 
+				  // Statemaschine setzen
 				  setStatus(StateNormal);
 
+				  // Stromwert uebernehmen
+				  // TODO: Umrechnung der Vorzeichenbehafteten Variable
+				  current.data[0] = RxMessage.buf[0];
+				  current.data[1] = RxMessage.buf[1];
+				  current.result = (RxMessage.buf[2] << 24) | (RxMessage.buf[3] << 16) | (RxMessage.buf[4] << 8) | RxMessage.buf[5];
+				  break;
+			  }
+
+			  // Spannungswert 1
+			  case STROM_HV_CAN_U1:
+			  {
+				  // Spannungswerte uebernehmen
+				  // TODO: Umrechnung der Vorzeichenbehafteten Variable
+				  voltage1.data[0] = RxMessage.buf[0];
+				  voltage1.data[1] = RxMessage.buf[1];
+				  voltage1.result = (RxMessage.buf[2] << 24) | (RxMessage.buf[3] << 16) | (RxMessage.buf[4] << 8) | RxMessage.buf[5];
+				  break;
+			  }
+
+			  // Spannungswert 2
+			  case STROM_HV_CAN_U2:
+			  {
+				  // Spannungswerte uebernehmen
+				  // TODO: Umrechnung der Vorzeichenbehafteten Variable
+				  voltage2.data[0] = RxMessage.buf[0];
+				  voltage2.data[1] = RxMessage.buf[1];
+				  voltage2.result = (RxMessage.buf[2] << 24) | (RxMessage.buf[3] << 16) | (RxMessage.buf[4] << 8) | RxMessage.buf[5];
+				  break;
+			  }
+
+			  // Spannungswert 3
+			  case STROM_HV_CAN_U3:
+			  {
+				  // Spannungswerte uebernehmen
+				  // TODO: Umrechnung der Vorzeichenbehafteten Variable
+				  voltage3.data[0] = RxMessage.buf[0];
+				  voltage3.data[1] = RxMessage.buf[1];
+				  voltage3.result = (RxMessage.buf[2] << 24) | (RxMessage.buf[3] << 16) | (RxMessage.buf[4] << 8) | RxMessage.buf[5];
 				  break;
 			  }
 #endif
@@ -406,6 +455,17 @@ int main(void)
 		  {
 			  bms_work();
 			  timeBMSWork = millis();
+		  }
+
+		  // 2s Task
+		  if (millis() > (zweisekunden + 2000))
+		  {
+			  uartTransmitNumber(current.result, 10);
+			  uartTransmit("\n", 1);
+			  uartTransmitNumber(voltage1.result, 10);
+			  uartTransmit("\n", 1);
+
+			  zweisekunden = millis();
 		  }
 	  }
 
