@@ -218,8 +218,6 @@ int main(void)
 	setState(Ready);
 
 	ltc6811_validate_balance();
-
-	ltc6811_balance(1);
   /* USER CODE END 2 */
 
   /* Infinite loop */

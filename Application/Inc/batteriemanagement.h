@@ -26,7 +26,7 @@
 #ifdef DEBUG
 //	#define DEBUG_BMS
 //	#define DEBUG_BMS_OK
-//	#define DEBUG_BMS_WORK
+	#define DEBUG_BMS_WORK
 #endif
 //----------------------------------------------------------------------
 

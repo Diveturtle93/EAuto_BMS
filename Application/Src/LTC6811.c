@@ -27,6 +27,7 @@
 // Definiere Zellenarray
 //----------------------------------------------------------------------
 ltc6811_configuration_tag ltc6811_Conf;										// LTC6811 Configurations Register
+ltc6811_balancing_tag ltc6811_balance[LTC6811_DEVICES];						// LTC6811 Balancing Register
 //----------------------------------------------------------------------
 
 // Definiere Globale Variable
@@ -628,27 +629,38 @@ bool ltc6811_init (void)
 	ltc6811_Conf.VUV = LTC6811_UVOLT;										// Setze Vergleichsspannung fuer Unterspannung
 	ltc6811_Conf.VOV = LTC6811_OVOLT;										// Setze Vergleichsspannung fuer Ueberspannung
 
-	// Balancing
-	ltc6811_Conf.DCC1 = 0;													// Balancing von Zelle 1 ausschalten
-	ltc6811_Conf.DCC2 = 0;													// Balancing von Zelle 2 ausschalten
-	ltc6811_Conf.DCC3 = 0;													// Balancing von Zelle 3 ausschalten
-	ltc6811_Conf.DCC4 = 0;													// Balancing von Zelle 4 ausschalten
-	ltc6811_Conf.DCC5 = 0;													// Balancing von Zelle 5 ausschalten
-	ltc6811_Conf.DCC6 = 0;													// Balancing von Zelle 6 ausschalten
-	ltc6811_Conf.DCC7 = 0;													// Balancing von Zelle 7 ausschalten
-	ltc6811_Conf.DCC8 = 0;													// Balancing von Zelle 8 ausschalten
-	ltc6811_Conf.DCC9 = 0;													// Balancing von Zelle 9 ausschalten
-	ltc6811_Conf.DCC10 = 0;													// Balancing von Zelle 10 ausschalten
-	ltc6811_Conf.DCC11 = 0;													// Balancing von Zelle 11 ausschalten
-	ltc6811_Conf.DCC12 = 0;													// Balancing von Zelle 12 ausschalten
-	ltc6811_Conf.DCTO = 0;													// Balancing Timer zuruecksetzen
+	// Balancing zuruecksetzen bei Initialisierung
+	ltc6811_balance[0].DCC1 = 0;											// Balancing von Zelle 1 ausschalten
+	ltc6811_balance[0].DCC2 = 0;											// Balancing von Zelle 2 ausschalten
+	ltc6811_balance[0].DCC3 = 0;											// Balancing von Zelle 3 ausschalten
+	ltc6811_balance[0].DCC4 = 0;											// Balancing von Zelle 4 ausschalten
+	ltc6811_balance[0].DCC5 = 0;											// Balancing von Zelle 5 ausschalten
+	ltc6811_balance[0].DCC6 = 0;											// Balancing von Zelle 6 ausschalten
+	ltc6811_balance[0].DCC7 = 0;											// Balancing von Zelle 7 ausschalten
+	ltc6811_balance[0].DCC8 = 0;											// Balancing von Zelle 8 ausschalten
+	ltc6811_balance[0].DCC9 = 0;											// Balancing von Zelle 9 ausschalten
+	ltc6811_balance[0].DCC10 = 0;											// Balancing von Zelle 10 ausschalten
+	ltc6811_balance[0].DCC11 = 0;											// Balancing von Zelle 11 ausschalten
+	ltc6811_balance[0].DCC12 = 0;											// Balancing von Zelle 12 ausschalten
+	ltc6811_balance[0].DCTO = 0;											// Balancing Timer zuruecksetzen
 
 	// Sampling Mode setzen
 	// TODO: samplingMode einmal global setzen, nicht immer beim uebermitteln von Commands
 	samplingMode = MD73;
 
+	// Configuration Register vorbereiten
+	for (uint8_t j = 0; j < LTC6811_DEVICES; j++)
+	{
+		tmp_data[j*8] = ltc6811_Conf.configuration[0];
+		tmp_data[j*8 + 1] = ltc6811_Conf.configuration[1];
+		tmp_data[j*8 + 2] = ltc6811_Conf.configuration[2];
+		tmp_data[j*8 + 3] = ltc6811_Conf.configuration[3];
+		tmp_data[j*8 + 4] = (ltc6811_balance[j].balancing[0] & 0xFF);
+		tmp_data[j*8 + 5] = (ltc6811_balance[j].balancing[1] >> 8);
+	}
+
 	// Schreibe Konfiguration in Register am LTC6811
-	ltc6811_write(WRCFG, &ltc6811_Conf.configuration[0]);
+	ltc6811_write(WRCFG, &tmp_data[0]);
 
 	// Config-Register zuruecklesen
 	do
@@ -1251,18 +1263,30 @@ bool ltc6811_validate_balance (void)
 	uint8_t cell[32 * LTC6811_DEVICES] = {0};								// Speicher Zelle ohne Discharge Schalter
 	uint8_t celldchg[32 * LTC6811_DEVICES] = {0};							// Speicher Zelle mit Discharge Schalter
 	uint8_t sdata[6 * LTC6811_DEVICES] = {0};								// Speicher S Register
-	ltc6811_configuration_tag conf_temp = {0};								// Zwischenspeicher LTC6811 Konfiguration
+	uint8_t temp_balancing[LTC6811_DEVICES][2] = {0};						// Zwischenspeicher LTC6811 Balancing
+	uint8_t temp_data[6 * LTC6811_DEVICES] = {0};							// Zwischenspeicher LTC6811 um Konfigurations Register zu beschreiben
 
-	// Balancing Einstellungen zwischen speichern
-	conf_temp.configuration[4] = ltc6811_Conf.configuration[4];				// Zwischenspeichern der Konfiguration fuer DCC Wert
-	conf_temp.configuration[5] = ltc6811_Conf.configuration[5];				// Zwischenspeichern der Konfiguration fuer DCC Wert
+	// Balancing Einstellungen zwischen speichern, pro Modul
+	for (uint8_t j = 0; j < LTC6811_DEVICES; j++)
+	{
+		temp_balancing[j][0] = ltc6811_balance[j].balancing[0];				// Zwischenspeichern der Konfiguration fuer DCC Wert
+		temp_balancing[j][1] = ltc6811_balance[j].balancing[1];				// Zwischenspeichern der Konfiguration fuer DCC Wert
 
-	// Balancing reseten
-	ltc6811_Conf.configuration[4] = 0;
-	ltc6811_Conf.configuration[5] &= 0xF0;
+		// Balancing reseten
+		ltc6811_balance[j].balancing[0] = 0x00;
+		ltc6811_balance[j].balancing[1] &= 0xF0;
+
+		// Daten fuer Register vorbereiten
+		temp_data[6*j] = ltc6811_Conf.configuration[0];
+		temp_data[6*j + 1] = ltc6811_Conf.configuration[1];
+		temp_data[6*j + 2] = ltc6811_Conf.configuration[2];
+		temp_data[6*j + 3] = ltc6811_Conf.configuration[3];
+		temp_data[6*j + 4] = ltc6811_balance[j].balancing[0];
+		temp_data[6*j + 5] = ltc6811_balance[j].balancing[1];
+	}
 
 	// Setze Konfigurationsregister
-	ltc6811_write(WRCFG, &ltc6811_Conf.configuration[0]);
+	ltc6811_write(WRCFG, &temp_data[0]);
 
 	// Zuruecksetzen S-Register
 	ltc6811(CLRSCTRL);
@@ -1284,12 +1308,14 @@ bool ltc6811_validate_balance (void)
 			// S-Ausgang auswaehlen
 			switch (j)
 			{
+				// Schreiben unteren vier Bits des Bytes, Ungerade Schalter
 				case 0:
 				{
 					sdata[i] = 0x08;
 					sdata[i + 3] = 0x08;
 					break;
 				}
+				// Schreiben oberen vier Bits des Bytes, gerade Schalter
 				case 1:
 				{
 					sdata[i] = 0x80;
@@ -1358,12 +1384,18 @@ bool ltc6811_validate_balance (void)
 		}
 	}
 
-	// Balancing Werte zuruecksetzen
-	ltc6811_Conf.configuration[4] = conf_temp.configuration[4];				// Konfiguration fuer DCC Wert zuruecksetzen
-	ltc6811_Conf.configuration[5] = conf_temp.configuration[5];				// Konfiguration fuer DCC Wert zuruecksetzen
+	// Balancing Werte wieder auf den Ausgangszustand setzen
+	for (uint8_t j = 0; j < LTC6811_DEVICES; j++)
+	{
+		ltc6811_balance[j].balancing[0] = temp_balancing[j][0];				// Konfiguration fuer DCC Wert zuruecksetzen
+		ltc6811_balance[j].balancing[1] = temp_balancing[j][1];				// Konfiguration fuer DCC Wert zuruecksetzen
+
+		temp_data[6*j + 4] = ltc6811_balance[j].balancing[0];
+		temp_data[6*j + 5] = ltc6811_balance[j].balancing[1];
+	}
 
 	// Schreibe Konfiguration
-	ltc6811_write(WRCFG, &ltc6811_Conf.configuration[0]);
+	ltc6811_write(WRCFG, &temp_data[0]);
 
 #ifdef DEBUG_LTC6811_VALID_BALANCING
 	for (uint8_t j = 0; j < LTC6811_DEVICES; j++)
@@ -1398,12 +1430,29 @@ bool ltc6811_validate_balance (void)
 
 // Zelle balancieren
 //----------------------------------------------------------------------
-void ltc6811_balance (uint8_t cell)
+void ltc6811_balancing (uint8_t cell, bool active)
 {
-	// Test Zelle 1
-	ltc6811_Conf.DCC1 = 1;
+	// Variable definieren
+	uint8_t data[6 * LTC6811_DEVICES] = {0};
+
+	// Auswahl ob Zellbalancing fuer Zelle eingeschalter oder ausgeschaltet werden soll
+	if (active == true)
+	{
+		ltc6811_balance[0].DCC2 = active;
+	}
+	else
+	{
+		ltc6811_balance[0].DCC2 = active;
+	}
+
+	data[0] = ltc6811_Conf.configuration[0];
+	data[1] = ltc6811_Conf.configuration[1];
+	data[2] = ltc6811_Conf.configuration[2];
+	data[3] = ltc6811_Conf.configuration[3];
+	data[4] = ltc6811_balance[0].balancing[0];
+	data[5] = ltc6811_balance[0].balancing[1];
 
 	// Schreibe Daten
-	ltc6811_write(WRCFG, &ltc6811_Conf.configuration[0]);
+	ltc6811_write(WRCFG, &data[0]);
 }
 //----------------------------------------------------------------------

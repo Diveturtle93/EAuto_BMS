@@ -25,33 +25,8 @@
 //	#define DEBUG_ISOSPI
 //	#define DEBUG_LTC6811
 //	#define DEBUG_LTC6811_PEC
-	#define DEBUG_LTC6811_VALID_BALANCING
+//	#define DEBUG_LTC6811_VALID_BALANCING
 #endif
-//----------------------------------------------------------------------
-
-// Definiere Statemaschine Typedefines
-//----------------------------------------------------------------------
-// Definiere IsoSpi States
-//----------------------------------------------------------------------
-typedef enum IsoSpiState_tag {
-	IsoIdle,																// Kommunikation unterbrochen
-	IsoReady,																// Kommunikation kann durchgefuehrt werden
-	IsoActive,																// Kommunikation wird durchgefuehrt
-	IsoGetReady,															// Kommunikation wird vorbereitet
-	IsoSleep,																// Kommunikation abgeschaltet
-} IsoSpi_State;
-//----------------------------------------------------------------------
-// Definiere LTC6811 States
-//----------------------------------------------------------------------
-typedef enum LTC6811State_tag {
-	LTCStandby,																// IC im Standby, Referenzspannung inaktiv, Beide Timer laufen
-	LTCMeasure,																// Messung am ADC wird durchgefuehrt
-	LTCRefup,																// Referenzspannung aktiv
-	LTCSetRefup,															// Referenzspannung wird vorbereitet
-	LTCWakeup,																// IC wird geweckt
-	LTCExtendedBalancing,													// Balancing aktiv, Watchdog Timer ausgeschaltet, Entladetimer läuft
-	LTCSleep																// IC im Sleep, keine Aktion, Beide Timer ausgeschaltet
-} LTC6811_State;
 //----------------------------------------------------------------------
 
 // Allgemeine Einstellungen
@@ -217,6 +192,75 @@ typedef enum LTC6811State_tag {
 #define ISOCS_DISABLE() (HAL_GPIO_WritePin(ISOSPI_CS_GPIO_Port, ISOSPI_CS_Pin, GPIO_PIN_SET))		// Chip-Select disable
 //----------------------------------------------------------------------
 
+// Definiere Statemaschine Typedefines
+//----------------------------------------------------------------------
+// Definiere IsoSpi States
+//----------------------------------------------------------------------
+typedef enum IsoSpiState_tag {
+	IsoIdle,																// Kommunikation unterbrochen
+	IsoReady,																// Kommunikation kann durchgefuehrt werden
+	IsoActive,																// Kommunikation wird durchgefuehrt
+	IsoGetReady,															// Kommunikation wird vorbereitet
+	IsoSleep,																// Kommunikation abgeschaltet
+} IsoSpi_State;
+//----------------------------------------------------------------------
+// Definiere LTC6811 States
+//----------------------------------------------------------------------
+typedef enum LTC6811State_tag {
+	LTCStandby,																// IC im Standby, Referenzspannung inaktiv, Beide Timer laufen
+	LTCMeasure,																// Messung am ADC wird durchgefuehrt
+	LTCRefup,																// Referenzspannung aktiv
+	LTCSetRefup,															// Referenzspannung wird vorbereitet
+	LTCWakeup,																// IC wird geweckt
+	LTCExtendedBalancing,													// Balancing aktiv, Watchdog Timer ausgeschaltet, Entladetimer läuft
+	LTCSleep																// IC im Sleep, keine Aktion, Beide Timer ausgeschaltet
+} LTC6811_State;
+//----------------------------------------------------------------------
+
+// Definiere LTC6811 Konfiguration, fuer alle ICs gleich
+//----------------------------------------------------------------------
+typedef union __ltc6811_configuration_tag {
+	struct {
+		uint8_t ADCOPT : 1;													// ADC Mode Option
+		uint8_t DTEN : 1;													// DTEN Pin
+		uint8_t REFON : 1;													// Reference voltage shutdown
+		uint8_t LTC_GPIO1 : 1;												// GPIO 1
+		uint8_t LTC_GPIO2 : 1;												// GPIO 2
+		uint8_t LTC_GPIO3 : 1;												// GPIO 3
+		uint8_t LTC_GPIO4 : 1;												// GPIO 4
+		uint8_t LTC_GPIO5 : 1;												// GPIO 5
+		uint32_t VUV : 12;													// Undervoltage Treshold
+		uint32_t VOV : 12;													// Overvoltage Treshold
+	};
+
+	uint8_t configuration[4];												// Array fuer Configuration Register
+} ltc6811_configuration_tag;
+//----------------------------------------------------------------------
+
+// Definiere Balancing, fuer alle ICs unterschiedlich
+//----------------------------------------------------------------------
+typedef union __ltc6811_balancing_tag {
+	struct {
+		uint8_t DCC1 : 1;													// Zelle 1 Balancing
+		uint8_t DCC2 : 1;													// Zelle 2 Balancing
+		uint8_t DCC3 : 1;													// Zelle 3 Balancing
+		uint8_t DCC4 : 1;													// Zelle 4 Balancing
+		uint8_t DCC5 : 1;													// Zelle 5 Balancing
+		uint8_t DCC6 : 1;													// Zelle 6 Balancing
+		uint8_t DCC7 : 1;													// Zelle 7 Balancing
+		uint8_t DCC8 : 1;													// Zelle 8 Balancing
+		uint8_t DCC9 : 1;													// Zelle 9 Balancing
+		uint8_t DCC10 : 1;													// Zelle 10 Balancing
+		uint8_t DCC11 : 1;													// Zelle 11 Balancing
+		uint8_t DCC12 : 1;													// Zelle 12 Balancing
+		uint8_t DCTO : 4;													// Timeout fuer Balancing
+	};
+
+	uint8_t balancing[2];													// Array fuer Balancen
+	uint16_t balance;														// 16 Bit Variable des Array
+} ltc6811_balancing_tag;
+//----------------------------------------------------------------------
+
 // Funktionen definieren
 //----------------------------------------------------------------------
 // IsoSPI Funktionen
@@ -249,46 +293,15 @@ bool ltc6811_openwire (void);												// Leitungscheck offene Leitung
 uint16_t ltc6811_poll (void);												// Poll Data nach Conversion
 uint16_t ltc6811_timeout (void);											// Rueckgabe welches Module timeout hat
 bool ltc6811_validate_balance (void);										// Validieren der Balancer Mosfets
-void ltc6811_balance (uint8_t cell);										// Balancen der Zellen
+void ltc6811_balancing (uint8_t cell, bool active);							// Balancen der Zellen
 //----------------------------------------------------------------------
 //void init_crc(void);														// Wird benoetigt um Pec-Tabelle zu berechnen
 //----------------------------------------------------------------------
 
-// Definiere Zellenarray
-//----------------------------------------------------------------------
-typedef union __ltc6811_configuration_tag {
-	struct {
-		uint8_t ADCOPT : 1;													// ADC Mode Option
-		uint8_t DTEN : 1;													// DTEN Pin
-		uint8_t REFON : 1;													// Reference voltage shutdown
-		uint8_t LTC_GPIO1 : 1;												// GPIO 1
-		uint8_t LTC_GPIO2 : 1;												// GPIO 2
-		uint8_t LTC_GPIO3 : 1;												// GPIO 3
-		uint8_t LTC_GPIO4 : 1;												// GPIO 4
-		uint8_t LTC_GPIO5 : 1;												// GPIO 5
-		uint32_t VUV : 12;													// Undervoltage Treshold
-		uint32_t VOV : 12;													// Overvoltage Treshold
-		uint8_t DCC1 : 1;													// Zelle 1 Balancing
-		uint8_t DCC2 : 1;													// Zelle 2 Balancing
-		uint8_t DCC3 : 1;													// Zelle 3 Balancing
-		uint8_t DCC4 : 1;													// Zelle 4 Balancing
-		uint8_t DCC5 : 1;													// Zelle 5 Balancing
-		uint8_t DCC6 : 1;													// Zelle 6 Balancing
-		uint8_t DCC7 : 1;													// Zelle 7 Balancing
-		uint8_t DCC8 : 1;													// Zelle 8 Balancing
-		uint8_t DCC9 : 1;													// Zelle 9 Balancing
-		uint8_t DCC10 : 1;													// Zelle 10 Balancing
-		uint8_t DCC11 : 1;													// Zelle 11 Balancing
-		uint8_t DCC12 : 1;													// Zelle 12 Balancing
-		uint8_t DCTO : 4;													// Timeout fuer Balancing
-	};
-
-	uint8_t configuration[6];												// Array fuer COnfiguration Register
-} ltc6811_configuration_tag;
-//----------------------------------------------------------------------
-
+// Definiere globale Variablen
 //----------------------------------------------------------------------
 extern ltc6811_configuration_tag ltc6811_Conf;								// LTC6811 Configurations Register
+extern ltc6811_balancing_tag ltc6811_balance[LTC6811_DEVICES];				// LTC6811 Balancing Register
 //----------------------------------------------------------------------
 
 #endif /* INC_LTC6811_H_ */
