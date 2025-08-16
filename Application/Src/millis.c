@@ -5,27 +5,28 @@
 // Datum	:	01.06.2021
 // Version	:	1.0
 // Autor	:	Diveturtle93
-// Projekt	:	Batteriemanagement-System
+// Projekt	:	Millis
 //----------------------------------------------------------------------
 
-// Einfügen der standard Include-Dateien
+// Einfuegen der standard Include-Dateien
 //----------------------------------------------------------------------
 
 //----------------------------------------------------------------------
 
-// Einfügen der STM Include-Dateien
+// Einfuegen der STM Include-Dateien
 //----------------------------------------------------------------------
-#include "stm32f7xx_hal.h"
+#include "main.h"
 //----------------------------------------------------------------------
 
-// Einfügen der eigenen Include Dateien
+// Einfuegen der eigenen Include Dateien
 //----------------------------------------------------------------------
 #include "millis.h"
+#include "BatteriemanagementSystem.h"
 //----------------------------------------------------------------------
 
-// Function millis erstellt
+// Funktion millis (ms)
 //----------------------------------------------------------------------
-uint32_t millis(void)
+uint32_t millis (void)
 {
 	return HAL_GetTick();
 }

@@ -26,7 +26,8 @@
 	@echo "" >> $@
 	@echo "// Git Tags-Infos definieren" >> $@
 	@echo "//----------------------------------------------------------------------" >> $@
-	@echo "#define GIT_LAST_TAG				\"$(shell git tag)\"" >> $@
+	@echo "#define GIT_TAGS					\"$(shell git tag)\"" >> $@
+	@echo "#define GIT_LAST_TAG				\"$(shell git describe --abbrev=0 --tags)\"" >> $@
 	@echo "#define GIT_TAG_COMMIT				\"$(shell git rev-list --tags --abbrev-commit)\"" >> $@
 	@echo "#define GIT_TAG_DIRTY				\"$(shell git describe)\"" >> $@
 	@echo "//----------------------------------------------------------------------" >> $@
@@ -42,8 +43,8 @@
 	@echo "" >> $@
 	@echo "// Build Zeit definieren" >> $@
 	@echo "//----------------------------------------------------------------------" >> $@
-	@echo "#define BUILD_DATE					\"$(shell date +"%Y-%m-%d")\"" >> $@
-	@echo "#define BUILD_TIME					\"$(shell date +"%H:%M:%S")\"" >> $@
+	@echo "#define GIT_BUILD_DATE				\"$(shell date +"%b %d %Y")\"" >> $@
+	@echo "#define GIT_BUILD_TIME				\"$(shell date +"%H:%M:%S")\"" >> $@
 	@echo "//----------------------------------------------------------------------" >> $@
 	@echo "#endif /* _GIT_H_ */" >> $@
 	@echo "//----------------------------------------------------------------------" >> $@

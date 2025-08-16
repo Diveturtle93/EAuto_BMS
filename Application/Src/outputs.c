@@ -5,7 +5,7 @@
 // Datum	:	31.03.2021
 // Version	:	1.0
 // Autor	:	Diveturtle93
-// Projekt	:	Batteriemanagement-System
+// Projekt	:	Digital IOs
 //----------------------------------------------------------------------
 
 // Einfuegen der standard Include-Dateien
@@ -21,11 +21,20 @@
 // Einfuegen der eigenen Include Dateien
 //----------------------------------------------------------------------
 #include "outputs.h"
+#include "BatteriemanagementSystem.h"
+//----------------------------------------------------------------------
+
+// Variablen einbinden
+//----------------------------------------------------------------------
+system_out_tag system_out;																			// Variable fuer Systemausgaenge definieren
+highcurrent_out_tag highcurrent_out;																// Variable fuer Highcurrentausgaenge definieren
+leuchten_out_tag leuchten_out;																		// Variable fuer Leuchtenausgaenge definieren
+komfort_out_tag komfort_out;																		// Variable fuer Komfortausgaenge definieren
 //----------------------------------------------------------------------
 
 // Initialisiere alle Ausgangsstrukturen auf default Werte
 //----------------------------------------------------------------------
-void init_outputs(void)
+void init_outputs (void)
 {
 	// Schreibe alle Variablen auf Standart setzen
 	system_out.systemoutput = SYSTEM_OUTPUT;														// Alle System Ausgaenge auf null setzen
@@ -40,7 +49,7 @@ void init_outputs(void)
 
 // Schreibe alle Ausgaenge auf default Werte
 //----------------------------------------------------------------------
-void writeall_outputs(void)
+void writeall_outputs (void)
 {
 	// Schreibe System Ausgaenge
 	HAL_GPIO_WritePin(AMS_LIMIT_GPIO_Port, AMS_LIMIT_Pin, system_out.AmsLimit);						// Batteriemanagement-System Strom limitiert
@@ -50,7 +59,7 @@ void writeall_outputs(void)
 	HAL_GPIO_WritePin(RECUPERATION_GPIO_Port, RECUPERATION_Pin, system_out.Recuperation);			// Rekuperation aktivieren
 	HAL_GPIO_WritePin(HV_P_GPIO_Port, HV_P_Pin, system_out.HV_P);									// Ausgang HV-Schuetz Plus
 	HAL_GPIO_WritePin(HV_N_GPIO_Port, HV_N_Pin, system_out.HV_N);									// Ausgang HV-Schuetz Minus
-	HAL_GPIO_WritePin(POWER_ON_GPIO_Port, POWER_ON_Pin, system_out.Power_On);						// Selbsthaltung DCDC-Wandler Motorsteuergeraet
+	HAL_GPIO_WritePin(POWER_ON_GPIO_Port, POWER_ON_Pin, system_out.PowerOn);						// Selbsthaltung DCDC-Wandler Motorsteuergeraet
 
 	// Schreibe Hochstromfaehige Ausgaenge
 	HAL_GPIO_WritePin(DIGITAL1_GPIO_Port, DIGITAL1_Pin, highcurrent_out.Digital1);					// Digitaler Ausgang 1
@@ -64,21 +73,110 @@ void writeall_outputs(void)
 	// Schreibe Leuchtdioden Ausgaenge
 	HAL_GPIO_WritePin(INLET_RED_GPIO_Port, INLET_RED_Pin, leuchten_out.InletRed);					// Red Inlet LED
 	HAL_GPIO_WritePin(INLET_GREEN_GPIO_Port, INLET_GREEN_Pin, leuchten_out.InletGreen);				// Green Inlet LED
-	HAL_GPIO_WritePin(AKKU_LED_GPIO_Port, AKKU_LED_Pin, leuchten_out.AkkuLed);						// Akku LED Kombiinstrument
+	HAL_GPIO_WritePin(AKKU_LED_GPIO_Port, AKKU_LED_Pin, leuchten_out.AkkuErrorLed);					// Akku LED Kombiinstrument
 	HAL_GPIO_WritePin(RED_LED_GPIO_Port, RED_LED_Pin, leuchten_out.RedLed);							// Rote LED Platine
 	HAL_GPIO_WritePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin, leuchten_out.GreenLed);					// Gruene LED Platine
 	HAL_GPIO_WritePin(BLUE_LED_GPIO_Port, BLUE_LED_Pin, leuchten_out.BlueLed);						// Blaue LED Platine
 
-	// SChreibe Komfortausgaenge
+	// Schreibe Komfortausgaenge
 	HAL_GPIO_WritePin(TRIGGER_CURRENT_GPIO_Port, TRIGGER_CURRENT_Pin, komfort_out.TriggerOut);		// Stromsensor Triggern, mehr Infos
+//	HAL_GPIO_WritePin(ISOSPI_EN_GPIO_Port, ISOSPI_EN_Pin, komfort_out.IsoSPI_EN);					// IsoSPI einschalten
 }
 //----------------------------------------------------------------------
 
 // Selbsterhalten einschalten / DCDC-Wandler einschalten
 //----------------------------------------------------------------------
-void power_on(void)
+void writeled_outputs (void)
 {
-	system_out.Power_On = 1;																		// Power On Variable setzen
-	HAL_GPIO_WritePin(POWER_ON_GPIO_Port, POWER_ON_Pin, system_out.Power_On);						// Selbsthaltung DCDC-Wandler Motorsteuergeraet
+	leuchten_out.ledoutput = 0;
+
+	// Schreibe Leuchtdioden Ausgaenge
+	HAL_GPIO_WritePin(INLET_RED_GPIO_Port, INLET_RED_Pin, leuchten_out.InletRed);					// Red Inlet LED
+	HAL_GPIO_WritePin(INLET_GREEN_GPIO_Port, INLET_GREEN_Pin, leuchten_out.InletGreen);				// Green Inlet LED
+	HAL_GPIO_WritePin(AKKU_LED_GPIO_Port, AKKU_LED_Pin, leuchten_out.AkkuErrorLed);					// Akku LED Kombiinstrument
+	HAL_GPIO_WritePin(RED_LED_GPIO_Port, RED_LED_Pin, leuchten_out.RedLed);							// Rote LED Platine
+	HAL_GPIO_WritePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin, leuchten_out.GreenLed);					// Gruene LED Platine
+	HAL_GPIO_WritePin(BLUE_LED_GPIO_Port, BLUE_LED_Pin, leuchten_out.BlueLed);						// Blaue LED Platine
+}
+//----------------------------------------------------------------------
+
+// Teste Platinen LEDs
+//----------------------------------------------------------------------
+void testPCB_Leds (void)
+{
+	// Leds Testen
+    HAL_GPIO_WritePin(BLUE_LED_GPIO_Port, BLUE_LED_Pin, GPIO_PIN_SET);								// Blaue LED Platine setzen
+    HAL_Delay(LED_TEST_TIME);
+    HAL_GPIO_WritePin(BLUE_LED_GPIO_Port, BLUE_LED_Pin, GPIO_PIN_RESET);							// Blaue LED Platine zuruecksetzen
+    HAL_Delay(LED_TEST_TIME);
+    HAL_GPIO_WritePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin, GPIO_PIN_SET);							// Gruene LED Platine setzen
+    HAL_Delay(LED_TEST_TIME);
+    HAL_GPIO_WritePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin, GPIO_PIN_RESET);							// Gruene LED Platine zuruecksetzen
+    HAL_Delay(LED_TEST_TIME);
+    HAL_GPIO_WritePin(RED_LED_GPIO_Port, RED_LED_Pin, GPIO_PIN_SET);								// Rote LED Platine setzen
+    HAL_Delay(LED_TEST_TIME);
+    HAL_GPIO_WritePin(RED_LED_GPIO_Port, RED_LED_Pin, GPIO_PIN_RESET);								// Rote LED Platine zuruecksetzen
+    HAL_Delay(LED_TEST_TIME);
+}
+//----------------------------------------------------------------------
+
+// Teste alle externen LEDs, Inlet
+//----------------------------------------------------------------------
+void testInletLeds (void)
+{
+	// Leds Testen
+	HAL_GPIO_WritePin(INLET_RED_GPIO_Port, INLET_RED_Pin, GPIO_PIN_SET);							// Red Inlet LED setzen
+	HAL_Delay(LED_TEST_TIME);
+	HAL_GPIO_WritePin(INLET_RED_GPIO_Port, INLET_RED_Pin, GPIO_PIN_RESET);							// Red Inlet LED zuruecksetzen
+	HAL_Delay(LED_TEST_TIME);
+	HAL_GPIO_WritePin(INLET_GREEN_GPIO_Port, INLET_GREEN_Pin, GPIO_PIN_SET);						// Green Inlet LED setzen
+	HAL_Delay(LED_TEST_TIME);
+	HAL_GPIO_WritePin(INLET_GREEN_GPIO_Port, INLET_GREEN_Pin, GPIO_PIN_RESET);						// Green Inlet LED zuruecksetzen
+	HAL_Delay(LED_TEST_TIME);
+}
+//----------------------------------------------------------------------
+
+// Teste Cockpit LEDs
+void testCockpitLeds (void)
+{
+	HAL_GPIO_WritePin(AKKU_LED_GPIO_Port, AKKU_LED_Pin, GPIO_PIN_SET);								// Akku LED Kombiinstrument setzen, Ladekontrollleuchte an
+	HAL_Delay(LED_TEST_TIME);
+	HAL_GPIO_WritePin(AKKU_LED_GPIO_Port, AKKU_LED_Pin, GPIO_PIN_RESET);							// Akku LED Kombiinstrument zuruecksetzen, Ladekontrollleuchte aus
+	HAL_Delay(LED_TEST_TIME);
+}
+
+// Ladekontroll LED setzen
+//----------------------------------------------------------------------
+void setLadekontrolle (void)
+{
+	// Status Ladekontrolle setzen
+	leuchten_out.AkkuErrorLed = 1;
+
+	// Ladekontrolle im Cockpit setzen
+	HAL_GPIO_WritePin(AKKU_LED_GPIO_Port, AKKU_LED_Pin, leuchten_out.AkkuErrorLed);					// Akku LED Kombiinstrument setzen
+}
+//----------------------------------------------------------------------
+
+// Ladekontroll LED zuruecksetzen
+//----------------------------------------------------------------------
+void resetLadekontrolle (void)
+{
+	// Status Ladekontrolle zuruecksetzen
+	leuchten_out.AkkuErrorLed = 0;
+
+	// Ladekontrolle im Cockpit zuruecksetzen
+	HAL_GPIO_WritePin(AKKU_LED_GPIO_Port, AKKU_LED_Pin, leuchten_out.AkkuErrorLed);					// Akku LED Kombiinstrument zuruecksetzen
+}
+//----------------------------------------------------------------------
+
+// Selbsterhaltung einschalten
+//----------------------------------------------------------------------
+void setPowerOn (void)
+{
+	// Status PowerOn setzen
+	system_out.PowerOn = 1;
+
+	// Selbsterhaltung einschalten
+	HAL_GPIO_WritePin(POWER_ON_GPIO_Port, POWER_ON_Pin, system_out.PowerOn);						// BMS bleibt aktiv bei auschalten von KL15
 }
 //----------------------------------------------------------------------

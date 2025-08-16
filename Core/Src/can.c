@@ -1,3 +1,4 @@
+/* USER CODE BEGIN Header */
 /**
   ******************************************************************************
   * @file    can.c
@@ -6,21 +7,22 @@
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; Copyright (c) 2021 STMicroelectronics.
-  * All rights reserved.</center></h2>
+  * Copyright (c) 2022 STMicroelectronics.
+  * All rights reserved.
   *
-  * This software component is licensed by ST under BSD 3-Clause license,
-  * the "License"; You may not use this file except in compliance with the
-  * License. You may obtain a copy of the License at:
-  *                        opensource.org/licenses/BSD-3-Clause
+  * This software is licensed under terms that can be found in the LICENSE file
+  * in the root directory of this software component.
+  * If no LICENSE file comes with this software, it is provided AS-IS.
   *
   ******************************************************************************
   */
-
+/* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "can.h"
 
 /* USER CODE BEGIN 0 */
+// Definiere Variable
+CAN_FilterTypeDef sFilterConfig;
 
 /* USER CODE END 0 */
 
@@ -87,12 +89,41 @@ void MX_CAN3_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN CAN3_Init 2 */
+	// Starte CAN Bus
+	if ((HAL_CAN_Start(&hcan3)) != HAL_OK)
+	{
+		// Fehler beim Starten des CAN-Busses
+		Error_Handler();
+	}
 
+	// Aktiviere Interrupt fuer CAN-Bus
+	if ((HAL_CAN_ActivateNotification(&hcan3, CAN_IT_RX_FIFO0_MSG_PENDING)) != HAL_OK)
+	{
+		// Fehler in der Initialisierung des CAN-Interrupts
+		Error_Handler();
+	}
+
+	// Filter Bank initialisieren um Daten zu empfangen
+	// Akzeptiere alle CAN-Pakete
+	sFilterConfig.FilterBank = 0;
+	sFilterConfig.FilterMode = CAN_FILTERMODE_IDMASK;
+	sFilterConfig.FilterScale = CAN_FILTERSCALE_32BIT;
+	sFilterConfig.FilterIdHigh = 0x0;
+	sFilterConfig.FilterIdLow = 0x0;
+	sFilterConfig.FilterMaskIdHigh = 0x0;
+	sFilterConfig.FilterMaskIdLow = 0x0;
+	sFilterConfig.FilterFIFOAssignment = 0;
+	sFilterConfig.FilterActivation = ENABLE;
+
+	// Filter Bank schreiben
+	if ((HAL_CAN_ConfigFilter(&hcan3, &sFilterConfig)) != HAL_OK)
+	{
+		// Fehler beim konfigurieren der Filterbank fue den CAN-Bus
+		Error_Handler();
+	}
   /* USER CODE END CAN3_Init 2 */
 
 }
-
-static uint32_t HAL_RCC_CAN1_CLK_ENABLED=0;
 
 void HAL_CAN_MspInit(CAN_HandleTypeDef* canHandle)
 {
@@ -104,10 +135,7 @@ void HAL_CAN_MspInit(CAN_HandleTypeDef* canHandle)
 
   /* USER CODE END CAN1_MspInit 0 */
     /* CAN1 clock enable */
-    HAL_RCC_CAN1_CLK_ENABLED++;
-    if(HAL_RCC_CAN1_CLK_ENABLED==1){
-      __HAL_RCC_CAN1_CLK_ENABLE();
-    }
+    __HAL_RCC_CAN1_CLK_ENABLE();
 
     __HAL_RCC_GPIOD_CLK_ENABLE();
     /**CAN1 GPIO Configuration
@@ -132,11 +160,6 @@ void HAL_CAN_MspInit(CAN_HandleTypeDef* canHandle)
   /* USER CODE END CAN3_MspInit 0 */
     /* CAN3 clock enable */
     __HAL_RCC_CAN3_CLK_ENABLE();
-    __HAL_RCC_CAN2_CLK_ENABLE();
-    HAL_RCC_CAN1_CLK_ENABLED++;
-    if(HAL_RCC_CAN1_CLK_ENABLED==1){
-      __HAL_RCC_CAN1_CLK_ENABLE();
-    }
 
     __HAL_RCC_GPIOA_CLK_ENABLE();
     /**CAN3 GPIO Configuration
@@ -150,6 +173,11 @@ void HAL_CAN_MspInit(CAN_HandleTypeDef* canHandle)
     GPIO_InitStruct.Alternate = GPIO_AF11_CAN3;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
+    /* CAN3 interrupt Init */
+    HAL_NVIC_SetPriority(CAN3_TX_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(CAN3_TX_IRQn);
+    HAL_NVIC_SetPriority(CAN3_RX0_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(CAN3_RX0_IRQn);
   /* USER CODE BEGIN CAN3_MspInit 1 */
 
   /* USER CODE END CAN3_MspInit 1 */
@@ -184,11 +212,6 @@ void HAL_CAN_MspDeInit(CAN_HandleTypeDef* canHandle)
   /* USER CODE END CAN3_MspDeInit 0 */
     /* Peripheral clock disable */
     __HAL_RCC_CAN3_CLK_DISABLE();
-    __HAL_RCC_CAN2_CLK_DISABLE();
-    HAL_RCC_CAN1_CLK_ENABLED--;
-    if(HAL_RCC_CAN1_CLK_ENABLED==0){
-      __HAL_RCC_CAN1_CLK_DISABLE();
-    }
 
     /**CAN3 GPIO Configuration
     PA8     ------> CAN3_RX
@@ -196,6 +219,9 @@ void HAL_CAN_MspDeInit(CAN_HandleTypeDef* canHandle)
     */
     HAL_GPIO_DeInit(GPIOA, GPIO_PIN_8|GPIO_PIN_15);
 
+    /* CAN3 interrupt Deinit */
+    HAL_NVIC_DisableIRQ(CAN3_TX_IRQn);
+    HAL_NVIC_DisableIRQ(CAN3_RX0_IRQn);
   /* USER CODE BEGIN CAN3_MspDeInit 1 */
 
   /* USER CODE END CAN3_MspDeInit 1 */
@@ -205,5 +231,3 @@ void HAL_CAN_MspDeInit(CAN_HandleTypeDef* canHandle)
 /* USER CODE BEGIN 1 */
 
 /* USER CODE END 1 */
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

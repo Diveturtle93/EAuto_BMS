@@ -88,6 +88,8 @@ void Error_Handler(void);
 #define SPI_MOSI_GPIO_Port GPIOF
 #define RCC_OSC_IN_Pin GPIO_PIN_0
 #define RCC_OSC_IN_GPIO_Port GPIOH
+#define RCC_OSC_OUT_Pin GPIO_PIN_1
+#define RCC_OSC_OUT_GPIO_Port GPIOH
 #define CRASH_Pin GPIO_PIN_0
 #define CRASH_GPIO_Port GPIOA
 #define IMD_OK_OUT_Pin GPIO_PIN_1
@@ -104,8 +106,8 @@ void Error_Handler(void);
 #define SENSE_TEMP4_GPIO_Port GPIOA
 #define SENSE_PCB_Pin GPIO_PIN_7
 #define SENSE_PCB_GPIO_Port GPIOA
-#define GREEN_LED_Pin GPIO_PIN_2
-#define GREEN_LED_GPIO_Port GPIOB
+#define RED_LED_Pin GPIO_PIN_2
+#define RED_LED_GPIO_Port GPIOB
 #define PRECHARGE_OUT_Pin GPIO_PIN_13
 #define PRECHARGE_OUT_GPIO_Port GPIOF
 #define PRECHARGE_IN_Pin GPIO_PIN_15
@@ -126,8 +128,8 @@ void Error_Handler(void);
 #define ISOSPI_MOSI_GPIO_Port GPIOE
 #define ISOSPI_EN_Pin GPIO_PIN_15
 #define ISOSPI_EN_GPIO_Port GPIOE
-#define RED_LED_Pin GPIO_PIN_14
-#define RED_LED_GPIO_Port GPIOB
+#define GREEN_LED_Pin GPIO_PIN_14
+#define GREEN_LED_GPIO_Port GPIOB
 #define KL15_Pin GPIO_PIN_11
 #define KL15_GPIO_Port GPIOD
 #define PWM_HV_N_Pin GPIO_PIN_12
@@ -206,8 +208,16 @@ void Error_Handler(void);
 #define FREIGABE_GPIO_Port GPIOE
 #define INLET_GREEN_Pin GPIO_PIN_1
 #define INLET_GREEN_GPIO_Port GPIOE
-/* USER CODE BEGIN Private defines */
 
+/* USER CODE BEGIN Private defines */
+// Typedefine Boolean definieren
+//----------------------------------------------------------------------
+typedef enum
+{
+	false,
+	true,
+} bool;
+//----------------------------------------------------------------------
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
@@ -215,5 +225,3 @@ void Error_Handler(void);
 #endif
 
 #endif /* __MAIN_H */
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
