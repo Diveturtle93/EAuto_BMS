@@ -552,6 +552,8 @@ int main(void)
 			  // Solange kein kritischer Fehler auftritt
 			  if (!(BMSstate.CriticalError))
 			  {
+				  komfort_out.IsoSPI_EN = true;
+				  ISOSPI_ENABLE();											// Enable IsoSPI nach Standby
 				  setState(KL15);
 			  }
 
@@ -719,7 +721,7 @@ int main(void)
 			  {
 				  sdc_in.Anlassen = false;
 				  komfort_out.IsoSPI_EN = false;
-				  ISOSPI_DISABLE();
+				  ISOSPI_DISABLE();											// Disable IsoSPI nach 5s im Standby
 
 				  HAL_GPIO_WritePin(PWM_HV_Charger_GPIO_Port, PWM_HV_Charger_Pin, GPIO_PIN_RESET);
 			  }
