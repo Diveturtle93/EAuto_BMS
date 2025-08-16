@@ -39,7 +39,9 @@ typedef enum
 // Funktionen definieren
 //----------------------------------------------------------------------
 void uartTransmit (const char *str, const size_t size);						// Sende Zeichenkette der Laenge "size"
-void uartTransmitNumber (const uint32_t number, const uint32_t base);		// Sende Nummer mit Basis "base"
+void uartTransmitNumber (const uint32_t number, const uint32_t base);		// Sende Nummer ohne Vorzeichen mit Basis "base"
+void uartTransmitUNumber (const uint32_t number, const uint32_t base);		// Sende Nummer ohne Vorzeichen mit Basis "base"
+void uartTransmitVNumber (const int32_t number, const uint32_t base);		// Sende Nummer mit Vorzeichen mit Basis "base"
 void uartTransmitString (const char *str);									// Sende String, Laenge wird ermittelt
 void uartTransmitChar (const char str);										// Sende einzelnes Zeichen
 uart_status uartReceive (uint8_t *data, uint16_t length);					// Empfange Daten

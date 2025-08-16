@@ -286,7 +286,6 @@ void bms_cellspannungen (void)
 }
 //----------------------------------------------------------------------
 
-// TODO: Lese Referenzspannung, GPIO3
 // Lese Zelltemperatur ein
 //----------------------------------------------------------------------
 void bms_celltemperatur (uint8_t tempsensor)

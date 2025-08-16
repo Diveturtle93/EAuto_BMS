@@ -108,16 +108,13 @@ int main(void)
 	Statemaschine mStrg = {{Start, true, false, false, false}};
 
 	// Stromsensor Nachrichten definieren
-	stromsensor_ivtmod current;
-	stromsensor_ivtmod voltage1;
-	stromsensor_ivtmod voltage2;
-	stromsensor_ivtmod voltage3;
+	stromsensor_ivtmod current, voltage1; //voltage2, voltage3;
 
 	// IMD Variablen fuer Berechnung
 	uint32_t timer1Periode = 0, timeIMD = 0;
 
 	// Testvariablen
-	uint32_t zweisekunden = 0, temp;
+	uint32_t zweisekunden = 0;
 
 	// Backup Data, stored in RTC_Backup Register
 //	uint32_t Backup = 0xFFFF;
@@ -321,8 +318,7 @@ int main(void)
 				  }
 
 				  // Abrage ASR1
-				  // FIXME: Pruefen ob wirklich in State ReadyToDrive oder Drive umgeschaltet wird. Nicht das Precharge oder Standby auch einen einfluss haben
-				  if ((RxMessage.buf[5] & (1 << 0)) && (mStrg.State & (ReadyToDrive & Drive)))
+				  if ((RxMessage.buf[5] & (1 << 0)) && ((mStrg.State & ReadyToDrive) | (mStrg.State & Drive)))
 				  {
 					  // DriveMode aktivieren
 					  ActivDrive = true;
@@ -344,7 +340,6 @@ int main(void)
 				  setStatus(StateNormal);
 
 				  // Stromwert uebernehmen
-				  // TODO: Umrechnung der Vorzeichenbehafteten Variable
 				  current.data[0] = RxMessage.buf[0];
 				  current.data[1] = RxMessage.buf[1];
 				  current.result = (RxMessage.buf[2] << 24) | (RxMessage.buf[3] << 16) | (RxMessage.buf[4] << 8) | RxMessage.buf[5];
@@ -355,34 +350,31 @@ int main(void)
 			  case STROM_HV_CAN_U1:
 			  {
 				  // Spannungswerte uebernehmen
-				  // TODO: Umrechnung der Vorzeichenbehafteten Variable
 				  voltage1.data[0] = RxMessage.buf[0];
 				  voltage1.data[1] = RxMessage.buf[1];
 				  voltage1.result = (RxMessage.buf[2] << 24) | (RxMessage.buf[3] << 16) | (RxMessage.buf[4] << 8) | RxMessage.buf[5];
 				  break;
 			  }
 
-			  // Spannungswert 2
-			  case STROM_HV_CAN_U2:
-			  {
-				  // Spannungswerte uebernehmen
-				  // TODO: Umrechnung der Vorzeichenbehafteten Variable
-				  voltage2.data[0] = RxMessage.buf[0];
-				  voltage2.data[1] = RxMessage.buf[1];
-				  voltage2.result = (RxMessage.buf[2] << 24) | (RxMessage.buf[3] << 16) | (RxMessage.buf[4] << 8) | RxMessage.buf[5];
-				  break;
-			  }
-
-			  // Spannungswert 3
-			  case STROM_HV_CAN_U3:
-			  {
-				  // Spannungswerte uebernehmen
-				  // TODO: Umrechnung der Vorzeichenbehafteten Variable
-				  voltage3.data[0] = RxMessage.buf[0];
-				  voltage3.data[1] = RxMessage.buf[1];
-				  voltage3.result = (RxMessage.buf[2] << 24) | (RxMessage.buf[3] << 16) | (RxMessage.buf[4] << 8) | RxMessage.buf[5];
-				  break;
-			  }
+//			  // Spannungswert 2
+//			  case STROM_HV_CAN_U2:
+//			  {
+//				  // Spannungswerte uebernehmen
+//				  voltage2.data[0] = RxMessage.buf[0];
+//				  voltage2.data[1] = RxMessage.buf[1];
+//				  voltage2.result = (RxMessage.buf[2] << 24) | (RxMessage.buf[3] << 16) | (RxMessage.buf[4] << 8) | RxMessage.buf[5];
+//				  break;
+//			  }
+//
+//			  // Spannungswert 3
+//			  case STROM_HV_CAN_U3:
+//			  {
+//				  // Spannungswerte uebernehmen
+//				  voltage3.data[0] = RxMessage.buf[0];
+//				  voltage3.data[1] = RxMessage.buf[1];
+//				  voltage3.result = (RxMessage.buf[2] << 24) | (RxMessage.buf[3] << 16) | (RxMessage.buf[4] << 8) | RxMessage.buf[5];
+//				  break;
+//			  }
 #endif
 
 			  //
@@ -460,9 +452,9 @@ int main(void)
 		  // 2s Task
 		  if (millis() > (zweisekunden + 2000))
 		  {
-			  uartTransmitNumber(current.result, 10);
+			  uartTransmitVNumber(current.result, 10);
 			  uartTransmit("\n", 1);
-			  uartTransmitNumber(voltage1.result, 10);
+			  uartTransmitVNumber(voltage1.result, 10);
 			  uartTransmit("\n", 1);
 
 			  zweisekunden = millis();
