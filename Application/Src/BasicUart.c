@@ -5,7 +5,7 @@
 // Datum	:	16.01.2021
 // Version	:	1.0
 // Autor	:	Diveturtle93
-// Projekt	:	Batteriemanagement-System
+// Projekt	:	Basic Uart
 //----------------------------------------------------------------------
 
 // Einfuegen der standard Include-Dateien
@@ -59,6 +59,42 @@ void uartTransmitString (const char *str)
 #ifdef SHELL
 	// Sende String
 	HAL_UART_Transmit(&huart2, (uint8_t *)str, sizeof(str), 1000);
+#endif
+}
+//----------------------------------------------------------------------
+
+// Uart2 Transmit Character Funktion
+//----------------------------------------------------------------------
+void uartTransmitChar(const char chr)
+{
+#ifdef SHELL
+	// Variable definieren
+	char str[1];
+	str[0] = chr;
+
+	// Sende String
+	HAL_UART_Transmit(&huart2, (uint8_t *)str, 1, 1000);
+#endif
+}
+//----------------------------------------------------------------------
+
+// Uart2 Receive Funktion
+//----------------------------------------------------------------------
+uart_status uartReceive(uint8_t *data, uint16_t length)
+{
+#ifdef SHELL
+	// Status generieren, default ERROR ausgeben
+	uart_status status = UART_ERROR;
+
+	// Daten empfangen und einlesen
+	if (HAL_OK == HAL_UART_Receive(&huart2, data, length, 1000))
+	{
+		// Wenn einlesen funktioniert hat
+		status = UART_OK;
+	}
+
+	// Status zurueckgeben
+	return status;
 #endif
 }
 //----------------------------------------------------------------------

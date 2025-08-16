@@ -43,7 +43,6 @@ void uartTransmitNumber (const uint32_t number, const uint32_t base);		// Sende 
 void uartTransmitString (const char *str);									// Sende String, Laenge wird ermittelt
 void uartTransmitChar (const char str);										// Sende einzelnes Zeichen
 uart_status uartReceive (uint8_t *data, uint16_t length);					// Empfange Daten
-void uartReInitBasicPolling (void);											// Deinitialisiere Uart
 //----------------------------------------------------------------------
 
 #endif /* INC_BASICUART_H_ */
