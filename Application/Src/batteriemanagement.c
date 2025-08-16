@@ -42,7 +42,7 @@ uint8_t bms_readerror_count = 0;											// Variable fuer Fehlerzaehler beim a
 
 // Definiere Zellenarray Spannungen
 //----------------------------------------------------------------------
-uint16_t cellvoltage[LTC6811_DEVICES][12] = {0};							// Array fuer gemessene Zellspannungen
+uint16_t cellvoltage[LTC6811_DEVICES][LTC6811_CELLS] = {0};					// Array fuer gemessene Zellspannungen
 uint32_t modulvoltage[LTC6811_DEVICES] = {0};								// Array fuer gemessene Modulspannung
 uint16_t mincellvoltage[LTC6811_DEVICES + 1] = {0};							// Array fuer Minimalspannungen
 uint16_t maxcellvoltage[LTC6811_DEVICES + 1] = {0};							// Array fuer Maximalspannungen
@@ -88,7 +88,7 @@ bool bms_init (void)
 	// TODO: Bei Fehler nicht in Endlosschleife gehen. Ggf. Slaves neustarten. Status muss auf CAN-Bus vorhanden sein
 	do
 	{
-		if ((error = ltc6811_check()) != 0)									// LTC6804 Selftest durchfuehren
+		if ((error = ltc6811_check()) != 0)									// LTC6811 Selftest durchfuehren
 		{
 			#define LTC6811_FAILED	"Selbsttest LTC6811 fehlerhaft\n"
 			uartTransmit(LTC6811_FAILED, sizeof(LTC6811_FAILED));			// Ausgabe bei Fehlerhaftem Selbsttest
@@ -221,7 +221,7 @@ void bms_cellspannung (uint8_t cell)
 			case 6:
 			{
 				cellvoltage[i][cell-1] = ((data[(LTC6811_DEVICES+i)*8 + ((cell-1)-3)*2 + 1] << 8) | data[(LTC6811_DEVICES+i)*8 + ((cell-1)-3)*2]);
-				cellvoltage[i][cell-1+6] = ((data[(LTC6811_DEVICES*2+i)*8 + ((cell-1)-9)*2 + 1] << 8) | data[(LTC6811_DEVICES*2+i)*8 + ((cell-1)-9)*2]);
+				cellvoltage[i][cell-1+6] = ((data[(LTC6811_DEVICES*3+i)*8 + ((cell-1)-9)*2 + 1] << 8) | data[(LTC6811_DEVICES*3+i)*8 + ((cell-1)-9)*2]);
 				break;
 			}
 			default:
@@ -296,7 +296,7 @@ void bms_celltemperatur (uint8_t tempsensor)
 	// Analogmultiplexer einstellen und Messung starten
 	ltc1380_write(LTC1380_MUX0, tempsensor);								// Adresse und Kanal auf Multiplexer setzen
 	ltc1380_write(LTC1380_MUX2, tempsensor);								// Adresse und Kanal auf Multiplexer setzen
-	ltc6811(ADAX | MD73);													// Messung fuer GPIOs starten
+	ltc6811(ADCVAX | MD73);													// Messung fuer GPIOs starten
 	
 	// Daten einlesen
 	ltc6811_read(RDAUXA, &data[0]);
@@ -308,11 +308,11 @@ void bms_celltemperatur (uint8_t tempsensor)
 		for (uint8_t j = 0; j < LTC1380_DEVICES; j++)
 		{
 			// GPIO 1 und 2
-			celltemperature[i][tempsensor + j*8] = ((data[i*8 + j*2 + 1] << 8) | data[i*8 + j*2]);	// LTC GPIO 0 und 1, Byte 0 bis 3 des Registers
+			celltemperature[i][tempsensor + j*8] = ((data[i*8 + j*2 + 1] << 8) | data[i*8 + j*2]);	// LTC GPIO 1 und 2, Byte 0 bis 3 des Registers
 		}
 
 		// GPIO 3
-		PCB_Temperature[i] = ((data[i*8 + 4 + 1] << 8) | data[i*8 + 4]);	// LTC GPIO 2, Byte 4 und 5 des Registers
+		PCB_Temperature[i] = ((data[i*8 + 4 + 1] << 8) | data[i*8 + 4]);	// LTC GPIO 3, Byte 4 und 5 des Registers
 	}
 }
 //----------------------------------------------------------------------
@@ -343,7 +343,7 @@ void bms_readgpio (uint8_t gpio)
 				break;
 			// GPIO 3
 			case 3:
-				PCB_Temperature[i] = ((data[i*8 + 4 + 1] << 8) | data[i*8 + 4]);// LTC GPIO 2, Byte 4 und 5 des Registers
+				PCB_Temperature[i] = ((data[i*8 + 4 + 1] << 8) | data[i*8 + 4]);// LTC GPIO 3, Byte 4 und 5 des Registers
 				break;
 			// GPIO 4 und 5
 			case 4:
@@ -549,7 +549,7 @@ void bms_work (void)
 
 #ifdef DEBUG_BMS_WORK
 		uartTransmitNumber(bms_ok(), 10);
-		uartTransmit("\n", 1);
+		uartTransmit(", ", 2);
 #endif
 
 	}
@@ -600,7 +600,7 @@ void bms_work (void)
 	CAN_Output_PaketListe[63].msg.buf[3] = (stackvoltage >> 24);
 
 #ifdef DEBUG_BMS_WORK
-	if (bms_tempcount == LTC1380_SENSORES)
+	if (bms_tempcount == 0)
 	{
 		for (uint8_t i = 0; i < LTC6811_DEVICES; i++)
 		{
@@ -618,10 +618,23 @@ void bms_work (void)
 
 			uartTransmitNumber(PCB_Temperature[i], 10);
 			uartTransmit(", ", 2);
+			uartTransmitNumber(LTC6811_Temperature[i], 10);
+			uartTransmit(", ", 2);
+			uartTransmitNumber(LTC6811_analogvolt[i], 10);
+			uartTransmit(", ", 2);
+			uartTransmitNumber(LTC6811_digitalvolt[i], 10);
+			uartTransmit(", ", 2);
+			uartTransmitNumber(LTC6811_secref[i], 10);
+			uartTransmit(", ", 2);
 			uartTransmitNumber(LTC6811_soc[i], 10);
 			uartTransmit("\n", 1);
 		}
-		uartTransmit("\n", 1);
+
+		// Wenn mehrere Module angeschlossen sind, zusaetzlichen Zeilenumbruch ausgeben
+		if (LTC6811_DEVICES > 1)
+		{
+			uartTransmit("\n", 1);
+		}
 	}
 #endif
 }
@@ -808,6 +821,13 @@ bool bms_ok (void)
 			bms_warning[LTC6811_DEVICES] &= ~(1 << i);
 		}
 	}
+
+#ifdef DEBUG_BMS_OK
+	uartTransmitNumber(bms_error[0], 10);
+	uartTransmit(", ", 2);
+	uartTransmitNumber(bms_warning[0], 10);
+	uartTransmit("\n", 1);
+#endif
 
 	// Auswertung ob in BMS ein Fehler oder Warnung vorhanden, Rueckgabe False / True
 	if (bms_error[LTC6811_DEVICES] != 0)

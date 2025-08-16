@@ -209,6 +209,7 @@ int main(void)
 	// Nach erfolgreicher Initialisiserung aller Konfigurationen
 	setState(Ready);
 
+	ltc6811_validate_balance();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -489,10 +490,10 @@ int main(void)
 		  // 2s Task
 		  if (millis() > (zweisekunden + 2000))
 		  {
-			  uartTransmitVNumber(current.result, 10);
-			  uartTransmit("\n", 1);
-			  uartTransmitVNumber(voltage1.result, 10);
-			  uartTransmit("\n", 1);
+//			  uartTransmitVNumber(current.result, 10);
+//			  uartTransmit("\n", 1);
+//			  uartTransmitVNumber(voltage1.result, 10);
+//			  uartTransmit("\n", 1);
 
 			  zweisekunden = millis();
 		  }
@@ -650,7 +651,7 @@ int main(void)
 		  case ReadyToDrive:
 		  {
 			  // Nach 10s nach dem Precharge gestartet wurde, wird das Precharge Relais wieder abgeschaltet
-			  if (millis() > (timePrecharge + 10000))
+			  if ((highcurrent_out.PrechargeOut == true) && (millis() > (timePrecharge + 10000)))
 			  {
 				  highcurrent_out.PrechargeOut = false;
 			  }
@@ -717,6 +718,9 @@ int main(void)
 			  if (millis() > (timeStandby + HVRELAISTIME))
 			  {
 				  sdc_in.Anlassen = false;
+				  komfort_out.IsoSPI_EN = false;
+				  ISOSPI_DISABLE();
+
 				  HAL_GPIO_WritePin(PWM_HV_Charger_GPIO_Port, PWM_HV_Charger_Pin, GPIO_PIN_RESET);
 			  }
 

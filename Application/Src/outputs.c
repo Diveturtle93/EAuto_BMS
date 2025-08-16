@@ -77,6 +77,7 @@ void writeall_outputs (void)
 
 	// Schreibe Komfortausgaenge
 	HAL_GPIO_WritePin(TRIGGER_CURRENT_GPIO_Port, TRIGGER_CURRENT_Pin, komfort_out.TriggerOut);		// Stromsensor Triggern, mehr Infos
+//	HAL_GPIO_WritePin(ISOSPI_EN_GPIO_Port, ISOSPI_EN_Pin, komfort_out.IsoSPI_EN);					// IsoSPI einschalten
 }
 //----------------------------------------------------------------------
 
@@ -102,17 +103,17 @@ void testPCB_Leds (void)
 {
 	// Leds Testen
     HAL_GPIO_WritePin(BLUE_LED_GPIO_Port, BLUE_LED_Pin, GPIO_PIN_SET);								// Blaue LED Platine setzen
-    HAL_Delay(1000);
+    HAL_Delay(LED_TEST_TIME);
     HAL_GPIO_WritePin(BLUE_LED_GPIO_Port, BLUE_LED_Pin, GPIO_PIN_RESET);							// Blaue LED Platine zuruecksetzen
-    HAL_Delay(500);
+    HAL_Delay(LED_TEST_TIME);
     HAL_GPIO_WritePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin, GPIO_PIN_SET);							// Gruene LED Platine setzen
-    HAL_Delay(1000);
+    HAL_Delay(LED_TEST_TIME);
     HAL_GPIO_WritePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin, GPIO_PIN_RESET);							// Gruene LED Platine zuruecksetzen
-    HAL_Delay(500);
+    HAL_Delay(LED_TEST_TIME);
     HAL_GPIO_WritePin(RED_LED_GPIO_Port, RED_LED_Pin, GPIO_PIN_SET);								// Rote LED Platine setzen
-    HAL_Delay(1000);
+    HAL_Delay(LED_TEST_TIME);
     HAL_GPIO_WritePin(RED_LED_GPIO_Port, RED_LED_Pin, GPIO_PIN_RESET);								// Rote LED Platine zuruecksetzen
-    HAL_Delay(500);
+    HAL_Delay(LED_TEST_TIME);
 }
 //----------------------------------------------------------------------
 
@@ -122,13 +123,13 @@ void testInletLeds (void)
 {
 	// Leds Testen
 	HAL_GPIO_WritePin(INLET_RED_GPIO_Port, INLET_RED_Pin, GPIO_PIN_SET);							// Red Inlet LED setzen
-	HAL_Delay(1000);
+	HAL_Delay(LED_TEST_TIME);
 	HAL_GPIO_WritePin(INLET_RED_GPIO_Port, INLET_RED_Pin, GPIO_PIN_RESET);							// Red Inlet LED zuruecksetzen
-	HAL_Delay(500);
+	HAL_Delay(LED_TEST_TIME);
 	HAL_GPIO_WritePin(INLET_GREEN_GPIO_Port, INLET_GREEN_Pin, GPIO_PIN_SET);						// Green Inlet LED setzen
-	HAL_Delay(1000);
+	HAL_Delay(LED_TEST_TIME);
 	HAL_GPIO_WritePin(INLET_GREEN_GPIO_Port, INLET_GREEN_Pin, GPIO_PIN_RESET);						// Green Inlet LED zuruecksetzen
-	HAL_Delay(500);
+	HAL_Delay(LED_TEST_TIME);
 }
 //----------------------------------------------------------------------
 
@@ -136,9 +137,9 @@ void testInletLeds (void)
 void testCockpitLeds (void)
 {
 	HAL_GPIO_WritePin(AKKU_LED_GPIO_Port, AKKU_LED_Pin, GPIO_PIN_SET);								// Akku LED Kombiinstrument setzen, Ladekontrollleuchte an
-	HAL_Delay(1000);
+	HAL_Delay(LED_TEST_TIME);
 	HAL_GPIO_WritePin(AKKU_LED_GPIO_Port, AKKU_LED_Pin, GPIO_PIN_RESET);							// Akku LED Kombiinstrument zuruecksetzen, Ladekontrollleuchte aus
-	HAL_Delay(500);
+	HAL_Delay(LED_TEST_TIME);
 }
 
 // Ladekontroll LED setzen

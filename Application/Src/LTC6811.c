@@ -27,6 +27,7 @@
 // Definiere Zellenarray
 //----------------------------------------------------------------------
 ltc6811_configuration_tag ltc6811_Conf;										// LTC6811 Configurations Register
+ltc6811_balancing_tag ltc6811_balance[LTC6811_DEVICES];						// LTC6811 Balancing Register
 //----------------------------------------------------------------------
 
 // Definiere Globale Variable
@@ -34,7 +35,7 @@ ltc6811_configuration_tag ltc6811_Conf;										// LTC6811 Configurations Regis
 static LTC6811_State Ltc6811State;											// Statusvariable Statemaschine
 static uint32_t timeLtc6811State;											// Time Variable fuer State
 uint16_t samplingMode = MD73;												// Sampling Mode fuer LTC6811 Messung
-static uint16_t error_readtimeout = 0xFFFF;									// Fehler fuer Timeout, default alle fehlerhaft
+static uint16_t error_readtimeout = 0x0001;									// Fehler fuer Timeout, default alle fehlerhaft
 //----------------------------------------------------------------------
 
 // Pec Lookuptabelle definieren
@@ -608,8 +609,13 @@ bool peccheck (uint8_t len, uint8_t *data)
 
 // Initialisiere LTC6811, Schreibe Config in Konfigurationsregister
 //----------------------------------------------------------------------
-void ltc6811_init (void)
+bool ltc6811_init (void)
 {
+	// Variablen definieren
+	bool error = false;														// Fehlervariable, wenn zuruecklesen der Register fehlerhaft
+	uint8_t count = 0;														// Fehlerzaehler
+	uint8_t tmp_data[8 * LTC6811_DEVICES];									// Zwischenspeicher Daten + Pec CRC
+
 	// Setze Konfiguration
 	ltc6811_Conf.ADCOPT = 0;												// Setze ADC Mode option, 0 = default
 	ltc6811_Conf.REFON = 0;													// Setze Referenzspannung, 0 = default, 0 = Shutdown after Conversion, 1 = Shutdown after Watchdog timeout
@@ -623,26 +629,81 @@ void ltc6811_init (void)
 	ltc6811_Conf.VUV = LTC6811_UVOLT;										// Setze Vergleichsspannung fuer Unterspannung
 	ltc6811_Conf.VOV = LTC6811_OVOLT;										// Setze Vergleichsspannung fuer Ueberspannung
 
-	// Balancing
-	ltc6811_Conf.DCC1 = 0;													// Balancing von Zelle 1 ausschalten
-	ltc6811_Conf.DCC2 = 0;													// Balancing von Zelle 2 ausschalten
-	ltc6811_Conf.DCC3 = 0;													// Balancing von Zelle 3 ausschalten
-	ltc6811_Conf.DCC4 = 0;													// Balancing von Zelle 4 ausschalten
-	ltc6811_Conf.DCC5 = 0;													// Balancing von Zelle 5 ausschalten
-	ltc6811_Conf.DCC6 = 0;													// Balancing von Zelle 6 ausschalten
-	ltc6811_Conf.DCC7 = 0;													// Balancing von Zelle 7 ausschalten
-	ltc6811_Conf.DCC8 = 0;													// Balancing von Zelle 8 ausschalten
-	ltc6811_Conf.DCC9 = 0;													// Balancing von Zelle 9 ausschalten
-	ltc6811_Conf.DCC10 = 0;													// Balancing von Zelle 10 ausschalten
-	ltc6811_Conf.DCC11 = 0;													// Balancing von Zelle 11 ausschalten
-	ltc6811_Conf.DCC12 = 0;													// Balancing von Zelle 12 ausschalten
-	ltc6811_Conf.DCTO = 0;													// Balancing Timer zuruecksetzen
+	// Balancing zuruecksetzen bei Initialisierung
+	ltc6811_balance[0].DCC1 = 0;											// Balancing von Zelle 1 ausschalten
+	ltc6811_balance[0].DCC2 = 0;											// Balancing von Zelle 2 ausschalten
+	ltc6811_balance[0].DCC3 = 0;											// Balancing von Zelle 3 ausschalten
+	ltc6811_balance[0].DCC4 = 0;											// Balancing von Zelle 4 ausschalten
+	ltc6811_balance[0].DCC5 = 0;											// Balancing von Zelle 5 ausschalten
+	ltc6811_balance[0].DCC6 = 0;											// Balancing von Zelle 6 ausschalten
+	ltc6811_balance[0].DCC7 = 0;											// Balancing von Zelle 7 ausschalten
+	ltc6811_balance[0].DCC8 = 0;											// Balancing von Zelle 8 ausschalten
+	ltc6811_balance[0].DCC9 = 0;											// Balancing von Zelle 9 ausschalten
+	ltc6811_balance[0].DCC10 = 0;											// Balancing von Zelle 10 ausschalten
+	ltc6811_balance[0].DCC11 = 0;											// Balancing von Zelle 11 ausschalten
+	ltc6811_balance[0].DCC12 = 0;											// Balancing von Zelle 12 ausschalten
+	ltc6811_balance[0].DCTO = 0;											// Balancing Timer zuruecksetzen
 
 	// Sampling Mode setzen
+	// TODO: samplingMode einmal global setzen, nicht immer beim uebermitteln von Commands
 	samplingMode = MD73;
 
+	// Configuration Register vorbereiten
+	for (uint8_t j = 0; j < LTC6811_DEVICES; j++)
+	{
+		tmp_data[j*8] = ltc6811_Conf.configuration[0];
+		tmp_data[j*8 + 1] = ltc6811_Conf.configuration[1];
+		tmp_data[j*8 + 2] = ltc6811_Conf.configuration[2];
+		tmp_data[j*8 + 3] = ltc6811_Conf.configuration[3];
+		tmp_data[j*8 + 4] = (ltc6811_balance[j].balancing[0] & 0xFF);
+		tmp_data[j*8 + 5] = (ltc6811_balance[j].balancing[1] >> 8);
+	}
+
 	// Schreibe Konfiguration in Register am LTC6811
-	ltc6811_write(WRCFG, &ltc6811_Conf.configuration[0]);
+	ltc6811_write(WRCFG, &tmp_data[0]);
+
+	// Config-Register zuruecklesen
+	do
+	{
+		// Register einlesen, true = Pec OK, false = Pec nOK
+		if ((error = ltc6811_read(RDCFG, &tmp_data[0])) != false)
+		{
+			// Register Werte pruefen, pro Modul
+			for (uint8_t j = 0; j < LTC6811_DEVICES; j++)
+			{
+				// Werte in Register prufen
+				for (uint8_t i = 1; i < 6; i++)
+				{
+					if (ltc6811_Conf.configuration[i] != tmp_data[j*8 + i])
+					{
+#ifdef DEBUG
+						software_error_debug(ERROR_LTC6811_INITIALTEST);
+#else
+						software_error(ERROR_LTC6811_INITIALTEST);
+#endif
+					}
+				}
+			}
+		}
+		else
+		{
+			count++;
+		}
+
+		// Wenn Fehler zum 10.ten mal auftritt, dann Fehler ausgeben
+		if (count >= 10)
+		{
+#ifdef DEBUG
+			software_error_debug(ERROR_LTC6811_INITIALTEST);
+#else
+			software_error(ERROR_LTC6811_INITIALTEST);
+#endif
+			return false;
+		}
+	}
+	while ((error != true) && (count <= 10));
+
+	return true;
 }
 //----------------------------------------------------------------------
 
@@ -769,7 +830,7 @@ bool ltc6811_test (uint16_t command)
 	if (command & MD2714)													// Wenn Sampling Frequenz = MD2714
 	{
 		// Wenn ADCOPT gesetzt
-		if (ltc6811_Conf.ADCOPT == 1)
+		if (ltc6811_Conf.ADCOPT == true)
 		{
 			// Wenn Selbsttest 1 gewaehlt
 			if (command == ST1)
@@ -1185,5 +1246,213 @@ uint16_t ltc6811_poll (void)
 uint16_t ltc6811_timeout (void)
 {
 	return error_readtimeout;
+}
+//----------------------------------------------------------------------
+
+// Balancing validieren
+//----------------------------------------------------------------------
+bool ltc6811_validate_balance (void)
+{
+	// Debug Nachricht
+#ifdef DEBUG_LTC6811
+	ITM_SendString("Mosfets am LTC6811 validieren\n");
+#endif
+
+	// Variablen definieren
+	uint16_t result[12 * LTC6811_DEVICES] = {0};							// Speicher Differenz
+	uint8_t cell[32 * LTC6811_DEVICES] = {0};								// Speicher Zelle ohne Discharge Schalter
+	uint8_t celldchg[32 * LTC6811_DEVICES] = {0};							// Speicher Zelle mit Discharge Schalter
+	uint8_t sdata[6 * LTC6811_DEVICES] = {0};								// Speicher S Register
+	uint8_t temp_balancing[LTC6811_DEVICES][2] = {0};						// Zwischenspeicher LTC6811 Balancing
+	uint8_t temp_data[6 * LTC6811_DEVICES] = {0};							// Zwischenspeicher LTC6811 um Konfigurations Register zu beschreiben
+
+	// Balancing Einstellungen zwischen speichern, pro Modul
+	for (uint8_t j = 0; j < LTC6811_DEVICES; j++)
+	{
+		temp_balancing[j][0] = ltc6811_balance[j].balancing[0];				// Zwischenspeichern der Konfiguration fuer DCC Wert
+		temp_balancing[j][1] = ltc6811_balance[j].balancing[1];				// Zwischenspeichern der Konfiguration fuer DCC Wert
+
+		// Balancing reseten
+		ltc6811_balance[j].balancing[0] = 0x00;
+		ltc6811_balance[j].balancing[1] &= 0xF0;
+
+		// Daten fuer Register vorbereiten
+		temp_data[6*j] = ltc6811_Conf.configuration[0];
+		temp_data[6*j + 1] = ltc6811_Conf.configuration[1];
+		temp_data[6*j + 2] = ltc6811_Conf.configuration[2];
+		temp_data[6*j + 3] = ltc6811_Conf.configuration[3];
+		temp_data[6*j + 4] = ltc6811_balance[j].balancing[0];
+		temp_data[6*j + 5] = ltc6811_balance[j].balancing[1];
+	}
+
+	// Setze Konfigurationsregister
+	ltc6811_write(WRCFG, &temp_data[0]);
+
+	// Zuruecksetzen S-Register
+	ltc6811(CLRSCTRL);
+
+	// Starte AD-Wandlung
+	ltc6811(ADCVC | MD73);
+
+	// Lese Spannungen
+	ltc6811_read(RDCVA, &cell[0]);
+	ltc6811_read(RDCVB, &cell[8 * LTC6811_DEVICES]);
+	ltc6811_read(RDCVC, &cell[16 * LTC6811_DEVICES]);
+	ltc6811_read(RDCVD, &cell[24 * LTC6811_DEVICES]);
+
+	// Durchschalten der S-Ausgaenge und Messen der Spannungen
+	for (uint8_t i = 0; i < 3; i++)
+	{
+		for (uint8_t j = 0; j < 2; j++)
+		{
+			// S-Ausgang auswaehlen
+			switch (j)
+			{
+				// Schreiben unteren vier Bits des Bytes, Ungerade Schalter
+				case 0:
+				{
+					sdata[i] = 0x08;
+					sdata[i + 3] = 0x08;
+					break;
+				}
+				// Schreiben oberen vier Bits des Bytes, gerade Schalter
+				case 1:
+				{
+					sdata[i] = 0x80;
+					sdata[i + 3] = 0x80;
+					break;
+				}
+				default:
+					break;
+			}
+
+			// Daten schreiben und Messung starten
+			ltc6811_write(WRSCTRL, &sdata[0]);
+			ltc6811(ADCVC | MD73 | ((i*2 + j + 1) & 0x07));
+
+			// S-Daten zuruecksetzen
+			sdata[i] = 0;
+			sdata[i + 3] = 0;
+		}
+	}
+
+	// S-Register zuruecksetzen
+	ltc6811(CLRSCTRL);
+
+	// Lese Spannungen
+	ltc6811_read(RDCVA, &celldchg[0]);
+	ltc6811_read(RDCVB, &celldchg[8 * LTC6811_DEVICES]);
+	ltc6811_read(RDCVC, &celldchg[16 * LTC6811_DEVICES]);
+	ltc6811_read(RDCVD, &celldchg[24 * LTC6811_DEVICES]);
+
+	// Daten bearbeiten, Differenz bilden, pro Modul
+	for (uint8_t j = 0; j < LTC6811_DEVICES; j++)
+	{
+		// Daten fuer Zelle bearbeiten
+		for (uint8_t i = 0; i < LTC6811_CELLS; i++)
+		{
+			// Auswahl welcher Schalter
+			switch (i)
+			{
+				// Schalter 1 - 3
+				case 0:
+				case 1:
+				case 2:
+					result[j*12 + i] = getDifference(((cell[j*32 + i*2 + 1] << 8) + cell[j*32 + i*2]), ((celldchg[j*32 + i*2 + 1] << 8) + celldchg[j*32 + i*2]));
+					break;
+				// Schalter 4 - 6
+				case 3:
+				case 4:
+				case 5:
+					result[j*12 + i] = getDifference(((cell[j*32 + i*2 + 3] << 8) + cell[j*32 + i*2 + 2]), ((celldchg[j*32 + i*2 + 3] << 8) + celldchg[j*32 + i*2 + 2]));
+					break;
+				// Schalter 7 - 9
+				case 6:
+				case 7:
+				case 8:
+					result[j*12 + i] = getDifference(((cell[j*32 + i*2 + 5] << 8) + cell[j*32 + i*2 + 4]), ((celldchg[j*32 + i*2 + 5] << 8) + celldchg[j*32 + i*2 + 4]));
+					break;
+				// Schalter 10 - 12
+				case 9:
+				case 10:
+				case 11:
+					result[j*12 + i] = getDifference(((cell[j*32 + i*2 + 7] << 8) + cell[j*32 + i*2 + 6]), ((celldchg[j*32 + i*2 + 7] << 8) + celldchg[j*32 + i*2 + 6]));
+					break;
+				default:
+					break;
+			}
+		}
+	}
+
+	// Balancing Werte wieder auf den Ausgangszustand setzen
+	for (uint8_t j = 0; j < LTC6811_DEVICES; j++)
+	{
+		ltc6811_balance[j].balancing[0] = temp_balancing[j][0];				// Konfiguration fuer DCC Wert zuruecksetzen
+		ltc6811_balance[j].balancing[1] = temp_balancing[j][1];				// Konfiguration fuer DCC Wert zuruecksetzen
+
+		temp_data[6*j + 4] = ltc6811_balance[j].balancing[0];
+		temp_data[6*j + 5] = ltc6811_balance[j].balancing[1];
+	}
+
+	// Schreibe Konfiguration
+	ltc6811_write(WRCFG, &temp_data[0]);
+
+#ifdef DEBUG_LTC6811_VALID_BALANCING
+	for (uint8_t j = 0; j < LTC6811_DEVICES; j++)
+	{
+		for (uint8_t i = 0; i < LTC6811_CELLS; i++)
+		{
+			uartTransmitNumber(result[j*12 + i], 10);
+			uartTransmit(", ", 2);
+		}
+	}
+	uartTransmit("\n", 1);
+#endif
+
+	// Schleife zum Pruefen der Daten, pro Modul
+	for (uint8_t j = 0; j < LTC6811_DEVICES; j++)
+	{
+		// pro Zelle
+		for (uint8_t i = 0; i < LTC6811_CELLS; i++)
+		{
+			// Vergleiche Messdaten mit Threshold
+			// TODO: Threshold Wert ermitteln und neue Konstante anlegen
+			if (result[j*12 + i] > OPENWIRE_THRESHOLD)
+			{
+				return false;
+			}
+		}
+	}
+
+	return true;
+}
+//----------------------------------------------------------------------
+
+// Zelle balancieren
+//----------------------------------------------------------------------
+void ltc6811_balancing (uint8_t cell, bool active)
+{
+	// Variable definieren
+	uint8_t data[6 * LTC6811_DEVICES] = {0};
+
+	// Auswahl ob Zellbalancing fuer Zelle eingeschalter oder ausgeschaltet werden soll
+	if (active == true)
+	{
+		ltc6811_balance[0].DCC2 = active;
+	}
+	else
+	{
+		ltc6811_balance[0].DCC2 = active;
+	}
+
+	data[0] = ltc6811_Conf.configuration[0];
+	data[1] = ltc6811_Conf.configuration[1];
+	data[2] = ltc6811_Conf.configuration[2];
+	data[3] = ltc6811_Conf.configuration[3];
+	data[4] = ltc6811_balance[0].balancing[0];
+	data[5] = ltc6811_balance[0].balancing[1];
+
+	// Schreibe Daten
+	ltc6811_write(WRCFG, &data[0]);
 }
 //----------------------------------------------------------------------
