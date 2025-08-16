@@ -190,19 +190,10 @@ int main(void)
 
 	// IMD Fehler zuruecksetzen bei Systemstart
 	system_out.ImdOK = true;
-
-	for (uint8_t j = 0; j < ANZAHL_OUTPUT_PAKETE; j++)
-	{
-		CAN_Output_PaketListe[j].msg.buf[0] = 0;
-		CAN_Output_PaketListe[j].msg.buf[1] = 0;
-		CAN_Output_PaketListe[j].msg.buf[2] = 0;
-		CAN_Output_PaketListe[j].msg.buf[3] = 0;
-		CAN_Output_PaketListe[j].msg.buf[4] = 0;
-		CAN_Output_PaketListe[j].msg.buf[5] = 0;
-		CAN_Output_PaketListe[j].msg.buf[6] = 0;
-		CAN_Output_PaketListe[j].msg.buf[7] = 0;
-	}
 	
+	// CAN-Nachrichten loeschen
+	cleanCAN();
+
 #ifdef DEBUG
 	#define MAINWHILE			"\nStarte While Schleife\n"
 	uartTransmit(MAINWHILE, sizeof(MAINWHILE));

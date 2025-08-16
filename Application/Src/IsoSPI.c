@@ -5,7 +5,7 @@
 // Datum	:	03.06.2022
 // Version	:	1.0
 // Autor	:	Diveturtle93
-// Projekt	:	BatteriemanagementSystem
+// Projekt	:	LTC6811
 //----------------------------------------------------------------------
 
 // Einfuegen der standard Include-Dateien
@@ -21,6 +21,7 @@
 // Einfuegen der eigenen Include Dateien
 //----------------------------------------------------------------------
 #include "LTC6811.h"
+#include "SPI_resource.h"
 #include "millis.h"
 //----------------------------------------------------------------------
 

@@ -5,7 +5,7 @@
 // Datum	:	27.08.2021
 // Version	:	1.0
 // Autor	:	Diveturtle93
-// Projekt	:	BatteriemanagementSystem
+// Projekt	:	AD8403
 //----------------------------------------------------------------------
 
 // Einfuegen der standard Include-Dateien

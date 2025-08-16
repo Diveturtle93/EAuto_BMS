@@ -5,7 +5,7 @@
 // Datum	:	09.08.2021
 // Version	:	1.0
 // Autor	:	Diveturtle93
-// Projekt	:	Batteriemanagement-System
+// Projekt	:	Math
 //----------------------------------------------------------------------
 
 // Einfuegen der standard Include-Dateien

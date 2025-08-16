@@ -2,10 +2,10 @@
 // Titel	:	app_info.c
 //----------------------------------------------------------------------
 // Sprache	:	C
-// Datum	:	Jul 16, 2023
+// Datum	:	16.07.2023
 // Version	:	1.0
 // Autor	:	Diveturtle93
-// Projekt	:	BatteriemanagementSystem
+// Projekt	:	App Info
 //----------------------------------------------------------------------
 
 // Einfuegen der standard Include-Dateien

@@ -5,7 +5,7 @@
 // Datum	:	Jun 28, 2023
 // Version	:	1.0
 // Autor	:	Diveturtle93
-// Projekt	:	BatteriemanagementSystem
+// Projekt	:	CAN-Bus
 //----------------------------------------------------------------------
 
 // Dateiheader definieren
@@ -37,6 +37,7 @@
 #define ANZAHL_OUTPUT_PAKETE						64						// Anzahl Sende Nachrichten
 //----------------------------------------------------------------------
 
+// Typedefine fuer Buffer size
 //----------------------------------------------------------------------
 typedef enum																// TypeDef fuer Empfangsbuffer groesse
 {																			// Tabellenform
@@ -66,6 +67,8 @@ typedef enum																// TypeDef fuer Sendebuffer groesse
 	TX_SIZE_1024 = (uint16_t)1024,
 } TXQUEUE_TABLE;
 //----------------------------------------------------------------------
+// Typedefine fuer CAN-Message
+//----------------------------------------------------------------------
 typedef struct
 {
 	uint32_t id;															// CAN Identifier
@@ -85,6 +88,8 @@ typedef struct
 	bool seq;																// Sequentiale Rahmen
 } CAN_message_t;
 //----------------------------------------------------------------------
+// Typedefine fuer Rigbuffer
+//----------------------------------------------------------------------
 typedef struct
 {
 	volatile uint16_t head;													// Kopf des Ringbusses
@@ -93,11 +98,14 @@ typedef struct
 	volatile CAN_message_t *buffer;											// Nachrichtenbuffer
 } RingbufferTypeDef;
 //----------------------------------------------------------------------
+// Typedefine fuer CAN-Paket
+//----------------------------------------------------------------------
 typedef struct
 {
 	CAN_message_t msg;														// CAN-Nachricht
 	uint16_t sendeintervall;												// Intervall, wie oft die Nachricht gesendet wird (in ms)
-	uint32_t sende_time;													// Startzeit, ab wann die Nachricht gesendet wird
+	uint32_t sendetime;														// Startzeit, ab wann die Nachricht gesendet wird
+	uint8_t sendpossible;													// Senden der Nachricht moeglich, 0 = nicht moeglich, 255 = unendlich, Zahl anzahl der Sendevorgaenge
 } CAN_PaketTypeDef;
 //----------------------------------------------------------------------
 
@@ -108,19 +116,20 @@ extern CAN_PaketTypeDef CAN_Output_PaketListe[ANZAHL_OUTPUT_PAKETE];
 
 // Funktionen definieren
 //----------------------------------------------------------------------
-void CANinit (RXQUEUE_TABLE rxSize, TXQUEUE_TABLE txSize);
-bool CANwrite (CAN_message_t *CAN_tx_msg, bool MB);
-uint8_t CAN_available (void);
-bool CANread (CAN_message_t *CAN_rx_msg);
-void CANwork (void);
-void CAN_config (void);
-bool isInitialized (void);
-void initializeBuffer (void);
-void initRingBuffer (RingbufferTypeDef *ring, volatile CAN_message_t *buffer, uint32_t size);
-bool addToRingBuffer (RingbufferTypeDef *ring, CAN_message_t *msg);
-bool removeFromRingBuffer (RingbufferTypeDef *ring, CAN_message_t *msg);
-bool isRingBufferEmpty (RingbufferTypeDef *ring);
-CAN_PaketTypeDef CAN_Nachricht (uint16_t id, uint8_t length, uint16_t sendeintervall, uint32_t sende_time);
+void CANinit (RXQUEUE_TABLE rxSize, TXQUEUE_TABLE txSize);					// CAN-Bus und Ringpuffer initialisieren
+bool CANwrite (CAN_message_t *CAN_tx_msg, bool MB);							// CAN-Nachricht schreiben
+uint8_t CAN_available (void);												// Abfrage, ob CAN-Nachricht im Ringpuffer vorhanden
+bool CANread (CAN_message_t *CAN_rx_msg);									// CAN-Nachricht lesen
+void CANwork (void);														// CAN-Bus durchlaufen
+void CAN_config (void);														// CAN-Bus konfigurieren
+void clearCAN (void);														// Daten aus CAN-NAchrichten zuruecksetzen
+bool isInitialized (void);													// Abfrage, ob Ringpuffer initialisiert
+void initializeBuffer (void);												// Empfangs und Sendepuffer initialisieren
+void initRingBuffer (RingbufferTypeDef *ring, volatile CAN_message_t *buffer, uint32_t size);	// Ringpuffer initialisieren
+bool addToRingBuffer (RingbufferTypeDef *ring, CAN_message_t *msg);			// Nachricht zu Ringpuffer hinzufuegen
+bool removeFromRingBuffer (RingbufferTypeDef *ring, CAN_message_t *msg);	// Nachricht von Ringpuffer loeschen
+bool isRingBufferEmpty (RingbufferTypeDef *ring);							// Abfrage, ob Ringpuffer leer ist
+CAN_PaketTypeDef CAN_Nachricht (uint16_t id, uint8_t length, uint16_t sendeintervall, uint32_t sendetime, uint8_t sendpossible);	// CAN-Paket in CAN-Paketliste schreiben
 //----------------------------------------------------------------------
 
 #endif /* INC_CAN_BUS_H_ */

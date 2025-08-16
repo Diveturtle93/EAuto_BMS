@@ -2,7 +2,7 @@
 // Titel	:	batteriemanagement.c
 //----------------------------------------------------------------------
 // Sprache	:	C
-// Datum	:	Jun 23, 2022
+// Datum	:	23.06.2022
 // Version	:	1.0
 // Autor	:	Diveturtle93
 // Projekt	:	BatteriemanagementSystem

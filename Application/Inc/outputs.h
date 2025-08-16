@@ -5,7 +5,7 @@
 // Datum	:	31.03.2021
 // Version	:	1.0
 // Autor	:	Diveturtle93
-// Projekt	:	Batteriemanagement-System
+// Projekt	:	Digital IOs
 //----------------------------------------------------------------------
 
 // Dateiheader definieren

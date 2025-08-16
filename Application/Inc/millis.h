@@ -5,7 +5,7 @@
 // Datum	:	01.06.2021
 // Version	:	1.0
 // Autor	:	Diveturtle93
-// Projekt	:	Batteriemanagement-System
+// Projekt	:	Millis
 //----------------------------------------------------------------------
 
 // Dateiheader definieren

@@ -21,13 +21,7 @@
 
 // Einfuegen der STM Include-Dateien
 //----------------------------------------------------------------------
-#ifdef STM32F767xx
-	#include "stm32f7xx_hal.h"
-#endif
-
-#ifdef STM32F105xx
-	#include "stm32f1xx_hal.h"
-#endif
+#include "main.h"
 //----------------------------------------------------------------------
 
 // Definiere Debug Symbols

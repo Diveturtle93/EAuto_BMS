@@ -5,7 +5,7 @@
 // Datum	:	25.09.2020
 // Version	:	1.0
 // Autor	:	Diveturtle93
-// Projekt	:	Batteriemanagement-System
+// Projekt	:	LTC6811
 //----------------------------------------------------------------------
 
 // Dateiheader definieren
@@ -208,12 +208,6 @@ typedef enum LTC6811State_tag {
 #define WRCOMM						0b11100100001							// Write Communication Register Group
 #define RDCOMM						0b11100100010							// Read Communication Register Group
 #define STCOMM						0b11100100011							// Start Communication I2C / SPI
-//----------------------------------------------------------------------
-
-// Definiere Chip-Select Leitung
-//----------------------------------------------------------------------
-#define ISOCS_ENABLE() (HAL_GPIO_WritePin(ISOSPI_CS_GPIO_Port, ISOSPI_CS_Pin, GPIO_PIN_RESET))		// Chip-Select enable
-#define ISOCS_DISABLE() (HAL_GPIO_WritePin(ISOSPI_CS_GPIO_Port, ISOSPI_CS_Pin, GPIO_PIN_SET))		// Chip-Select disable
 //----------------------------------------------------------------------
 
 // Funktionen definieren

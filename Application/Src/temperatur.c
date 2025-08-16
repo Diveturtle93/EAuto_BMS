@@ -2,10 +2,10 @@
 // Titel	:	temperatur.c
 //----------------------------------------------------------------------
 // Sprache	:	C
-// Datum	:	Jan 12, 2024
+// Datum	:	12.01.2024
 // Version	:	1.0
 // Autor	:	Diveturtle93
-// Projekt	:	BatteriemanagementSystem
+// Projekt	:	Temperaturen
 //----------------------------------------------------------------------
 
 // Einfuegen der standard Include-Dateien

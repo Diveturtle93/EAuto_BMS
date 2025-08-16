@@ -5,7 +5,7 @@
 // Datum	:	25.09.2020
 // Version	:	1.0
 // Autor	:	Diveturtle93
-// Projekt	:	Batteriemanagement-System
+// Projekt	:	LTC6811
 //----------------------------------------------------------------------
 
 // Einfuegen der standard Include-Dateien
