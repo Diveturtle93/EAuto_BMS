@@ -20,6 +20,17 @@
 #include "main.h"
 //----------------------------------------------------------------------
 
+// Konstanten definieren
+//----------------------------------------------------------------------
+#define IVT_OVERCURRENT_TRESHOLD				1000						// Angabe in mA
+#define IVT_OVERVOLTAGE1_TRESHOLD				15000						// Angabe in mV
+#define IVT_UNDERVOLTAGE1_TRESHOLD				10000						// Angabe in mV
+#define IVT_OVERVOLTAGE2_TRESHOLD				30000						// Angabe in mV
+#define IVT_UNDERVOLTAGE2_TRESHOLD				20000						// Angabe in mV
+#define IVT_OVERVOLTAGE3_TRESHOLD				30000						// Angabe in mV
+#define IVT_UNDERVOLTAGE3_TRESHOLD				20000						// Angabe in mV
+//----------------------------------------------------------------------
+
 // Definiere CAN Strukturen
 //----------------------------------------------------------------------
 typedef union

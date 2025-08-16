@@ -140,7 +140,7 @@ int main(void)
 	HAL_Delay(3000);
 #endif
 
-#if MOTOR_AVAILIBLE != 1
+#if MOTOR_AVAILABLE != 1
 	#if TISCHAUFBAU == 1
 		sdc_in.Anlassen = true;
 	#endif
@@ -386,32 +386,78 @@ int main(void)
 	  }
 
 #if BAMOCAR_AVAILABLE == 1
+	  // Timeout abfrage Bamocar
 	  if ((BMSstate.State != Standby) && (millis() > (timeBAMO + CAN_TIMEOUT)))
 	  {
+		  // Timeout vorhanden, dann Warnung setzen
 		  can_online &= ~(1 << 0);
 		  longWarning |= (1 << 0);
 
+		  // Status setzen
 		  setStatus(StateWarning);
 	  }
 #endif
 
 #if MOTOR_AVAILABLE == 1
+	  // Timeout abfrage Motorsteuergeraet
 	  if ((BMSstate.State != Standby) && (millis() > (timeMOTOR + CAN_TIMEOUT)))
 	  {
+		  // Timeout vorhanden, dann Warnung setzen
 		  can_online &= ~(1 << 1);
 		  longWarning |= (1 << 1);
 
+		  // Status setzen
 		  setStatus(StateWarning);
 	  }
 #endif
 
 #if STROM_HV_AVAILABLE == 1
+	  // Timeout abfrage Stromsensor
 	  if ((BMSstate.State != Standby) && (millis() > (timeStromHV + CAN_TIMEOUT)))
 	  {
+		  // Timeout vorhanden, dann Warnung setzen
 		  can_online &= ~(1 << 2);
 		  longWarning |= (1 << 2);
 
+		  // Status setzen
 		  setStatus(StateWarning);
+	  }
+
+	  // Overcurrent abfragen, Software
+	  if (current.result > IVT_OVERCURRENT_TRESHOLD)
+	  {
+		  // Overcurrent in Software vorhanden, dann Warnung setzen
+		  longWarning |= (1 << 4);
+
+		  // Status setzen
+		  setStatus(StateWarning);
+	  }
+
+	  // Ueberspannung abfragen, Software
+	  if (voltage1.result > IVT_OVERVOLTAGE1_TRESHOLD)
+	  {
+		  // Ueberspannung in Software vorhanden, dann Warnung setzen
+		  longWarning |= (1 << 5);											// Warnung fuer Ueberspannung setzen
+		  longWarning &= ~(1 << 6);											// Warnung fuer Unterspannung zuruecksetzen
+
+		  // Status setzen
+		  setStatus(StateWarning);
+	  }
+	  // Unterspannung abfragen, Software
+	  else if (voltage1.result <= IVT_UNDERVOLTAGE1_TRESHOLD)
+	  {
+		  // Unterspannung in Software vorhanden, dann Warnung setzen
+		  longWarning &= ~(1 << 5);											// Warnung fuer Ueberspannung zuruecksetzen
+		  longWarning |= (1 << 6);											// Warnung fuer Unterspannung setzen
+
+		  // Status setzen
+		  setStatus(StateWarning);
+	  }
+	  // Wenn weder Unter- noch Ueberspannung vorhanden
+	  else
+	  {
+		  // Status setzen
+		  setStatus(StateNormal);
 	  }
 #endif
 
