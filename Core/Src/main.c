@@ -192,7 +192,7 @@ int main(void)
 	system_out.ImdOK = true;
 	
 	// CAN-Nachrichten loeschen
-	cleanCAN();
+	clearCAN();
 
 #ifdef DEBUG
 	#define MAINWHILE			"\nStarte While Schleife\n"

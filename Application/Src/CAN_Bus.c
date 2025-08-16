@@ -185,7 +185,7 @@ void CANwork (void)
 
 // Alle Daten der CAN-Nachrichten zuruecksetzen
 //----------------------------------------------------------------------
-void cleanCAN (void)
+void clearCAN (void)
 {
 	// Fuer jede Nachricht den Nachrichtenpuffer zuruecksetzen
 	for (uint8_t j = 0; j < ANZAHL_OUTPUT_PAKETE; j++)

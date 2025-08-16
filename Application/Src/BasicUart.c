@@ -96,5 +96,7 @@ uart_status uartReceive(uint8_t *data, uint16_t length)
 	// Status zurueckgeben
 	return status;
 #endif
+
+	return UART_ERROR;
 }
 //----------------------------------------------------------------------
