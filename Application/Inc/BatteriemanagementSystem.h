@@ -40,6 +40,7 @@
 #include "ResetReason.h"
 #include "SPI_resource.h"
 #include "statemaschine.h"
+#include "stromsensor.h"
 #include "SystemInfo.h"
 #include "temperatur.h"
 //----------------------------------------------------------------------
@@ -62,12 +63,12 @@
 
 // Motorsteuergeraet vorhanden
 //----------------------------------------------------------------------
-#define MOTOR_AVAILIBLE								0						// 0 = Nicht vorhanden, 1 = vorhanden
-#define IMD_AVAILIBLE								0						// 0 = Nicht vorhanden, 1 = vorhanden
-#define BAMOCAR_AVAILIBLE							0						// 0 = Nicht vorhanden, 1 = vorhanden
-#define STROM_HV_AVAILIBLE							0						// 0 = Nicht vorhanden, 1 = vorhanden
-#define STROM_LV_AVAILIBLE							0						// 0 = Nicht vorhanden, 1 = vorhanden
-#define KOMBIINSTRUMENT_AVALIBLE					0						// 0 = Nicht vorhanden, 1 = vorhanden
+#define MOTOR_AVAILABLE								0						// 0 = Nicht vorhanden, 1 = vorhanden
+#define IMD_AVAILABLE								0						// 0 = Nicht vorhanden, 1 = vorhanden
+#define BAMOCAR_AVAILABLE							0						// 0 = Nicht vorhanden, 1 = vorhanden
+#define STROM_HV_AVAILABLE							1						// 0 = Nicht vorhanden, 1 = vorhanden
+#define STROM_LV_AVAILABLE							0						// 0 = Nicht vorhanden, 1 = vorhanden
+#define KOMBIINSTRUMENT_AVAILABLE					0						// 0 = Nicht vorhanden, 1 = vorhanden
 //----------------------------------------------------------------------
 
 

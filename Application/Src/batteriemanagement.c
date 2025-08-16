@@ -286,7 +286,6 @@ void bms_cellspannungen (void)
 }
 //----------------------------------------------------------------------
 
-// TODO: Lese Referenzspannung, GPIO3
 // Lese Zelltemperatur ein
 //----------------------------------------------------------------------
 void bms_celltemperatur (uint8_t tempsensor)
@@ -584,21 +583,21 @@ void bms_work (void)
 	// Temperaturen
 	for (uint8_t i = 0; i < 4; i++)
 	{
-		CAN_Output_PaketListe[10+i].msg.buf[0] = celltemperature[0][0+i*4];
-		CAN_Output_PaketListe[10+i].msg.buf[1] = (celltemperature[0][0+i*4]>>8);
-		CAN_Output_PaketListe[10+i].msg.buf[2] = celltemperature[0][1+i*4];
-		CAN_Output_PaketListe[10+i].msg.buf[3] = (celltemperature[0][1+i*4]>>8);
-		CAN_Output_PaketListe[10+i].msg.buf[4] = celltemperature[0][2+i*4];
-		CAN_Output_PaketListe[10+i].msg.buf[5] = (celltemperature[0][2+i*4]>>8);
-		CAN_Output_PaketListe[10+i].msg.buf[6] = celltemperature[0][3+i*4];
-		CAN_Output_PaketListe[10+i].msg.buf[7] = (celltemperature[0][3+i*4]>>8);
+		CAN_Output_PaketListe[31+i].msg.buf[0] = celltemperature[0][0+i*4];
+		CAN_Output_PaketListe[31+i].msg.buf[1] = (celltemperature[0][0+i*4]>>8);
+		CAN_Output_PaketListe[31+i].msg.buf[2] = celltemperature[0][1+i*4];
+		CAN_Output_PaketListe[31+i].msg.buf[3] = (celltemperature[0][1+i*4]>>8);
+		CAN_Output_PaketListe[31+i].msg.buf[4] = celltemperature[0][2+i*4];
+		CAN_Output_PaketListe[31+i].msg.buf[5] = (celltemperature[0][2+i*4]>>8);
+		CAN_Output_PaketListe[31+i].msg.buf[6] = celltemperature[0][3+i*4];
+		CAN_Output_PaketListe[31+i].msg.buf[7] = (celltemperature[0][3+i*4]>>8);
 	}
 
 	// Stackvoltage
-	CAN_Output_PaketListe[14].msg.buf[0] = stackvoltage;
-	CAN_Output_PaketListe[14].msg.buf[1] = (stackvoltage >> 8);
-	CAN_Output_PaketListe[14].msg.buf[2] = (stackvoltage >> 16);
-	CAN_Output_PaketListe[14].msg.buf[3] = (stackvoltage >> 24);
+	CAN_Output_PaketListe[63].msg.buf[0] = stackvoltage;
+	CAN_Output_PaketListe[63].msg.buf[1] = (stackvoltage >> 8);
+	CAN_Output_PaketListe[63].msg.buf[2] = (stackvoltage >> 16);
+	CAN_Output_PaketListe[63].msg.buf[3] = (stackvoltage >> 24);
 
 #ifdef DEBUG_BMS_WORK
 	if (bms_tempcount == LTC1380_SENSORES)

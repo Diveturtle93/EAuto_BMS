@@ -36,15 +36,36 @@ void uartTransmit (const char *str, const size_t size)
 }
 //----------------------------------------------------------------------
 
-// Uart2 Transmit Nummer Funktion
+// Uart2 Transmit Nummer Funktion, Ausgabe ohne Vorzeichen
 //----------------------------------------------------------------------
 void uartTransmitNumber (const uint32_t number, const uint32_t base)
+{
+	uartTransmitUNumber(number, base);
+}
+//----------------------------------------------------------------------
+void uartTransmitUNumber (const uint32_t number, const uint32_t base)
 {
 #ifdef SHELL
 	char str[11];
 
 	// Zahl umrechnen
 	utoa(number, str, base);												// Zahl umrechnen anhand der Basis "base"
+
+	// Sende Nummer als String
+	HAL_UART_Transmit(&huart2, (uint8_t *)str, strlen(str), 1000);			// Sende Zahlen
+#endif
+}
+//----------------------------------------------------------------------
+
+// Uart2 Transmit Nummer Funktion, Ausgabe mit Vorzeichen
+//----------------------------------------------------------------------
+void uartTransmitVNumber (const int32_t number, const uint32_t base)
+{
+#ifdef SHELL
+	char str[11];
+
+	// Zahl umrechnen
+	itoa(number, str, base);												// Zahl umrechnen anhand der Basis "base"
 
 	// Sende Nummer als String
 	HAL_UART_Transmit(&huart2, (uint8_t *)str, strlen(str), 1000);			// Sende Zahlen

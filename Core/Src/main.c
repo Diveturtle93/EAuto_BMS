@@ -107,8 +107,14 @@ int main(void)
 	bool ActivDrive = false;
 	Statemaschine mStrg = {{Start, true, false, false, false}};
 
+	// Stromsensor Nachrichten definieren
+	stromsensor_ivtmod current, voltage1; //voltage2, voltage3;
+
 	// IMD Variablen fuer Berechnung
 	uint32_t timer1Periode = 0, timeIMD = 0;
+
+	// Testvariablen
+	uint32_t zweisekunden = 0;
 
 	// Backup Data, stored in RTC_Backup Register
 //	uint32_t Backup = 0xFFFF;
@@ -134,7 +140,7 @@ int main(void)
 	HAL_Delay(3000);
 #endif
 
-#if MOTOR_AVAILIBLE != 1
+#if MOTOR_AVAILABLE != 1
 	#if TISCHAUFBAU == 1
 		sdc_in.Anlassen = true;
 	#endif
@@ -303,8 +309,7 @@ int main(void)
 				  }
 
 				  // Abrage ASR1
-				  // FIXME: Pruefen ob wirklich in State ReadyToDrive oder Drive umgeschaltet wird. Nicht das Precharge oder Standby auch einen einfluss haben
-				  if ((RxMessage.buf[5] & (1 << 0)) && (mStrg.State & (ReadyToDrive & Drive)))
+				  if ((RxMessage.buf[5] & (1 << 0)) && ((mStrg.State & ReadyToDrive) | (mStrg.State & Drive)))
 				  {
 					  // DriveMode aktivieren
 					  ActivDrive = true;
@@ -315,16 +320,52 @@ int main(void)
 #endif
 
 #if STROM_HV_AVAILABLE == 1
-			  // Stromsensor
+			  // Stromwert
 			  case STROM_HV_CAN_I:
 			  {
+				  // Speichern wenn verfuegbar, Zeit zuruecksetzen
 				  can_online |= (1 << 2);
 				  timeStromHV = millis();
 
+				  // Statemaschine setzen
 				  setStatus(StateNormal);
 
+				  // Stromwert uebernehmen
+				  current.data[0] = RxMessage.buf[0];
+				  current.data[1] = RxMessage.buf[1];
+				  current.result = (RxMessage.buf[2] << 24) | (RxMessage.buf[3] << 16) | (RxMessage.buf[4] << 8) | RxMessage.buf[5];
 				  break;
 			  }
+
+			  // Spannungswert 1
+			  case STROM_HV_CAN_U1:
+			  {
+				  // Spannungswerte uebernehmen
+				  voltage1.data[0] = RxMessage.buf[0];
+				  voltage1.data[1] = RxMessage.buf[1];
+				  voltage1.result = (RxMessage.buf[2] << 24) | (RxMessage.buf[3] << 16) | (RxMessage.buf[4] << 8) | RxMessage.buf[5];
+				  break;
+			  }
+
+//			  // Spannungswert 2
+//			  case STROM_HV_CAN_U2:
+//			  {
+//				  // Spannungswerte uebernehmen
+//				  voltage2.data[0] = RxMessage.buf[0];
+//				  voltage2.data[1] = RxMessage.buf[1];
+//				  voltage2.result = (RxMessage.buf[2] << 24) | (RxMessage.buf[3] << 16) | (RxMessage.buf[4] << 8) | RxMessage.buf[5];
+//				  break;
+//			  }
+//
+//			  // Spannungswert 3
+//			  case STROM_HV_CAN_U3:
+//			  {
+//				  // Spannungswerte uebernehmen
+//				  voltage3.data[0] = RxMessage.buf[0];
+//				  voltage3.data[1] = RxMessage.buf[1];
+//				  voltage3.result = (RxMessage.buf[2] << 24) | (RxMessage.buf[3] << 16) | (RxMessage.buf[4] << 8) | RxMessage.buf[5];
+//				  break;
+//			  }
 #endif
 
 			  //
@@ -336,32 +377,78 @@ int main(void)
 	  }
 
 #if BAMOCAR_AVAILABLE == 1
+	  // Timeout abfrage Bamocar
 	  if ((BMSstate.State != Standby) && (millis() > (timeBAMO + CAN_TIMEOUT)))
 	  {
+		  // Timeout vorhanden, dann Warnung setzen
 		  can_online &= ~(1 << 0);
 		  longWarning |= (1 << 0);
 
+		  // Status setzen
 		  setStatus(StateWarning);
 	  }
 #endif
 
 #if MOTOR_AVAILABLE == 1
+	  // Timeout abfrage Motorsteuergeraet
 	  if ((BMSstate.State != Standby) && (millis() > (timeMOTOR + CAN_TIMEOUT)))
 	  {
+		  // Timeout vorhanden, dann Warnung setzen
 		  can_online &= ~(1 << 1);
 		  longWarning |= (1 << 1);
 
+		  // Status setzen
 		  setStatus(StateWarning);
 	  }
 #endif
 
 #if STROM_HV_AVAILABLE == 1
+	  // Timeout abfrage Stromsensor
 	  if ((BMSstate.State != Standby) && (millis() > (timeStromHV + CAN_TIMEOUT)))
 	  {
+		  // Timeout vorhanden, dann Warnung setzen
 		  can_online &= ~(1 << 2);
 		  longWarning |= (1 << 2);
 
+		  // Status setzen
 		  setStatus(StateWarning);
+	  }
+
+	  // Overcurrent abfragen, Software
+	  if (current.result > IVT_OVERCURRENT_TRESHOLD)
+	  {
+		  // Overcurrent in Software vorhanden, dann Warnung setzen
+		  longWarning |= (1 << 4);
+
+		  // Status setzen
+		  setStatus(StateWarning);
+	  }
+
+	  // Ueberspannung abfragen, Software
+	  if (voltage1.result > IVT_OVERVOLTAGE1_TRESHOLD)
+	  {
+		  // Ueberspannung in Software vorhanden, dann Warnung setzen
+		  longWarning |= (1 << 5);											// Warnung fuer Ueberspannung setzen
+		  longWarning &= ~(1 << 6);											// Warnung fuer Unterspannung zuruecksetzen
+
+		  // Status setzen
+		  setStatus(StateWarning);
+	  }
+	  // Unterspannung abfragen, Software
+	  else if (voltage1.result <= IVT_UNDERVOLTAGE1_TRESHOLD)
+	  {
+		  // Unterspannung in Software vorhanden, dann Warnung setzen
+		  longWarning &= ~(1 << 5);											// Warnung fuer Ueberspannung zuruecksetzen
+		  longWarning |= (1 << 6);											// Warnung fuer Unterspannung setzen
+
+		  // Status setzen
+		  setStatus(StateWarning);
+	  }
+	  // Wenn weder Unter- noch Ueberspannung vorhanden
+	  else
+	  {
+		  // Status setzen
+		  setStatus(StateNormal);
 	  }
 #endif
 
@@ -397,6 +484,17 @@ int main(void)
 		  {
 			  bms_work();
 			  timeBMSWork = millis();
+		  }
+
+		  // 2s Task
+		  if (millis() > (zweisekunden + 2000))
+		  {
+			  uartTransmitVNumber(current.result, 10);
+			  uartTransmit("\n", 1);
+			  uartTransmitVNumber(voltage1.result, 10);
+			  uartTransmit("\n", 1);
+
+			  zweisekunden = millis();
 		  }
 	  }
 

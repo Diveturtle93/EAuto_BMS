@@ -225,10 +225,10 @@ void ReportHardFault(uint32_t *stack_frame, uint32_t exc)
 		uartTransmit(" - The processor has attempted to execute an undefined instruction.\n", 68);
 	}
 
-	/* Breakpoint. */
+	// Software breakpoint
 	__asm volatile("BKPT #0");
 
-	/* Infinite loop to stop the execution. */
+	// Endlosschleife nach HardFault
 	while(1);
 }
 //----------------------------------------------------------------------

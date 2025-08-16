@@ -50,8 +50,8 @@ typedef union
 		uint8_t MotorSDC : 1;					// 2						// Signal Motorsteuergeraet, Shutdown-Circuit
 		uint8_t BTB_SDC : 1;					// 3						// Signal BTB, Bamocar
 		uint8_t PrechargeIn : 1;				// 4						// Signal Precharge abgeschlossen
-		uint8_t Anlassen : 1;					// 5						// Abspeichern von Anlasser Signal
-		uint8_t SDC_OK : 1;						// 6						// Signal, SDC OK
+		uint8_t Anlassen : 1;					// 5						// Abspeichern von Anlasser Signal, aus CAN-Nachricht
+		uint8_t SDC_OK : 1;						// 6						// Signal, SDC OK, Software
 		uint8_t  : 1;							// 7
 	};
 

@@ -140,10 +140,11 @@ void bms_Tminmax (void);													// Minimal- und Maximaltemperatur ermitteln
 void bms_MSvoltage (void);													// Module- / Stackspannung berechnen
 //----------------------------------------------------------------------
 
-//----------------------------------------------------------------------
-extern uint16_t cellvoltage[LTC6811_DEVICES][LTC6811_CELLS];				// Array fuer gemessene Zellspannungen
-extern uint16_t celltemperature[LTC6811_DEVICES][LTC1380_DEVICES * LTC1380_SENSORES];// Array fuer gemessene Zelltemperaturen
-//----------------------------------------------------------------------
+//// Definiere globale Arrays fuer Zellspannung und -temperatur
+////----------------------------------------------------------------------
+//extern uint16_t cellvoltage[LTC6811_DEVICES][LTC6811_CELLS];				// Array fuer gemessene Zellspannungen
+//extern uint16_t celltemperature[LTC6811_DEVICES][LTC1380_DEVICES * LTC1380_SENSORES];// Array fuer gemessene Zelltemperaturen
+////----------------------------------------------------------------------
 
 #endif /* INC_BATTERIEMANAGEMENT_H_ */
 //----------------------------------------------------------------------
