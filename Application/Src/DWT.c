@@ -2,10 +2,10 @@
 // Titel	:	DWT.c
 //----------------------------------------------------------------------
 // Sprache	:	C
-// Datum	:	Jun 12, 2022
+// Datum	:	12.06.2022
 // Version	:	1.0
 // Autor	:	Diveturtle93
-// Projekt	:	BatteriemanagementSystem
+// Projekt	:	Data Watchpoint Trigger
 //----------------------------------------------------------------------
 
 
@@ -13,15 +13,16 @@
 /*
 	uint32_t DWT_count = 0, DWT_count1 = 0, DWT_count2 = 0, test = 0;
 
-	// Systick-Zaehler benutzen
+	// Data Watchpoint Trigger initialisieren
 	DWT_Init();
 
+	// Data Watchpoint Trigger auslesen und abspeichern
 	DWT_count = DWT_CycCounterRead();
 	test = DWT_count;
 
 	uartTransmitNumber(test, 10);
   	uartTransmit("\n", 1);
-  	DWT_CycCounterDis();							// Zaehler deaktivieren
+  	DWT_CycCounterDis();													// Zaehler deaktivieren
 */
 
 // Einfuegen der standard Include-Dateien

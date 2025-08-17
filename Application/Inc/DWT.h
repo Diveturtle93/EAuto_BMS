@@ -2,10 +2,10 @@
 // Titel	:	DWT.h
 //----------------------------------------------------------------------
 // Sprache	:	C
-// Datum	:	Jun 12, 2022
+// Datum	:	12.06.2022
 // Version	:	1.0
 // Autor	:	Diveturtle93
-// Projekt	:	BatteriemanagementSystem
+// Projekt	:	Data Watchpoint Trigger
 //----------------------------------------------------------------------
 
 // Dateiheader definieren
@@ -19,9 +19,11 @@
 #include <stdint.h>
 //----------------------------------------------------------------------
 
-// ... definieren
+// Define Debug Symbols
 //----------------------------------------------------------------------
-
+#ifdef DEBUG
+//	#define DEBUG_DWT
+#endif
 //----------------------------------------------------------------------
 
 // Funktionen definieren

@@ -114,6 +114,11 @@ int main(void)
 	// IMD Variablen fuer Berechnung
 	uint32_t timer1Periode = 0, timeIMD = 0;
 
+#ifdef DEBUG_DWT
+	// Variablen fuer Data Watchpoint Trigger
+	uint32_t DWT_count = 0, DWT_count1 = 0, DWT_count2 = 0, test = 0;
+#endif
+
 	// Backup Data, stored in RTC_Backup Register
 //	uint32_t Backup = 0xFFFF;
   /* USER CODE END 1 */
@@ -189,6 +194,12 @@ int main(void)
 	system_out.AmsLimit = true;
 	system_out.ImdOK = true;
 
+	// Data Watchpoint Trigger initialisieren
+#ifdef DEBUG_DWT
+	DWT_Init();
+#endif
+
+	// Alle CAN-Nachrichten loeschen
 	for (uint8_t j = 0; j < ANZAHL_OUTPUT_PAKETE; j++)
 	{
 		CAN_Output_PaketListe[j].msg.buf[0] = 0;
@@ -200,6 +211,16 @@ int main(void)
 		CAN_Output_PaketListe[j].msg.buf[6] = 0;
 		CAN_Output_PaketListe[j].msg.buf[7] = 0;
 	}
+
+	// Data Watchpoint Trigger auslesen und abspeichern
+#ifdef DEBUG_DWT
+	DWT_count = DWT_CycCounterRead();
+	test = DWT_count;
+
+	uartTransmitNumber(test, 10);
+  	uartTransmit("\n", 1);
+  	DWT_CycCounterDis();
+#endif													// Zaehler deaktivieren
 	
 #ifdef DEBUG
 	#define MAINWHILE			"\nStarte While Schleife\n"
