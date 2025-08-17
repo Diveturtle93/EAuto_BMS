@@ -115,6 +115,11 @@ int main(void)
 
 	// Testvariablen
 	uint32_t zweisekunden = 0;
+	
+#ifdef DEBUG_DWT
+	// Variablen fuer Data Watchpoint Trigger
+	uint32_t DWT_count = 0, DWT_count1 = 0, DWT_count2 = 0, test = 0;
+#endif
 
 	// Backup Data, stored in RTC_Backup Register
 //	uint32_t Backup = 0xFFFF;
