@@ -5,7 +5,7 @@ Er prüft, ob alle Stecker gesteckt und ob Fehler im System aufgetreten sind.
 
 Wird ein Fehler festgestellt oder sind nicht alle Stecker gesteckt, so ist ein
 Vorladen des HV-Kreises nicht möglich. Ein fahren mit dem Fahrzeug ist dann ebenfalls
-nicht gegeben. Wir allerding ein Fehler beim Fahren festgestellt, so ist hier noch
+nicht gegeben. Wird allerding ein Fehler beim Fahren festgestellt, so ist hier noch
 eine Priorisierung notwendig. Je nach Fehlerart und -auswirkung muss anders Reagiert
 werden.
 
@@ -33,3 +33,9 @@ Mögliche Fehler im System können sein:
 	- Der Strom im System ist zu hoch
 	- Vorladen schlägt fehl
 	- Kommunikationsfehler in den Steuergeräten
+	
+Diese Fehler müssen noch priorisiert und im Detail ausgewertet werden. Eine erste
+Version zeigt Fehler an, reagiert aber noch nicht korrekt.
+
+Ebenfalls können noch weitere Fehler auftreten, die bisher nicht in der Liste
+aufgeführt sind. Diese werden im weiteren Verlauf des Projektes weiter ergänzt.
