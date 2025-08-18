@@ -1,0 +1,3 @@
+[submodule "Lib/STM32_Systeminfo"]
+	path = Lib/STM32_Systeminfo
+	url = https://github.com/Diveturtle93/STM32_Systeminfo.git
