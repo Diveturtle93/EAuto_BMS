@@ -55,6 +55,7 @@
 									<listOptionValue builtIn="false" value="../Lib/STM32_Basicuart"/>
 									<listOptionValue builtIn="false" value="../Lib/STM32_Resetreason"/>
 									<listOptionValue builtIn="false" value="../Lib/STM32_Canbus"/>
+									<listOptionValue builtIn="false" value="../Lib/STM32_DWT"/>
 								</option>
 								<inputType id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.651824476" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c"/>
 							</tool>
@@ -139,6 +140,7 @@
 									<listOptionValue builtIn="false" value="../Lib/STM32_Basicuart"/>
 									<listOptionValue builtIn="false" value="../Lib/STM32_Resetreason"/>
 									<listOptionValue builtIn="false" value="../Lib/STM32_Canbus"/>
+									<listOptionValue builtIn="false" value="../Lib/STM32_DWT"/>
 								</option>
 								<inputType id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.1556013805" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c"/>
 							</tool>
@@ -310,6 +312,7 @@
 									<listOptionValue builtIn="false" value="../Lib/STM32_Basicuart"/>
 									<listOptionValue builtIn="false" value="../Lib/STM32_Resetreason"/>
 									<listOptionValue builtIn="false" value="../Lib/STM32_Canbus"/>
+									<listOptionValue builtIn="false" value="../Lib/STM32_DWT"/>
 								</option>
 								<inputType id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.1750645296" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c"/>
 							</tool>
