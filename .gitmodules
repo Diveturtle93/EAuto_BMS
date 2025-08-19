@@ -1,3 +1,6 @@
 [submodule "Lib/STM32_Systeminfo"]
 	path = Lib/STM32_Systeminfo
 	url = https://github.com/Diveturtle93/STM32_Systeminfo.git
+[submodule "Lib/STM32_Hardfault"]
+	path = Lib/STM32_Hardfault
+	url = https://github.com/Diveturtle93/STM32_Hardfault.git
