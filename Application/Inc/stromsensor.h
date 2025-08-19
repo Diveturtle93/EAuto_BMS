@@ -50,5 +50,12 @@ typedef union
 } stromsensor_ivtmod;
 //----------------------------------------------------------------------
 
+// Funktionen definieren
+//----------------------------------------------------------------------
+void ivtTrigger (void);														// Sende Trigger Signal
+void ivtConfig (void);														// Konfiguriere Stromsensor
+void ivtSort (uint8_t* data);												// Sortiere Konfiguration von Stromsensor
+//----------------------------------------------------------------------
+
 #endif /* INC_STROMSENSOR_H_ */
 //----------------------------------------------------------------------

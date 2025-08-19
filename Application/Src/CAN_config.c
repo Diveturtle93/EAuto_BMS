@@ -24,6 +24,12 @@
 #include "BatteriemanagementSystem.h"
 //----------------------------------------------------------------------
 
+// Definiere Offset Werte
+//----------------------------------------------------------------------
+#define CELL_VOLTAGE_OFFSET							8
+#define CELL_TEMPERATUR_OFFSET						(CELL_VOLTAGE_OFFSET)
+//----------------------------------------------------------------------
+
 // Konfiguriere CAN Nachrichten
 //----------------------------------------------------------------------
 void CAN_config (void)
@@ -35,6 +41,7 @@ void CAN_config (void)
 	CAN_Output_PaketListe[4] = CAN_Nachricht(BMS_CAN_TEMPERATUR, 8, 500, 84);		// main.c
 	CAN_Output_PaketListe[5] = CAN_Nachricht(BMS_CAN_STATUS, 4, 200, 95);			// main.c
 	CAN_Output_PaketListe[6] = CAN_Nachricht(BMS_CAN_IMD, 5, 200, 62);				// main.c oder imd.c?
+	CAN_Output_PaketListe[7] = CAN_Nachricht(BMS_CAN_STACKVOLTAGE, 4, 200, 73);		// batteriemanagement.c
 	CAN_Output_PaketListe[7] = CAN_Nachricht(BMS_CAN_ZELLEN11, 8, 200, 1);			// batteriemanagement.c
 	CAN_Output_PaketListe[8] = CAN_Nachricht(BMS_CAN_ZELLEN12, 8, 200, 2);			// batteriemanagement.c
 	CAN_Output_PaketListe[9] = CAN_Nachricht(BMS_CAN_ZELLEN13, 8, 200, 3);			// batteriemanagement.c
@@ -91,6 +98,5 @@ void CAN_config (void)
 	CAN_Output_PaketListe[60] = CAN_Nachricht(BMS_CAN_TEMPERATUR82, 8, 200, 54);	// batteriemanagement.c
 	CAN_Output_PaketListe[61] = CAN_Nachricht(BMS_CAN_TEMPERATUR83, 8, 200, 55);	// batteriemanagement.c
 	CAN_Output_PaketListe[62] = CAN_Nachricht(BMS_CAN_TEMPERATUR84, 8, 200, 56);	// batteriemanagement.c
-	CAN_Output_PaketListe[63] = CAN_Nachricht(BMS_CAN_STACKVOLTAGE, 4, 200, 73);	// batteriemanagement.c
 }
 //----------------------------------------------------------------------

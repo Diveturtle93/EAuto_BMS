@@ -22,4 +22,30 @@
 // Einfuegen der eigenen Include Dateien
 //----------------------------------------------------------------------
 #include "stromsensor.h"
+#include "BatteriemanagementSystem.h"
+//----------------------------------------------------------------------
+
+// Send Trigger, Hardware Trigger
+//----------------------------------------------------------------------
+void ivtTrigger (void)
+{
+	// TODO: Signal nach 200ms wieder abschalten
+	komfort_out.TriggerOut = true;											// Signal muss 200ms anliegen
+}
+//----------------------------------------------------------------------
+
+// Konfigure Stromsensor
+//----------------------------------------------------------------------
+void ivtConfig (void)
+{
+
+}
+//----------------------------------------------------------------------
+
+// Sortiere Konfiguration von Stromsensor
+//----------------------------------------------------------------------
+void ivtSort (uint8_t* data)
+{
+
+}
 //----------------------------------------------------------------------
