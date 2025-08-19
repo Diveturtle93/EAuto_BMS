@@ -10,9 +10,6 @@
 [submodule "Lib/STM32_Basicuart"]
 	path = Lib/STM32_Basicuart
 	url = https://github.com/Diveturtle93/STM32_Basicuart.git
-[submodule "Lib/STM32_Canbus"]
-	path = Lib/STM32_Canbus
-	url = https://github.com/Diveturtle93/STM32_Canbus.git
 [submodule "Lib/STM32_DWT"]
 	path = Lib/STM32_DWT
 	url = https://github.com/Diveturtle93/STM32_DataWatchpointTrigger.git
