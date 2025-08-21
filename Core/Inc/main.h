@@ -204,6 +204,11 @@ void Error_Handler(void);
 #define INLET_GREEN_GPIO_Port GPIOE
 
 /* USER CODE BEGIN Private defines */
+// Anzahl der CAN Output Pakete defineren
+//----------------------------------------------------------------------
+#define ANZAHL_OUTPUT_PAKETE						64						// Anzahl Sende Nachrichten
+//----------------------------------------------------------------------
+
 // Typedefine Boolean definieren
 //----------------------------------------------------------------------
 typedef enum
