@@ -4,7 +4,6 @@ Es stehen für die Programmierung unterschiedlichste Ausgänge am Mikrocontrolle
 Verfügung. Diese sind alle über eine entsprechende Logiklevel Schaltung nach aussen
 geführt.
 
----
 
 Es stehen für die Ansteuerung zwei unterschiedlicher Schaltungen zur Verfügung.
 Unterschieden werden die beiden Ausgangsschaltungen nur in ihrer Stromtragfähigkeit.
@@ -12,11 +11,11 @@ Die beiden Ausgangsstufen haben unterschiedliche Leistungsmosfets verbaut, welch
 somit eine unterschiedliche Stromtragfähigkeit besitzen. Somit kann man
 unterschiedlichste Periferie ansteueren und schalten.
 
----
 
 Alle Ausgänge arbeiten mir der angelegten Fahrzeugspannung. Sie sind alle ausgelegt
 für 12V, können aber auch mit 24V betrieben werden.
 
+---
 
 ## Liste der Ausgänge
 
@@ -24,7 +23,7 @@ Nachfolgend ist eine Auflistung aller Ausgangspins vom Mikrocontroller.
 
 | Funktionsgruppe | Pin | Funktion | Relevanz | Getestet |
 |:--------------- |:---:|:-------- |:-------- | --------:|
-| Shutdown Circuit | PA1 | IMD OK | System | No |
+| Shutdown Circuit | PA1 | IMD OK | System | Ja |
 | Akkukasten | PA9 | Heizung 1 | System | No |
 | Akkukasten | PA10 | Heizung 2 | System | No |
 | STM32 | PB2 | LED Red | Komfort | Ja |
@@ -37,20 +36,20 @@ Nachfolgend ist eine Auflistung aller Ausgangspins vom Mikrocontroller.
 | Akkukasten | PD13 | HV+ Relais PWM | System | No |
 | Akkukasten | PD14 | HV/ Relais PWM | System | No |
 | Akkukasten | PD15 | HV Charge Relais PWM | System | No |
-| Shutdown Circuit | PE0 | Freigabe Run | System | No |
+| Shutdown Circuit | PE0 | Freigabe Run | System | Ja |
 | Ladebuchse | PE1 | Inlet LED Green | Komfort | No |
 | Ladebuchse | PE2 | Inlet LED Green | Komfort | No |
-| Shutdown Circuit | PE7 | Akku OK | System | No |
-| Akkukasten | PE15 | ISO SPI Enable | System | No |
+| Shutdown Circuit | PE7 | Akku OK | System | Ja |
+| Akkukasten | PE15 | ISO SPI Enable | System | Ja |
 | Stromsensor | PF1 | Trigger Out | Komfort | No |
-| Akkukasten | PF13 | Precharge Relais | System | No |
+| Akkukasten | PF13 | Precharge Relais | System | Ja |
 | Akkukasten | PG2 | HV- Relais | System | No |
-| Akkukasten | PG3 | HV+ Relais | System | No |
+| Akkukasten | PG3 | HV+ Relais | System | Ja |
 | Akkukasten | PG9 | HV/ Relais | Komfort | No |
 | Akkukasten | PG10 | HV Charge Relais | Komfort | No |
 | Akkukasten | PG11 | Ladeleuchte | System | No |
 | Fahrzeug | PG14 | Recuperation | Komfort | No |
-| Fahrzeug | PG15 | AMS I Limit | System | No |
+| Fahrzeug | PG15 | AMS I Limit | System | Ja |
 
 
 ## System relevante Ausgänge

@@ -1,0 +1,28 @@
+[submodule "Lib/STM32_Systeminfo"]
+	path = Lib/STM32_Systeminfo
+	url = https://github.com/Diveturtle93/STM32_Systeminfo.git
+	branch = main
+[submodule "Lib/STM32_Hardfault"]
+	path = Lib/STM32_Hardfault
+	url = https://github.com/Diveturtle93/STM32_Hardfault.git
+	branch = main
+[submodule "Lib/STM32_Resetreason"]
+	path = Lib/STM32_Resetreason
+	url = https://github.com/Diveturtle93/STM32_Resetreason.git
+	branch = main
+[submodule "Lib/STM32_Basicuart"]
+	path = Lib/STM32_Basicuart
+	url = https://github.com/Diveturtle93/STM32_Basicuart.git
+	branch = main
+[submodule "Lib/STM32_DWT"]
+	path = Lib/STM32_DWT
+	url = https://github.com/Diveturtle93/STM32_DataWatchpointTrigger.git
+	branch = main
+[submodule "Lib/STM32_Canbus"]
+	path = Lib/STM32_Canbus
+	url = https://github.com/Diveturtle93/STM32_Canbus.git
+	branch = main
+[submodule "Lib/STM32_Statemaschine"]
+	path = Lib/STM32_Statemaschine
+	url = https://github.com/Diveturtle93/STM32_Statemaschine.git
+	branch = main

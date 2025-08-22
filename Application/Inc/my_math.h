@@ -5,7 +5,7 @@
 // Datum	:	30.01.2022
 // Version	:	1.0
 // Autor	:	Diveturtle93
-// Projekt	:	BatteriemanagementSystem
+// Projekt	:	Math
 //----------------------------------------------------------------------
 
 // Dateiheader definieren

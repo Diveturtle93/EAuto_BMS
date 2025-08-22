@@ -5,13 +5,18 @@
 // Datum	:	31.03.2021
 // Version	:	1.0
 // Autor	:	Diveturtle93
-// Projekt	:	Batteriemanagement-System
+// Projekt	:	Digital IOs
 //----------------------------------------------------------------------
 
 // Dateiheader definieren
 //----------------------------------------------------------------------
 #ifndef INC_OUTPUTS_H_
 #define INC_OUTPUTS_H_
+//----------------------------------------------------------------------
+
+// Konstanten definieren
+//----------------------------------------------------------------------
+#define LED_TEST_TIME								500						// Teste LEDs On/Off fuer 500ms
 //----------------------------------------------------------------------
 
 // Strukturen definieren

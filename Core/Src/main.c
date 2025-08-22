@@ -69,8 +69,6 @@ void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
 void checkSDC(void);
 void sortCAN(void);
-void setState(uint8_t State);
-void setStatus(uint8_t Status);
 
 /* USER CODE END PFP */
 
@@ -115,6 +113,11 @@ int main(void)
 
 	// Testvariablen
 	uint32_t zweisekunden = 0;
+	
+#ifdef DEBUG_DWT
+	// Variablen fuer Data Watchpoint Trigger
+	uint32_t DWT_count = 0, DWT_count1 = 0, DWT_count2 = 0, test = 0;
+#endif
 
 	// Backup Data, stored in RTC_Backup Register
 //	uint32_t Backup = 0xFFFF;
@@ -196,19 +199,10 @@ int main(void)
 
 	// IMD Fehler zuruecksetzen bei Systemstart
 	system_out.ImdOK = true;
-
-	for (uint8_t j = 0; j < ANZAHL_OUTPUT_PAKETE; j++)
-	{
-		CAN_Output_PaketListe[j].msg.buf[0] = 0;
-		CAN_Output_PaketListe[j].msg.buf[1] = 0;
-		CAN_Output_PaketListe[j].msg.buf[2] = 0;
-		CAN_Output_PaketListe[j].msg.buf[3] = 0;
-		CAN_Output_PaketListe[j].msg.buf[4] = 0;
-		CAN_Output_PaketListe[j].msg.buf[5] = 0;
-		CAN_Output_PaketListe[j].msg.buf[6] = 0;
-		CAN_Output_PaketListe[j].msg.buf[7] = 0;
-	}
 	
+	// CAN-Nachrichten loeschen
+	clearCAN();
+
 #ifdef DEBUG
 	#define MAINWHILE			"\nStarte While Schleife\n"
 	uartTransmit(MAINWHILE, sizeof(MAINWHILE));
@@ -218,6 +212,7 @@ int main(void)
 	// Nach erfolgreicher Initialisiserung aller Konfigurationen
 	setState(Ready);
 
+	ltc6811_validate_balance();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -413,7 +408,7 @@ int main(void)
 
 #if STROM_HV_AVAILABLE == 1
 	  // Timeout abfrage Stromsensor
-	  if ((BMSstate.State != Standby) && (millis() > (timeStromHV + CAN_TIMEOUT)))
+	  if ((Main_Statemaschine.State != Standby) && (millis() > (timeStromHV + CAN_TIMEOUT)))
 	  {
 		  // Timeout vorhanden, dann Warnung setzen
 		  can_online &= ~(1 << 2);
@@ -466,7 +461,7 @@ int main(void)
 	  {
 		  // Setze BMS Error Critical und Status auf Ready
 		  setStatus(CriticalError);
-		  BMSstate.State = Ready;
+		  Main_Statemaschine.State = Ready;
 
 		  // BMS zuruecksetzen, dass kein HV mehr eingeschaltet werden kann
 		  system_out.Freigabe = false;
@@ -478,7 +473,7 @@ int main(void)
 	  }
 
 	  // Wenn Statemaschine nicht im Standby ist
-	  if (BMSstate.State != Standby)
+	  if (Main_Statemaschine.State != Standby)
 	  {
 		  // Schreibe alle CAN-Nachrichten auf BUS, wenn nicht im Standby
 		  CANwork();
@@ -498,17 +493,17 @@ int main(void)
 		  // 2s Task
 		  if (millis() > (zweisekunden + 2000))
 		  {
-			  uartTransmitVNumber(current.result, 10);
-			  uartTransmit("\n", 1);
-			  uartTransmitVNumber(voltage1.result, 10);
-			  uartTransmit("\n", 1);
+//			  uartTransmitVNumber(current.result, 10);
+//			  uartTransmit("\n", 1);
+//			  uartTransmitVNumber(voltage1.result, 10);
+//			  uartTransmit("\n", 1);
 
 			  zweisekunden = millis();
 		  }
 	  }
 
 	  // Statemaschine keine Fehler
-	  if (BMSstate.Normal)
+	  if (Main_Statemaschine.Normal)
 	  {
 		  leuchten_out.RedLed = false;
 		  leuchten_out.GreenLed = true;
@@ -517,7 +512,7 @@ int main(void)
 	  }
 
 	  // Statemaschine hat Warnungen
-	  if (BMSstate.Warning)
+	  if (Main_Statemaschine.Warning)
 	  {
 		  if (millis() > (timeErrorLED + 1000))
 		  {
@@ -530,7 +525,7 @@ int main(void)
 	  }
 
 	  // Statemaschine hat Error
-	  if (BMSstate.Error)
+	  if (Main_Statemaschine.Error)
 	  {
 		  if (millis() > (timeErrorLED + 1000))
 		  {
@@ -543,7 +538,7 @@ int main(void)
 	  }
 
 	  // Statemaschine hat Kritische Fehler
-	  if (BMSstate.CriticalError)
+	  if (Main_Statemaschine.CriticalError)
 	  {
 		  leuchten_out.RedLed = true;
 		  leuchten_out.GreenLed = false;
@@ -552,14 +547,16 @@ int main(void)
 	  }
 
 	  // Statemaschine vom Batteriemanagement-System
-	  switch(BMSstate.State)
+	  switch(Main_Statemaschine.State)
 	  {
 		  // State Ready, Vorbereiten des Batteriemanagement
 		  case Ready:
 		  {
 			  // Solange kein kritischer Fehler auftritt
-			  if (!(BMSstate.CriticalError))
+			  if (!(Main_Statemaschine.CriticalError))
 			  {
+				  komfort_out.IsoSPI_EN = true;
+				  ISOSPI_ENABLE();											// Enable IsoSPI nach Standby
 				  setState(KL15);
 			  }
 
@@ -573,7 +570,7 @@ int main(void)
 			  if (sdc_in.Anlassen == true)
 			  {
 				  // Solange kein kritischer Fehler auftritt
-				  if (!(BMSstate.CriticalError))
+				  if (!(Main_Statemaschine.CriticalError))
 				  {
 					  system_out.AmsOK = true;
 
@@ -598,7 +595,7 @@ int main(void)
 			  if (mStrg.State == Precharge)
 			  {
 				  // Solange kein kritischer Fehler auftritt
-				  if (!(BMSstate.CriticalError))
+				  if (!(Main_Statemaschine.CriticalError))
 				  {
 					  // Precharge Relais aktivieren
 					  highcurrent_out.PrechargeOut = true;
@@ -659,7 +656,7 @@ int main(void)
 		  case ReadyToDrive:
 		  {
 			  // Nach 10s nach dem Precharge gestartet wurde, wird das Precharge Relais wieder abgeschaltet
-			  if (millis() > (timePrecharge + 10000))
+			  if ((highcurrent_out.PrechargeOut == true) && (millis() > (timePrecharge + 10000)))
 			  {
 				  highcurrent_out.PrechargeOut = false;
 			  }
@@ -726,6 +723,9 @@ int main(void)
 			  if (millis() > (timeStandby + HVRELAISTIME))
 			  {
 				  sdc_in.Anlassen = false;
+				  komfort_out.IsoSPI_EN = false;
+				  ISOSPI_DISABLE();											// Disable IsoSPI nach 5s im Standby
+
 				  HAL_GPIO_WritePin(PWM_HV_Charger_GPIO_Port, PWM_HV_Charger_Pin, GPIO_PIN_RESET);
 			  }
 
@@ -901,7 +901,7 @@ void sortCAN(void)
 	CAN_Output_PaketListe[4].msg.buf[7] = 0;
 
 	// Batteriemanagement Status
-	CAN_Output_PaketListe[5].msg.buf[0] = BMSstate.Status;
+	CAN_Output_PaketListe[5].msg.buf[0] = Main_Statemaschine.Status;
 	CAN_Output_PaketListe[5].msg.buf[1] = longWarning;
 	CAN_Output_PaketListe[5].msg.buf[2] = longError;
 	CAN_Output_PaketListe[5].msg.buf[3] = can_online;

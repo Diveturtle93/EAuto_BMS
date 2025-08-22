@@ -5,7 +5,7 @@
 // Datum	:	31.03.2021
 // Version	:	1.0
 // Autor	:	Diveturtle93
-// Projekt	:	Batteriemanagement-System
+// Projekt	:	Digital IOs
 //----------------------------------------------------------------------
 
 // Dateiheader definieren
@@ -96,7 +96,6 @@ extern komfort_in_tag komfort_in;											// Variable fuer Komforteingaenge de
 //----------------------------------------------------------------------
 void readall_inputs (void);													// Lese alle Eingaenge
 void read_sdc (void);														// Lese alle Pins vom SDC
-//void read_
 //----------------------------------------------------------------------
 
 #endif /* INC_INPUTS_H_ */

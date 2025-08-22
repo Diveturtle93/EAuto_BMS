@@ -5,7 +5,7 @@
 // Datum	:	27.09.2020
 // Version	:	1.0
 // Autor	:	Diveturtle93
-// Projekt	:	Batteriemanagement-System
+// Projekt	:	LTC6811
 //----------------------------------------------------------------------
 
 // Dateiheader definieren
@@ -23,6 +23,12 @@
 //----------------------------------------------------------------------
 #define ISOSPI_ENABLE() (HAL_GPIO_WritePin(ISOSPI_EN_GPIO_Port, ISOSPI_EN_Pin, GPIO_PIN_SET))		// Iso SPI enable
 #define ISOSPI_DISABLE() (HAL_GPIO_WritePin(ISOSPI_EN_GPIO_Port, ISOSPI_EN_Pin, GPIO_PIN_RESET))	// Iso SPI disable
+//----------------------------------------------------------------------
+
+// Definiere Chip-Select Leitung, LTC6811
+//----------------------------------------------------------------------
+#define ISOCS_ENABLE() (HAL_GPIO_WritePin(ISOSPI_CS_GPIO_Port, ISOSPI_CS_Pin, GPIO_PIN_RESET))		// Chip-Select enable
+#define ISOCS_DISABLE() (HAL_GPIO_WritePin(ISOSPI_CS_GPIO_Port, ISOSPI_CS_Pin, GPIO_PIN_SET))		// Chip-Select disable
 //----------------------------------------------------------------------
 
 // Definiere Chip-Select Leitung, AD8403

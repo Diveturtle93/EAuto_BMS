@@ -5,7 +5,7 @@
 // Datum	:	16.01.2021
 // Version	:	1.0
 // Autor	:	Diveturtle93
-// Projekt	:	Batteriemanagement-System
+// Projekt	:	Error
 //----------------------------------------------------------------------
 
 // Einfuegen der STM Include-Dateien

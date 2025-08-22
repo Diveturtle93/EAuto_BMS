@@ -60,10 +60,10 @@ mit berücksichtigt. Auch diese sollen mit aufgefürt werden.
 
 | Kanal | Funktion | Default-Wert |
 |:----- |:-------- | ------------:|
-| Channel 3 | Temperatur 1 | ... |
-| Channel 4 | Temperatur 2 | ... |
-| Channel 5 | Temperatur 3 | ... |
-| Channel 6 | Temperatur 4 | ... |
+| Channel 3 | Temperatur 1 | 3760 |
+| Channel 4 | Temperatur 2 | 3760 |
+| Channel 5 | Temperatur 3 | 3760 |
+| Channel 6 | Temperatur 4 | 3760 |
 | Channel 7 | PCB Temperatur | 2050 |
 | Channel 18 | STM32 Temperatur | 965 |
 

@@ -5,7 +5,7 @@
 // Datum	:	29.08.2021
 // Version	:	1.0
 // Autor	:	Diveturtle93
-// Projekt	:	BatteriemanagementSystem
+// Projekt	:	IMD
 //----------------------------------------------------------------------
 
 // Einfuegen der standard Include-Dateien

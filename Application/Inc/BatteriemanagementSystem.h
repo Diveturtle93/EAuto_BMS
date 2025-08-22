@@ -28,6 +28,7 @@
 #include "app_info.h"
 #include "batteriemanagement.h"
 #include "CAN_Bus.h"
+#include "DWT.h"
 #include "error.h"
 #include "HardFault.h"
 #include "imd.h"
@@ -54,6 +55,13 @@
 //#elif REVISION == 2
 //#warning "PCB Revision 1.1 definert"
 //#endif
+//----------------------------------------------------------------------
+
+// Definiere Debug Symbols
+//----------------------------------------------------------------------
+#ifdef DEBUG
+//	#define DEBUG_ZYKLUS
+#endif
 //----------------------------------------------------------------------
 
 // Tischaufbau

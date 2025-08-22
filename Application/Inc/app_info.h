@@ -5,7 +5,7 @@
 // Datum	:	Jul 16, 2023
 // Version	:	1.0
 // Autor	:	Diveturtle93
-// Projekt	:	BatteriemanagementSystem
+// Projekt	:	App Info
 //----------------------------------------------------------------------
 
 // Dateiheader definieren
