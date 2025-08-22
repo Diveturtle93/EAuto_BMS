@@ -53,7 +53,7 @@ typedef union
 // Funktionen definieren
 //----------------------------------------------------------------------
 void ivtTrigger (void);														// Sende Trigger Signal
-void ivtConfig (void);														// Konfiguriere Stromsensor
+bool ivtResultConfig (void);													// Konfiguriere CAN IDs Stromsensor
 void ivtSort (uint8_t* data);												// Sortiere Konfiguration von Stromsensor
 //----------------------------------------------------------------------
 

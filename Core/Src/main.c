@@ -114,6 +114,9 @@ int main(void)
 	// Testvariablen
 	uint32_t zweisekunden = 0;
 	
+	// Stromsensor
+	bool ivt_config = false;
+
 #ifdef DEBUG_DWT
 	// Variablen fuer Data Watchpoint Trigger
 	uint32_t DWT_count = 0, DWT_count1 = 0, DWT_count2 = 0, test = 0;
@@ -370,6 +373,11 @@ int main(void)
 //				  voltage3.result = (RxMessage.buf[2] << 24) | (RxMessage.buf[3] << 16) | (RxMessage.buf[4] << 8) | RxMessage.buf[5];
 //				  break;
 //			  }
+			  case STROM_HV_COMMAND_TX:
+			  {
+				  ivtSort(&RxMessage.buf[0]);
+				  break;
+			  }
 #endif
 
 			  //
@@ -751,6 +759,15 @@ int main(void)
 			  setStatus(CriticalError);
 
 			  break;
+		  }
+	  }
+
+	  // Stromsensor Config
+	  if (ivt_config == true)
+	  {
+		  if (ivtResultConfig() == true)
+		  {
+			  ivt_config = false;
 		  }
 	  }
 
