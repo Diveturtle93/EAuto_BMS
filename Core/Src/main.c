@@ -560,6 +560,11 @@ int main(void)
 				  setState(KL15);
 			  }
 
+			  // Zeitvariablen zuruecksetzen
+			  timeMOTOR = millis();
+			  timeBAMO = millis();
+			  timeStromHV = millis();
+
 			  break;
 		  }
 
