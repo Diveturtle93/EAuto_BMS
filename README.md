@@ -12,7 +12,7 @@ Aufgaben erledigt. Dies sind das Überwachen des HV-Stromes, das einlesen eines
 Isolationswächters, die Ausgabe der Akkukapazität auf dem Kombiinstrument sowie
 die Überwachung einer Interlock-Schleife.
 
----
+#
 
 Das eigentliche Batteriemanagement-System basiert auf dem LTC6811-1 und liest alle
 Zellspannungen und -temperaturen ein. Diese werden dann intern verarbeitet und
@@ -26,7 +26,7 @@ Fahrzeug verbaut.
 
 ---
 
-##Isolationswächter
+## Isolationswächter
 
 Der IMD wertet die Verbindung des Hochvoltsystemes zur Fahrzeugkarosserie aus.
 Hier wied ermittelt, ob der Widerstandswert zur Fahrzeugkarosserie größer einem

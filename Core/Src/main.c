@@ -21,7 +21,6 @@
 #include "main.h"
 #include "adc.h"
 #include "can.h"
-#include "rtc.h"
 #include "spi.h"
 #include "tim.h"
 #include "usart.h"
@@ -118,9 +117,6 @@ int main(void)
 	// Variablen fuer Data Watchpoint Trigger
 	uint32_t DWT_count = 0, DWT_count1 = 0, DWT_count2 = 0, test = 0;
 #endif
-
-	// Backup Data, stored in RTC_Backup Register
-//	uint32_t Backup = 0xFFFF;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -162,12 +158,7 @@ int main(void)
   MX_TIM4_Init();
   MX_SPI1_Init();
   MX_CAN3_Init();
-  MX_RTC_Init();
   /* USER CODE BEGIN 2 */
-
-//	HAL_PWR_EnableBkUpAccess();
-//	Backup = HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR0);
-//	HAL_PWR_DisableBkUpAccess();
 
 	// Timer 1 fuer IMD PWM-Eingang aktivieren
 	if (HAL_TIM_Base_Init(&htim1) != HAL_OK);
@@ -228,15 +219,7 @@ int main(void)
 	  lasttimeZyklus = timeZyklus;
 	  timeZyklus = millis();
     /* USER CODE END WHILE */
-	  HAL_Delay(5000);
-	  HAL_GPIO_TogglePin(GREEN_LED_GPIO_Port, GREEN_LED_Pin);
-	  HAL_GPIO_TogglePin(RED_LED_GPIO_Port, RED_LED_Pin);
-	  readall_inputs();
-	  if ((system_in.KL15 == 0) && (leuchten_out.GreenLed == 1))
-	  {
-		  system_out.Power_On = 0;
-		  HAL_GPIO_WritePin(POWER_ON_GPIO_Port, POWER_ON_Pin, system_out.Power_On);
-	  }
+
     /* USER CODE BEGIN 3 */
 	  // Alle Eingaenge einlesen
 	  readall_inputs();
@@ -258,6 +241,7 @@ int main(void)
 	  // Wenn sich der Pegel am IMD_PWM aendert
 	  if (pwm_change == 1)
 	  {
+		  // IMD Werte berechnen
 		  if (rising != 0 && falling != 0)
 		  {
 			  // Berechne DutyCycle und Frequenzy von IMD_PWM
@@ -266,6 +250,7 @@ int main(void)
 			  imd.Frequency = timer1Periode / rising;
 		  }
 
+		  // Alle 5s den IMD-Status auslesen
 		  if (millis() > (timeIMD + 5000))
 		  {
 			  imd_status();
@@ -501,10 +486,6 @@ int main(void)
 		  // 2s Task
 		  if (millis() > (zweisekunden + 2000))
 		  {
-//			  uartTransmitVNumber(current.result, 10);
-//			  uartTransmit("\n", 1);
-//			  uartTransmitVNumber(voltage1.result, 10);
-//			  uartTransmit("\n", 1);
 
 			  zweisekunden = millis();
 		  }
@@ -785,7 +766,6 @@ void SystemClock_Config(void)
   /** Configure LSE Drive Capability
   */
   HAL_PWR_EnableBkUpAccess();
-  __HAL_RCC_LSEDRIVE_CONFIG(RCC_LSEDRIVE_LOW);
 
   /** Configure the main internal regulator output voltage
   */
@@ -795,9 +775,8 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE|RCC_OSCILLATORTYPE_LSE;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
-  RCC_OscInitStruct.LSEState = RCC_LSE_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
   RCC_OscInitStruct.PLL.PLLM = 25;
