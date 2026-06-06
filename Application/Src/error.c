@@ -186,7 +186,7 @@ void ITM_SendFloat (double number, int digits)
 	double remainder = (double)(number - (double)int_part);					// Nachkommastellen isolieren
 	ITM_SendNumber(int_part);												// Sende Intergerwert
 
-	// Wenn Nachkommastellen groeßer 0 ist
+	// Wenn Nachkommastellen groesser 0 ist
 	if (digits > 0)
 	{
 		ITM_SendChar('.');													// Sende Dezimalpunkt

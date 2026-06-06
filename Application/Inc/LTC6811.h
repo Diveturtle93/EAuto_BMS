@@ -206,7 +206,7 @@ typedef enum LTC6811State_tag {
 	LTCRefup,																// Referenzspannung aktiv
 	LTCSetRefup,															// Referenzspannung wird vorbereitet
 	LTCWakeup,																// IC wird geweckt
-	LTCExtendedBalancing,													// Balancing aktiv, Watchdog Timer ausgeschaltet, Entladetimer läuft
+	LTCExtendedBalancing,													// Balancing aktiv, Watchdog Timer ausgeschaltet, Entladetimer laeuft
 	LTCSleep																// IC im Sleep, keine Aktion, Beide Timer ausgeschaltet
 } LTC6811_State;
 //----------------------------------------------------------------------

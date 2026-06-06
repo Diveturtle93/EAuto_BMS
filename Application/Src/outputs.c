@@ -55,7 +55,7 @@ void writeall_outputs (void)
 	HAL_GPIO_WritePin(AMS_LIMIT_GPIO_Port, AMS_LIMIT_Pin, system_out.AmsLimit);						// Batteriemanagement-System Strom limitiert
 	HAL_GPIO_WritePin(IMD_OK_OUT_GPIO_Port, IMD_OK_OUT_Pin, system_out.ImdOK);						// Isolationswaechter OK
 	HAL_GPIO_WritePin(AMS_OK_GPIO_Port, AMS_OK_Pin, system_out.AmsOK);								// Batteriemanagement-System OK
-	HAL_GPIO_WritePin(FREIGABE_GPIO_Port, FREIGABE_Pin, system_out.Freigabe);						// Freigabe, Run, Fahren möglich
+	HAL_GPIO_WritePin(FREIGABE_GPIO_Port, FREIGABE_Pin, system_out.Freigabe);						// Freigabe, Run, Fahren moeglich
 	HAL_GPIO_WritePin(RECUPERATION_GPIO_Port, RECUPERATION_Pin, system_out.Recuperation);			// Rekuperation aktivieren
 	HAL_GPIO_WritePin(HV_P_GPIO_Port, HV_P_Pin, system_out.HV_P);									// Ausgang HV-Schuetz Plus
 	HAL_GPIO_WritePin(HV_N_GPIO_Port, HV_N_Pin, system_out.HV_N);									// Ausgang HV-Schuetz Minus

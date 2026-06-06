@@ -201,9 +201,9 @@
 #define KOMBI3_CAN									0x520
 #define KLIMA_CAN									0x5E0
 #define xxx_CAN										0x3D0
-#define xx_CAN										0x5DE					// Immer aktive, außer im Sleep
-#define x_CAN										0x010					// Einmalig gesendet wenn Schlüssel auf Stufe 2
-#define xy_CAN										0x011					// Einmalig gesendet wenn Schlüssel auf Stufe 2
+#define xx_CAN										0x5DE					// Immer aktive, ausser im Sleep
+#define x_CAN										0x010					// Einmalig gesendet wenn Schluessel auf Stufe 2
+#define xy_CAN										0x011					// Einmalig gesendet wenn Schluessel auf Stufe 2
 //----------------------------------------------------------------------
 // Bamocar
 //----------------------------------------------------------------------
