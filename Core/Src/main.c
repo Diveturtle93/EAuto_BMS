@@ -104,8 +104,10 @@ int main(void)
 	bool ActivDrive = false;
 	Statemaschine mStrg = {{Start, true, false, false, false}};
 
+#if STROM_HV_AVAILABLE == 1
 	// Stromsensor Nachrichten definieren
 	stromsensor_ivtmod current, voltage1; //voltage2, voltage3;
+#endif
 
 	// IMD Variablen fuer Berechnung
 	uint32_t timer1Periode = 0, timeIMD = 0;
@@ -185,7 +187,7 @@ int main(void)
 		uartTransmit("BMS konnte nicht gestartet werden\n", 34);
 		system_out.AmsOK = false;
 		system_out.AmsLimit = false;
-		setStatus(StateError);
+//		setStatus(StateError);
 	}
 
 	// IMD Fehler zuruecksetzen bei Systemstart
@@ -200,6 +202,7 @@ int main(void)
 #endif
 
 	timeZyklus = millis();
+
 	// Nach erfolgreicher Initialisiserung aller Konfigurationen
 	setState(Ready);
 
@@ -375,7 +378,7 @@ int main(void)
 
 #if BAMOCAR_AVAILABLE == 1
 	  // Timeout abfrage Bamocar
-	  if ((BMSstate.State != Standby) && (millis() > (timeBAMO + CAN_TIMEOUT)))
+	  if ((Main_Statemaschine.State != Standby) && (millis() > (timeBAMO + CAN_TIMEOUT)))
 	  {
 		  // Timeout vorhanden, dann Warnung setzen
 		  can_online &= ~(1 << 0);
@@ -388,7 +391,7 @@ int main(void)
 
 #if MOTOR_AVAILABLE == 1
 	  // Timeout abfrage Motorsteuergeraet
-	  if ((BMSstate.State != Standby) && (millis() > (timeMOTOR + CAN_TIMEOUT)))
+	  if ((Main_Statemaschine.State != Standby) && (millis() > (timeMOTOR + CAN_TIMEOUT)))
 	  {
 		  // Timeout vorhanden, dann Warnung setzen
 		  can_online &= ~(1 << 1);
@@ -703,7 +706,7 @@ int main(void)
 		  case Standby:
 		  {
 			  // Fuer 5min warten und BMS weiterhin aktiv halten
-			  if (millis() > (timeStandby + BMSTIME))
+			  if (millis() > (timeStandby + STANDBYTIME))
 			  {
 				  setState(Ausschalten);
 			  }

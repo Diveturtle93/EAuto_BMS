@@ -27,7 +27,7 @@
 #include "adc_inputs.h"
 #include "app_info.h"
 #include "batteriemanagement.h"
-#include "CAN_Bus.h"
+#include "canbus.h"
 #include "DWT.h"
 #include "error.h"
 #include "HardFault.h"
@@ -74,7 +74,7 @@
 #define MOTOR_AVAILABLE								0						// 0 = Nicht vorhanden, 1 = vorhanden
 #define IMD_AVAILABLE								0						// 0 = Nicht vorhanden, 1 = vorhanden
 #define BAMOCAR_AVAILABLE							0						// 0 = Nicht vorhanden, 1 = vorhanden
-#define STROM_HV_AVAILABLE							1						// 0 = Nicht vorhanden, 1 = vorhanden
+#define STROM_HV_AVAILABLE							0						// 0 = Nicht vorhanden, 1 = vorhanden
 #define STROM_LV_AVAILABLE							0						// 0 = Nicht vorhanden, 1 = vorhanden
 #define KOMBIINSTRUMENT_AVAILABLE					0						// 0 = Nicht vorhanden, 1 = vorhanden
 //----------------------------------------------------------------------
