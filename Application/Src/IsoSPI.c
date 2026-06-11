@@ -132,7 +132,7 @@ void IsoSPI_wakeup (void)
 	// Wenn Statemaschine Idle ist, dann IsoSPI wecken
 	if (get_IsoSpiState() == IsoIdle)
 	{
-		for(uint8_t i = 0; i < LTC6811_DEVICES; i++)							// Wiederholen fuer Anzahl Slaves
+		for (uint8_t i = 0; i < LTC6811_DEVICES; i++)							// Wiederholen fuer Anzahl Slaves
 		{
 			// ISOCS einschalten
 			ISOCS_ENABLE();														// Chip-Select einschalten
@@ -148,7 +148,7 @@ void IsoSPI_wakeup (void)
 		set_IsoSpiState(IsoGetReady);
 
 		// Warten das bis Ready
-		while(get_IsoSpiState() == IsoGetReady);
+		while (get_IsoSpiState() == IsoGetReady);
 	}
 }
 //----------------------------------------------------------------------

@@ -24,19 +24,28 @@
 #include "BatteriemanagementSystem.h"
 //----------------------------------------------------------------------
 
+// Application Informationen sammeln
+//----------------------------------------------------------------------
 void app_info (void)
 {
-  	// Teste serielle Schnittstelle
+	// Teste serielle Schnittstelle
 	#define START_STRING_UART		"!--- Batteriemanagement-System ---!\n"
 	uartTransmit(START_STRING_UART, sizeof(START_STRING_UART));
+
+	// Version der Software auf Uart ausgeben
 	#define VERSION_STRING_UART		"Application Version: "
 	uartTransmit(VERSION_STRING_UART, sizeof(VERSION_STRING_UART));
-	uartTransmitNumber(MAJOR, 10);
+	uartTransmitNumber(BATTERIEMANAGEMENTSYSTEM_MAJOR, 10);
 	uartTransmit(".", 1);
-	uartTransmitNumber(MINOR, 10);
+	uartTransmitNumber(BATTERIEMANAGEMENTSYSTEM_MINOR, 10);
+	uartTransmit(".", 1);
+	uartTransmitNumber(BATTERIEMANAGEMENTSYSTEM_PATCH, 10);
+	uartTransmit(".", 1);
+	uartTransmitNumber(BATTERIEMANAGEMENTSYSTEM_DEV, 10);
 	uartTransmit("\n", 1);
 
-  	// Sammel Systeminformationen
+  	// Sammelt Systeminformationen
   	collectSystemInfo();
 	printResetSource(readResetSource());
 }
+//----------------------------------------------------------------------

@@ -129,7 +129,7 @@ void HAL_CAN_MspInit(CAN_HandleTypeDef* canHandle)
 {
 
   GPIO_InitTypeDef GPIO_InitStruct = {0};
-  if(canHandle->Instance==CAN1)
+  if (canHandle->Instance == CAN1)
   {
   /* USER CODE BEGIN CAN1_MspInit 0 */
 
@@ -153,7 +153,7 @@ void HAL_CAN_MspInit(CAN_HandleTypeDef* canHandle)
 
   /* USER CODE END CAN1_MspInit 1 */
   }
-  else if(canHandle->Instance==CAN3)
+  else if (canHandle->Instance == CAN3)
   {
   /* USER CODE BEGIN CAN3_MspInit 0 */
 
@@ -187,7 +187,7 @@ void HAL_CAN_MspInit(CAN_HandleTypeDef* canHandle)
 void HAL_CAN_MspDeInit(CAN_HandleTypeDef* canHandle)
 {
 
-  if(canHandle->Instance==CAN1)
+  if (canHandle->Instance == CAN1)
   {
   /* USER CODE BEGIN CAN1_MspDeInit 0 */
 
@@ -205,7 +205,7 @@ void HAL_CAN_MspDeInit(CAN_HandleTypeDef* canHandle)
 
   /* USER CODE END CAN1_MspDeInit 1 */
   }
-  else if(canHandle->Instance==CAN3)
+  else if (canHandle->Instance == CAN3)
   {
   /* USER CODE BEGIN CAN3_MspDeInit 0 */
 

@@ -539,7 +539,7 @@ int main(void)
 	  }
 
 	  // Statemaschine vom Batteriemanagement-System
-	  switch(Main_Statemaschine.State)
+	  switch (Main_Statemaschine.State)
 	  {
 		  // State Ready, Vorbereiten des Batteriemanagement
 		  case Ready:

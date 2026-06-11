@@ -8,19 +8,28 @@
 // Projekt	:	BatteriemanagementSystem
 //----------------------------------------------------------------------
 
+// Sicherheitssymbol
+//----------------------------------------------------------------------
+#pragma once
+//----------------------------------------------------------------------
+
 // Dateiheader definieren
 //----------------------------------------------------------------------
 #ifndef INC_BATTERIEMANAGEMENTSYSTEM_H_
 #define INC_BATTERIEMANAGEMENTSYSTEM_H_
 //----------------------------------------------------------------------
 
-// Programmversion definieren
-//----------------------------------------------------------------------
-#define MAJOR 0																// Batteriemanagement Major Version Number
-#define MINOR 1																// Batteriemanagement Minor Version Number
+// Einfuegen der standard Include-Dateien
 //----------------------------------------------------------------------
 
-// Include Project Header
+//----------------------------------------------------------------------
+
+// Einfuegen der STM Include-Dateien
+//----------------------------------------------------------------------
+
+//----------------------------------------------------------------------
+
+// Einfuegen der eigenen Include Dateien
 //----------------------------------------------------------------------
 #include "BasicUart.h"
 #include "AD8403.h"
@@ -44,6 +53,14 @@
 #include "stromsensor.h"
 #include "SystemInfo.h"
 #include "temperatur.h"
+//----------------------------------------------------------------------
+
+// Version definieren
+//----------------------------------------------------------------------
+#define BATTERIEMANAGEMENTSYSTEM_MAJOR				0						// Batteriemanagement Major Version Number
+#define BATTERIEMANAGEMENTSYSTEM_MINOR				0						// Batteriemanagement Minor Version Number
+#define BATTERIEMANAGEMENTSYSTEM_PATCH				0						// Batteriemanagement Patch Version Number
+#define BATTERIEMANAGEMENTSYSTEM_DEV				0						// Batteriemanagement Development Version Number
 //----------------------------------------------------------------------
 
 // Definiere Revision of Batteriemanagement HW PCB

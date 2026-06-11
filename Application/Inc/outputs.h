@@ -8,15 +8,43 @@
 // Projekt	:	Digital IOs
 //----------------------------------------------------------------------
 
+// Sicherheitssymbol
+//----------------------------------------------------------------------
+#pragma once
+//----------------------------------------------------------------------
+
 // Dateiheader definieren
 //----------------------------------------------------------------------
 #ifndef INC_OUTPUTS_H_
 #define INC_OUTPUTS_H_
 //----------------------------------------------------------------------
 
+// Einfuegen der standard Include-Dateien
+//----------------------------------------------------------------------
+
+//----------------------------------------------------------------------
+
+// Einfuegen der STM Include-Dateien
+//----------------------------------------------------------------------
+
+//----------------------------------------------------------------------
+
+// Einfuegen der eigenen Include Dateien
+//----------------------------------------------------------------------
+
+//----------------------------------------------------------------------
+
+// Version definieren
+//----------------------------------------------------------------------
+#define OUTPUTS_MAJOR					0
+#define OUTPUTS_MINOR					0
+#define OUTPUTS_PATCH					0
+#define OUTPUTS_DEV						0
+//----------------------------------------------------------------------
+
 // Konstanten definieren
 //----------------------------------------------------------------------
-#define LED_TEST_TIME								500						// Teste LEDs On/Off fuer 500ms
+#define LED_TEST_TIME					500									// Teste LEDs On/Off fuer 500ms
 //----------------------------------------------------------------------
 
 // Strukturen definieren
@@ -98,10 +126,10 @@ typedef union
 
 // Definiere Konstanten
 //----------------------------------------------------------------------
-#define SYSTEM_OUTPUT				0b10000111								// 8 Bit, 8 Systemausgaenge
-#define HIGH_OUTPUT					0b00000000								// 8 Bit, 7 Hochstromfaehige Ausgaenge
-#define LED_OUTPUT					0b01000000								// 8 Bit, 6 Leuchtdioden
-#define KOMFORT_OUTPUT				0b00000010								// 8 Bit, 3 Komfortausgaenge
+#define SYSTEM_OUTPUT					0b10000111							// 8 Bit, 8 Systemausgaenge
+#define HIGH_OUTPUT						0b00000000							// 8 Bit, 7 Hochstromfaehige Ausgaenge
+#define LED_OUTPUT						0b01000000							// 8 Bit, 6 Leuchtdioden
+#define KOMFORT_OUTPUT					0b00000010							// 8 Bit, 3 Komfortausgaenge
 //----------------------------------------------------------------------
 
 // Definiere globale Variablen

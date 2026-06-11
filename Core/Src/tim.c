@@ -155,7 +155,7 @@ void HAL_TIM_Base_MspInit(TIM_HandleTypeDef* tim_baseHandle)
 {
 
   GPIO_InitTypeDef GPIO_InitStruct = {0};
-  if(tim_baseHandle->Instance==TIM1)
+  if (tim_baseHandle->Instance == TIM1)
   {
   /* USER CODE BEGIN TIM1_MspInit 0 */
 
@@ -186,7 +186,7 @@ void HAL_TIM_Base_MspInit(TIM_HandleTypeDef* tim_baseHandle)
 void HAL_TIM_PWM_MspInit(TIM_HandleTypeDef* tim_pwmHandle)
 {
 
-  if(tim_pwmHandle->Instance==TIM4)
+  if (tim_pwmHandle->Instance == TIM4)
   {
   /* USER CODE BEGIN TIM4_MspInit 0 */
 
@@ -202,7 +202,7 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef* timHandle)
 {
 
   GPIO_InitTypeDef GPIO_InitStruct = {0};
-  if(timHandle->Instance==TIM4)
+  if (timHandle->Instance == TIM4)
   {
   /* USER CODE BEGIN TIM4_MspPostInit 0 */
 
@@ -231,7 +231,7 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef* timHandle)
 void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef* tim_baseHandle)
 {
 
-  if(tim_baseHandle->Instance==TIM1)
+  if (tim_baseHandle->Instance == TIM1)
   {
   /* USER CODE BEGIN TIM1_MspDeInit 0 */
 
@@ -255,7 +255,7 @@ void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef* tim_baseHandle)
 void HAL_TIM_PWM_MspDeInit(TIM_HandleTypeDef* tim_pwmHandle)
 {
 
-  if(tim_pwmHandle->Instance==TIM4)
+  if (tim_pwmHandle->Instance == TIM4)
   {
   /* USER CODE BEGIN TIM4_MspDeInit 0 */
 

@@ -43,7 +43,7 @@ uint16_t readADC (uint8_t channel)
 
 	// ADC Starten, Wert einlesen und ADC Stoppen
 	HAL_ADC_Start(&hadc1);													// ADC starten
-	if(HAL_ADC_PollForConversion(&hadc1, 100) == HAL_OK)					// Wenn ADC funktioniert
+	if (HAL_ADC_PollForConversion(&hadc1, 100) == HAL_OK)					// Wenn ADC funktioniert
 	{
 		// ADC Wert holen
 		ADC_Data = HAL_ADC_GetValue(&hadc1);
@@ -79,7 +79,7 @@ uint16_t ADC_STMTemperatur (void)
 
 	// ADC Starten, Wert einlesen und ADC Stoppen
 	HAL_ADC_Start(&hadc1);													// ADC starten
-	if(HAL_ADC_PollForConversion(&hadc1, 100) == HAL_OK)					// Wenn ADC funktioniert
+	if (HAL_ADC_PollForConversion(&hadc1, 100) == HAL_OK)					// Wenn ADC funktioniert
 	{
 		// ADC Wert holen
 		ADC_Data = HAL_ADC_GetValue(&hadc1);

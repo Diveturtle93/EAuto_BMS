@@ -8,15 +8,30 @@
 // Projekt	:	LTC1380
 //----------------------------------------------------------------------
 
-// Dateiheader definieren
+// Sicherheitssymbol
 //----------------------------------------------------------------------
-#ifndef LTC1380_H
-#define LTC1380_H
+#pragma once
 //----------------------------------------------------------------------
 
-// Include-Dateien einfuegen
+// Dateiheader definieren
+//----------------------------------------------------------------------
+#ifndef INC_LTC1380_H_
+#define INC_LTC1380_H_
+//----------------------------------------------------------------------
+
+// Einfuegen der standard Include-Dateien
 //----------------------------------------------------------------------
 #include "inttypes.h"
+//----------------------------------------------------------------------
+
+// Einfuegen der STM Include-Dateien
+//----------------------------------------------------------------------
+
+//----------------------------------------------------------------------
+
+// Einfuegen der eigenen Include Dateien
+//----------------------------------------------------------------------
+
 //----------------------------------------------------------------------
 
 // Define Debug Symbols
@@ -26,30 +41,38 @@
 #endif
 //----------------------------------------------------------------------
 
+// Version definieren
+//----------------------------------------------------------------------
+#define LTC1380_MAJOR					0
+#define LTC1380_MINOR					0
+#define LTC1380_PATCH					0
+#define LTC1380_DEV						0
+//----------------------------------------------------------------------
+
 // Konstanten definieren
 //----------------------------------------------------------------------
-#define LTC1380_DEVICES		2												// Anzahl der ICs pro LTC6811
-#define LTC1380_SENSORES	8												// Anzahl der Sensoren pro IC
+#define LTC1380_DEVICES					2									// Anzahl der ICs pro LTC6811
+#define LTC1380_SENSORES				8									// Anzahl der Sensoren pro IC
 //----------------------------------------------------------------------
 
 // Addressen
 //----------------------------------------------------------------------
-#define LTC1380_MUX0 		0b10010000										// Adresse fue IC 1
-#define LTC1380_MUX1		0b10010010										// Adresse fue IC 2
-#define LTC1380_MUX2		0b10010100										// Adresse fue IC 3
-#define LTC1380_MUX3		0b10010110										// Adresse fue IC 4
+#define LTC1380_MUX0					0b10010000							// Adresse fue IC 1
+#define LTC1380_MUX1					0b10010010							// Adresse fue IC 2
+#define LTC1380_MUX2					0b10010100							// Adresse fue IC 3
+#define LTC1380_MUX3					0b10010110							// Adresse fue IC 4
 //----------------------------------------------------------------------
 
 // Channel Auswahl
 //----------------------------------------------------------------------
-#define TEMPERATUR0			0												// Kanal 1 am IC
-#define TEMPERATUR1			1												// Kanal 2 am IC
-#define TEMPERATUR2			2												// Kanal 3 am IC
-#define TEMPERATUR3			3												// Kanal 4 am IC
-#define TEMPERATUR4			4												// Kanal 5 am IC
-#define TEMPERATUR5			5												// Kanal 6 am IC
-#define TEMPERATUR6			6												// Kanal 7 am IC
-#define TEMPERATUR7			7												// Kanal 8 am IC
+#define TEMPERATUR0						0									// Kanal 1 am IC
+#define TEMPERATUR1						1									// Kanal 2 am IC
+#define TEMPERATUR2						2									// Kanal 3 am IC
+#define TEMPERATUR3						3									// Kanal 4 am IC
+#define TEMPERATUR4						4									// Kanal 5 am IC
+#define TEMPERATUR5						5									// Kanal 6 am IC
+#define TEMPERATUR6						6									// Kanal 7 am IC
+#define TEMPERATUR7						7									// Kanal 8 am IC
 //----------------------------------------------------------------------
 
 // Funktionen definieren

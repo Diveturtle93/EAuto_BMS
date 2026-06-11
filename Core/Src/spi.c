@@ -100,7 +100,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* spiHandle)
 {
 
   GPIO_InitTypeDef GPIO_InitStruct = {0};
-  if(spiHandle->Instance==SPI1)
+  if (spiHandle->Instance == SPI1)
   {
   /* USER CODE BEGIN SPI1_MspInit 0 */
 
@@ -133,7 +133,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* spiHandle)
 
   /* USER CODE END SPI1_MspInit 1 */
   }
-  else if(spiHandle->Instance==SPI4)
+  else if (spiHandle->Instance == SPI4)
   {
   /* USER CODE BEGIN SPI4_MspInit 0 */
 

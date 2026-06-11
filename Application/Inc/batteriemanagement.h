@@ -8,15 +8,29 @@
 // Projekt	:	BatteriemanagementSystem
 //----------------------------------------------------------------------
 
+// Sicherheitssymbol
+//----------------------------------------------------------------------
+#pragma once
+//----------------------------------------------------------------------
+
 // Dateiheader definieren
 //----------------------------------------------------------------------
 #ifndef INC_BATTERIEMANAGEMENT_H_
 #define INC_BATTERIEMANAGEMENT_H_
 //----------------------------------------------------------------------
 
-// Inlude Dateien einfuegen
+// Einfuegen der standard Include-Dateien
+//----------------------------------------------------------------------
+
+//----------------------------------------------------------------------
+
+// Einfuegen der STM Include-Dateien
 //----------------------------------------------------------------------
 #include "main.h"
+//----------------------------------------------------------------------
+
+// Einfuegen der eigenen Include Dateien
+//----------------------------------------------------------------------
 #include "ltc6811.h"
 #include "ltc1380.h"
 //----------------------------------------------------------------------
@@ -28,6 +42,14 @@
 //	#define DEBUG_BMS_OK
 	#define DEBUG_BMS_WORK
 #endif
+//----------------------------------------------------------------------
+
+// Version definieren
+//----------------------------------------------------------------------
+#define BATTERIEMANAGEMENT_MAJOR				0
+#define BATTERIEMANAGEMENT_MINOR				0
+#define BATTERIEMANAGEMENT_PATCH				0
+#define BATTERIEMANAGEMENT_DEV					0
 //----------------------------------------------------------------------
 
 // Pruefen ob zuviele LTC6811_DEVICES gesetzt sind

@@ -544,7 +544,7 @@ uint16_t peclookup (uint8_t len,	uint8_t *data)								// len = Anzahl Byte, dat
 	remainder = 16;															// Initialisiere reminder mit 16 (0b0000000000010000)
 	
 	// Schleife fuer die Pec-Calculation
-	for(uint8_t i = 0; i < len; i++)
+	for (uint8_t i = 0; i < len; i++)
 	{
 		// Kalkuliere Pec Anhand der Lookuptabelle
 		addr = ((remainder >> 7) ^ data[i]) & 0xFF;							// Tabellenaddresse berechnen
