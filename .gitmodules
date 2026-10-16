@@ -26,3 +26,12 @@
 	path = Lib/STM32_Statemaschine
 	url = https://github.com/Diveturtle93/STM32_Statemaschine.git
 	branch = main
+[submodule "Lib/STM32_AD8403"]
+	path = Lib/STM32_AD8403
+	url = https://github.com/Diveturtle93/STM32_AD8403.git
+[submodule "Lib/IMD_IR155_3204"]
+	path = Lib/IMD_IR155_3204
+	url = https://github.com/Diveturtle93/IMD_IR155_3204.git
+[submodule "Lib/STM32_LTC6811"]
+	path = Lib/STM32_LTC6811
+	url = https://github.com/Diveturtle93/STM32_LTC6811.git
