@@ -100,7 +100,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* spiHandle)
 {
 
   GPIO_InitTypeDef GPIO_InitStruct = {0};
-  if (spiHandle->Instance == SPI1)
+  if(spiHandle->Instance==SPI1)
   {
   /* USER CODE BEGIN SPI1_MspInit 0 */
 
@@ -115,14 +115,14 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* spiHandle)
     PG10     ------> SPI1_NSS
     PG11     ------> SPI1_SCK
     */
-    GPIO_InitStruct.Pin = POTI_MOSI_Pin;
+    GPIO_InitStruct.Pin = AD8403_MOSI_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
     GPIO_InitStruct.Alternate = GPIO_AF5_SPI1;
-    HAL_GPIO_Init(POTI_MOSI_GPIO_Port, &GPIO_InitStruct);
+    HAL_GPIO_Init(AD8403_MOSI_GPIO_Port, &GPIO_InitStruct);
 
-    GPIO_InitStruct.Pin = POTI_CS_Pin|POTI_SCK_Pin;
+    GPIO_InitStruct.Pin = AD8403_CS_Pin|AD8403_SCK_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
@@ -133,7 +133,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* spiHandle)
 
   /* USER CODE END SPI1_MspInit 1 */
   }
-  else if (spiHandle->Instance == SPI4)
+  else if(spiHandle->Instance==SPI4)
   {
   /* USER CODE BEGIN SPI4_MspInit 0 */
 
@@ -176,9 +176,9 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* spiHandle)
     PG10     ------> SPI1_NSS
     PG11     ------> SPI1_SCK
     */
-    HAL_GPIO_DeInit(POTI_MOSI_GPIO_Port, POTI_MOSI_Pin);
+    HAL_GPIO_DeInit(AD8403_MOSI_GPIO_Port, AD8403_MOSI_Pin);
 
-    HAL_GPIO_DeInit(GPIOG, POTI_CS_Pin|POTI_SCK_Pin);
+    HAL_GPIO_DeInit(GPIOG, AD8403_CS_Pin|AD8403_SCK_Pin);
 
   /* USER CODE BEGIN SPI1_MspDeInit 1 */
 

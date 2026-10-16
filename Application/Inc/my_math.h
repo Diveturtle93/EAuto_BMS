@@ -3,9 +3,9 @@
 //----------------------------------------------------------------------
 // Sprache	:	C
 // Datum	:	30.01.2022
-// Version	:	1.0
 // Autor	:	Diveturtle93
 // Projekt	:	Math
+// Quelle	:
 //----------------------------------------------------------------------
 
 // Sicherheitssymbol
@@ -15,8 +15,8 @@
 
 // Dateiheader definieren
 //----------------------------------------------------------------------
-#ifndef INC_MATH_H_
-#define INC_MATH_H_
+#ifndef INC_MY_MATH_H_
+#define INC_MY_MATH_H_
 //----------------------------------------------------------------------
 
 // Einfuegen der standard Include-Dateien
@@ -29,29 +29,23 @@
 #include "main.h"
 //----------------------------------------------------------------------
 
-// Einfuegen der eigenen Include Dateien
+// Einfuegen der eigenen Include-Dateien
 //----------------------------------------------------------------------
 
 //----------------------------------------------------------------------
 
-// Define Debug Symbols
+// Definiere Debug-Symbole
 //----------------------------------------------------------------------
-//#define DEBUG_MATH
-//----------------------------------------------------------------------
-
-// Version definieren
-//----------------------------------------------------------------------
-#define MATH_MAJOR						0
-#define MATH_MINOR						0
-#define MATH_PATCH						0
-#define MATH_DEV						0
+#ifdef DEBUG
+//	#define DEBUG_MY_MATH
+#endif
 //----------------------------------------------------------------------
 
 // Funktionen definieren
 //----------------------------------------------------------------------
 int32_t calculateMovingAverage (uint16_t oldValue, uint16_t newValue, uint16_t n);		// Gleitenden Mittelwert berechnen
-uint16_t getDifference (uint16_t a, uint16_t b);										// Differenzberechnung
+uint16_t getDifference (uint16_t a, uint16_t b);							// Differenzberechnung
 //----------------------------------------------------------------------
 
-#endif /* INC_MATH_H_ */
+#endif /* INC_MY_MATH_H_ */
 //----------------------------------------------------------------------

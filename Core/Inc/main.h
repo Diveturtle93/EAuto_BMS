@@ -174,18 +174,18 @@ void Error_Handler(void);
 #define DIGITAL1_GPIO_Port GPIOD
 #define DIGITAL2_Pin GPIO_PIN_4
 #define DIGITAL2_GPIO_Port GPIOD
-#define POTI_MOSI_Pin GPIO_PIN_7
-#define POTI_MOSI_GPIO_Port GPIOD
-#define POTI_MISO_Pin GPIO_PIN_9
-#define POTI_MISO_GPIO_Port GPIOG
-#define POTI_CS_Pin GPIO_PIN_10
-#define POTI_CS_GPIO_Port GPIOG
-#define POTI_SCK_Pin GPIO_PIN_11
-#define POTI_SCK_GPIO_Port GPIOG
-#define POTI_RS_Pin GPIO_PIN_12
-#define POTI_RS_GPIO_Port GPIOG
-#define POTI_SHDN_Pin GPIO_PIN_13
-#define POTI_SHDN_GPIO_Port GPIOG
+#define AD8403_MOSI_Pin GPIO_PIN_7
+#define AD8403_MOSI_GPIO_Port GPIOD
+#define AD8403_MISO_Pin GPIO_PIN_9
+#define AD8403_MISO_GPIO_Port GPIOG
+#define AD8403_CS_Pin GPIO_PIN_10
+#define AD8403_CS_GPIO_Port GPIOG
+#define AD8403_SCK_Pin GPIO_PIN_11
+#define AD8403_SCK_GPIO_Port GPIOG
+#define AD8403_RS_Pin GPIO_PIN_12
+#define AD8403_RS_GPIO_Port GPIOG
+#define AD8403_SHDN_Pin GPIO_PIN_13
+#define AD8403_SHDN_GPIO_Port GPIOG
 #define RECUPERATION_Pin GPIO_PIN_14
 #define RECUPERATION_GPIO_Port GPIOG
 #define AMS_LIMIT_Pin GPIO_PIN_15
@@ -206,7 +206,7 @@ void Error_Handler(void);
 /* USER CODE BEGIN Private defines */
 // Anzahl der CAN Output Pakete defineren
 //----------------------------------------------------------------------
-#define ANZAHL_OUTPUT_PAKETE						64						// Anzahl Sende Nachrichten
+#define ANZAHL_OUTPUT_PAKETE					64							// Anzahl Sende Nachrichten
 //----------------------------------------------------------------------
 
 // Typedefine Boolean definieren

@@ -1,11 +1,11 @@
 //----------------------------------------------------------------------
-// Titel	:	Inputs.h
+// Titel	:	inputs.h
 //----------------------------------------------------------------------
 // Sprache	:	C
 // Datum	:	31.03.2021
-// Version	:	1.0
 // Autor	:	Diveturtle93
 // Projekt	:	Digital IOs
+// Quelle	:
 //----------------------------------------------------------------------
 
 // Sicherheitssymbol
@@ -29,17 +29,24 @@
 
 //----------------------------------------------------------------------
 
-// Einfuegen der eigenen Include Dateien
+// Einfuegen der eigenen Include-Dateien
 //----------------------------------------------------------------------
 
 //----------------------------------------------------------------------
 
-// Version definieren
+// Definiere Debug-Symbole
 //----------------------------------------------------------------------
-#define INPUTS_MAJOR					0
-#define INPUTS_MINOR					0
-#define INPUTS_PATCH					0
-#define INPUTS_DEV						0
+#ifdef DEBUG
+//	#define DEBUG_INPUTS
+#endif
+//----------------------------------------------------------------------
+
+// Intputs Version definieren
+//----------------------------------------------------------------------
+#define INPUTS_MAJOR							0
+#define INPUTS_MINOR							0
+#define INPUTS_PATCH							0
+#define INPUTS_DEV								0
 //----------------------------------------------------------------------
 
 // Eingangsstrukturen definieren
@@ -108,9 +115,9 @@ typedef union
 
 // Definiere Konstanten
 //----------------------------------------------------------------------
-#define SYSTEM_INPUT					0b00000111							// 8 Bit, 6 Systemeingaenge
-#define KOMFORT_INPUT					0b00000000							// 8 Bit, 1 Komforteingaenge
-#define SDC_INPUT						0b00000000							// 8 Bit, 5 SDC-Eingaenge
+#define SYSTEM_INPUT							0b00000111					// 8 Bit, 6 Systemeingaenge
+#define KOMFORT_INPUT							0b00000000					// 8 Bit, 1 Komforteingaenge
+#define SDC_INPUT								0b00000000					// 8 Bit, 5 SDC-Eingaenge
 //----------------------------------------------------------------------
 
 // Definiere globale Variablen

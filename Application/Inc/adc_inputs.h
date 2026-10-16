@@ -3,9 +3,9 @@
 //----------------------------------------------------------------------
 // Sprache	:	C
 // Datum	:	14.08.2021
-// Version	:	1.0
 // Autor	:	Diveturtle93
 // Projekt	:	ADC Inputs
+// Quelle	:
 //----------------------------------------------------------------------
 
 // Sicherheitssymbol
@@ -29,22 +29,16 @@
 
 //----------------------------------------------------------------------
 
-// Einfuegen der eigenen Include Dateien
+// Einfuegen der eigenen Include-Dateien
 //----------------------------------------------------------------------
 
 //----------------------------------------------------------------------
 
-// Define Debug Symbols
+// Definiere Debug-Symbole
 //----------------------------------------------------------------------
-#define DEBUG_ADC_INPUTS
-//----------------------------------------------------------------------
-
-// Version definieren
-//----------------------------------------------------------------------
-#define ADC_INPUTS_MAJOR					0
-#define ADC_INPUTS_MINOR					0
-#define ADC_INPUTS_PATCH					0
-#define ADC_INPUTS_DEV						0
+#ifdef DEBUG
+	#define DEBUG_ADC_INPUTS
+#endif
 //----------------------------------------------------------------------
 
 // Funktionen definieren

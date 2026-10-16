@@ -3,9 +3,9 @@
 //----------------------------------------------------------------------
 // Sprache	:	C
 // Datum	:	12.01.2024
-// Version	:	1.0
 // Autor	:	Diveturtle93
 // Projekt	:	Temperaturen
+// Quelle	:
 //----------------------------------------------------------------------
 
 // Einfuegen der standard Include-Dateien
@@ -18,10 +18,15 @@
 #include "main.h"
 //----------------------------------------------------------------------
 
-// Einfuegen der eigenen Include Dateien
+// Einfuegen der eigenen Include-Dateien
 //----------------------------------------------------------------------
 #include "temperatur.h"
 #include "BatteriemanagementSystem.h"
+//----------------------------------------------------------------------
+
+// Variablen definieren
+//----------------------------------------------------------------------
+
 //----------------------------------------------------------------------
 
 // ADC-Wert in Temperatur umrechnen, NTC auf der PCB

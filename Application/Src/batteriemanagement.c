@@ -3,9 +3,9 @@
 //----------------------------------------------------------------------
 // Sprache	:	C
 // Datum	:	23.06.2022
-// Version	:	1.0
 // Autor	:	Diveturtle93
 // Projekt	:	BatteriemanagementSystem
+// Quelle	:
 //----------------------------------------------------------------------
 
 // Einfuegen der standard Include-Dateien
@@ -18,13 +18,13 @@
 #include "main.h"
 //----------------------------------------------------------------------
 
-// Einfuegen der eigenen Include Dateien
+// Einfuegen der eigenen Include-Dateien
 //----------------------------------------------------------------------
 #include "batteriemanagement.h"
 #include "BatteriemanagementSystem.h"
 //----------------------------------------------------------------------
 
-// Definiere
+// Variablen definieren
 //----------------------------------------------------------------------
 uint32_t stackvoltage = 0;													// Variable fuer Gesamtspannung
 uint16_t LTC6811_undervolt[LTC6811_DEVICES] = {0};							// Array zum Speichern welche Zelle Unterspannung hat
@@ -39,7 +39,6 @@ uint64_t bms_error[LTC6811_DEVICES + 1] = {0};								// Array zum Speichern der
 bool bms_readerror = false;													// Variable ob Fehler vorhanden beim auslesen
 uint8_t bms_readerror_count = 0;											// Variable fuer Fehlerzaehler beim auslesen
 //----------------------------------------------------------------------
-
 // Definiere Zellenarray Spannungen
 //----------------------------------------------------------------------
 uint16_t cellvoltage[LTC6811_DEVICES][LTC6811_CELLS] = {0};					// Array fuer gemessene Zellspannungen
@@ -47,7 +46,6 @@ uint32_t modulvoltage[LTC6811_DEVICES] = {0};								// Array fuer gemessene Mod
 uint16_t mincellvoltage[LTC6811_DEVICES + 1] = {0};							// Array fuer Minimalspannungen
 uint16_t maxcellvoltage[LTC6811_DEVICES + 1] = {0};							// Array fuer Maximalspannungen
 //----------------------------------------------------------------------
-
 // Definiere Zellenarray Temperaturen
 //----------------------------------------------------------------------
 uint16_t celltemperature[LTC6811_DEVICES][LTC1380_DEVICES * LTC1380_SENSORES] = {0};	// Array fuer gemessene Zelltemperaturen
@@ -65,11 +63,11 @@ bool bms_init (void)
 	// Variablen definieren
 	uint8_t error = 0, count = 0;
 
-  	// IsoSPI einschalten, Isolierte Spannungsversorgung IsoSPI und HV-Precharge Messung einschalten
-  	ISOSPI_ENABLE();
+	// IsoSPI einschalten, Isolierte Spannungsversorgung IsoSPI und HV-Precharge Messung einschalten
+	ISOSPI_ENABLE();
 
-  	// Warten fuer eine kurze Zeit
-  	HAL_Delay(20);
+	// Warten fuer eine kurze Zeit
+	HAL_Delay(20);
 
 	// Alle Register zuruecksetzen
 	ltc6811(CLRCELL);
@@ -80,7 +78,7 @@ bool bms_init (void)
 	// Ausgabe auf Seriller Schnittstelle
 	uartTransmit("\n", 1);
 
-	#define TEST_LTC6811	"Starte Batteriemanagement-System\n"
+	#define TEST_LTC6811						"Starte Batteriemanagement-System\n"
 	uartTransmit(TEST_LTC6811, sizeof(TEST_LTC6811));
 
 	// LTC Check durchfuehren, bei Fehler wird der Check max. 10 mal wiederholt
@@ -90,7 +88,7 @@ bool bms_init (void)
 	{
 		if ((error = ltc6811_check()) != 0)									// LTC6811 Selftest durchfuehren
 		{
-			#define LTC6811_FAILED	"Selbsttest LTC6811 fehlerhaft\n"
+			#define LTC6811_FAILED				"Selbsttest LTC6811 fehlerhaft\n"
 			uartTransmit(LTC6811_FAILED, sizeof(LTC6811_FAILED));			// Ausgabe bei Fehlerhaftem Selbsttest
 
 			uartTransmitNumber(error, 10);
@@ -99,7 +97,7 @@ bool bms_init (void)
 		}
 		else
 		{
-			#define LTC6811_PASSED	"Selbsttest LTC6811 erfolgreich\n"
+			#define LTC6811_PASSED				"Selbsttest LTC6811 erfolgreich\n"
 			uartTransmit(LTC6811_PASSED, sizeof(LTC6811_PASSED));			// Ausgabe bei Erfolgreichem Selbsttest
 			break;
 		}
@@ -160,16 +158,20 @@ void bms_cellspannung (uint8_t cell)
 		case 1:
 		case 2:
 		case 3:
+		{
 			ltc6811_read(RDCVA, &data[0]);
 			ltc6811_read(RDCVC, &data[16 * LTC6811_DEVICES]);
 			break;
+		}
 		// Zell 4 - 6 und  10 - 12
 		case 4:
 		case 5:
 		case 6:
+		{
 			ltc6811_read(RDCVB, &data[8 * LTC6811_DEVICES]);
 			ltc6811_read(RDCVD, &data[24 * LTC6811_DEVICES]);
 			break;
+		}
 		default:
 			break;
 	}
@@ -178,33 +180,6 @@ void bms_cellspannung (uint8_t cell)
 	// Daten sortieren fuer alle Zellen
 	for (uint8_t i = 0; i < LTC6811_DEVICES; i++)
 	{
-		/*for (uint8_t j = 0; j < 12; j++)
-		{
-			switch (j)
-			{
-				case 0:
-				case 1:
-				case 2:
-					cellvoltage[i][j] = ((data[i*8 + j*2 + 1] << 8) | data[i*8 + j*2]);
-					break;
-				case 3:
-				case 4:
-				case 5:
-					cellvoltage[i][j] = ((data[(LTC6811_DEVICES+i)*8 + (j-3)*2 + 1] << 8) | data[(LTC6811_DEVICES+i)*8+ (j-3)*2]);
-					break;
-				case 6:
-				case 7:
-				case 8:
-					cellvoltage[i][j] = ((data[(LTC6811_DEVICES*2+i)*8 + (j-6)*2 + 1] << 8) | data[(LTC6811_DEVICES*2+i)*8 + (j-6)*2]);
-					break;
-				case 9:
-				case 10:
-				case 11:
-					cellvoltage[i][j] = ((data[(LTC6811_DEVICES*3+i)*8 + (j-9)*2 + 1] << 8) | data[(LTC6811_DEVICES*3+i)*8 + (j-9)*2]);
-					break;
-			}
-		}*/
-
 		// Daten sortieren fuer gewaehlte Zellen
 		switch (cell)
 		{
@@ -260,25 +235,35 @@ void bms_cellspannungen (void)
 				case 0:
 				case 1:
 				case 2:
+				{
 					cellvoltage[i][j] = ((data[i*8 + j*2 + 1] << 8) | data[i*8 + j*2]);
 					break;
+				}
 				// Zelle 4 - 6
 				case 3:
 				case 4:
 				case 5:
+				{
 					cellvoltage[i][j] = ((data[(LTC6811_DEVICES+i)*8 + (j-3)*2 + 1] << 8) | data[(LTC6811_DEVICES+i)*8+ (j-3)*2]);
 					break;
+				}
 				// Zelle 7 - 9
 				case 6:
 				case 7:
 				case 8:
+				{
 					cellvoltage[i][j] = ((data[(LTC6811_DEVICES*2+i)*8 + (j-6)*2 + 1] << 8) | data[(LTC6811_DEVICES*2+i)*8 + (j-6)*2]);
 					break;
+				}
 				// Zelle 10 - 12
 				case 9:
 				case 10:
 				case 11:
+				{
 					cellvoltage[i][j] = ((data[(LTC6811_DEVICES*3+i)*8 + (j-9)*2 + 1] << 8) | data[(LTC6811_DEVICES*3+i)*8 + (j-9)*2]);
+					break;
+				}
+				default:
 					break;
 			}
 		}
@@ -343,16 +328,20 @@ void bms_readgpio (uint8_t gpio)
 				break;
 			// GPIO 3
 			case 3:
+			{
 				PCB_Temperature[i] = ((data[i*8 + 4 + 1] << 8) | data[i*8 + 4]);// LTC GPIO 3, Byte 4 und 5 des Registers
 				break;
+			}
 			// GPIO 4 und 5
 			case 4:
 			case 5:
 				break;
 			// Sekundaerspannung
 			case 6:
+			{
 				LTC6811_secref[i] = ((data[i*8 + 8*LTC6811_DEVICES + 4 + 1] << 8) | data[i*8 + 8*LTC6811_DEVICES + 4]);	// LTC Sec Referenzspannung einlesen, Byte 6 und 7 des Registers
 				break;
+			}
 			default:
 				break;
 		}
@@ -441,26 +430,34 @@ void bms_volt_temp (uint8_t tempsensor)
 				case 0:
 				case 1:
 				case 2:
+				{
 					cellvoltage[i][j] = ((data[i*8 + j*2 + 1] << 8) | data[i*8 + j*2]);
 					break;
+				}
 				// Zelle 4 - 6
 				case 3:
 				case 4:
 				case 5:
+				{
 					cellvoltage[i][j] = ((data[(LTC6811_DEVICES+i)*8 + (j-3)*2 + 1] << 8) | data[(LTC6811_DEVICES+i)*8+ (j-3)*2]);
 					break;
+				}
 				// Zelle 7 - 9
 				case 6:
 				case 7:
 				case 8:
+				{
 					cellvoltage[i][j] = ((data[(LTC6811_DEVICES*2+i)*8 + (j-6)*2 + 1] << 8) | data[(LTC6811_DEVICES*2+i)*8 + (j-6)*2]);
 					break;
+				}
 				// Zelle 10 - 12
 				case 9:
 				case 10:
 				case 11:
+				{
 					cellvoltage[i][j] = ((data[(LTC6811_DEVICES*3+i)*8 + (j-9)*2 + 1] << 8) | data[(LTC6811_DEVICES*3+i)*8 + (j-9)*2]);
 					break;
+				}
 				default:
 					break;
 			}
@@ -504,26 +501,34 @@ void bms_volt_SOC (void)
 				case 0:
 				case 1:
 				case 2:
+				{
 					cellvoltage[i][j] = ((data[i*8 + j*2 + 1] << 8) | data[i*8 + j*2]);
 					break;
+				}
 				// Zelle 4 - 6
 				case 3:
 				case 4:
 				case 5:
+				{
 					cellvoltage[i][j] = ((data[(LTC6811_DEVICES+i)*8 + (j-3)*2 + 1] << 8) | data[(LTC6811_DEVICES+i)*8+ (j-3)*2]);
 					break;
+				}
 				// Zelle 7 - 9
 				case 6:
 				case 7:
 				case 8:
+				{
 					cellvoltage[i][j] = ((data[(LTC6811_DEVICES*2+i)*8 + (j-6)*2 + 1] << 8) | data[(LTC6811_DEVICES*2+i)*8 + (j-6)*2]);
 					break;
+				}
 				// Zelle 10 - 12
 				case 9:
 				case 10:
 				case 11:
+				{
 					cellvoltage[i][j] = ((data[(LTC6811_DEVICES*3+i)*8 + (j-9)*2 + 1] << 8) | data[(LTC6811_DEVICES*3+i)*8 + (j-9)*2]);
 					break;
+				}
 				default:
 					break;
 			}
@@ -645,13 +650,13 @@ void bms_work (void)
 bool bms_ok (void)
 {
 	// TODO: BMS OK abfrage erstellen
-	/*for (uint8_t i = 0; i < LTC6811_DEVICES; i++)
-	{
-		// BMS Error zuruecksetzen
-		bms_error[i] = 0;
-		// BMS Warnung zuruecksetzen
-		bms_warning[i] = 0;
-	}*/
+	// for (uint8_t i = 0; i < LTC6811_DEVICES; i++)
+	// {
+	//	// BMS Error zuruecksetzen
+	//	bms_error[i] = 0;
+	//	// BMS Warnung zuruecksetzen
+	//	bms_warning[i] = 0;
+	// }
 
 	// Unterspannung
 	for (uint8_t i = 0; i < LTC6811_DEVICES; i++)
@@ -717,12 +722,12 @@ bool bms_ok (void)
 		if ((LTC6811_Temperature[i] >= LTC6811_DEVUTEMP) && (LTC6811_Temperature[i] < LTC6811_DEVOTEMP))
 		{
 			// 1ULL fuer Konvertierung von 8bit in 64Bit
-			bms_error[i] &= ~(1ULL << BMS_LTC_Temperatur);					// LTC Temperaturfehler zuruecksetzen
+			bms_error[i] &= ~(1ULL << BMS_LTC_TEMPERATUR);					// LTC Temperaturfehler zuruecksetzen
 		}
 		else
 		{
 			// 1ULL fuer Konvertierung von 8bit in 64Bit
-			bms_error[i] |= (1ULL << BMS_LTC_Temperatur);					// LTC Temperaturfehler setzen
+			bms_error[i] |= (1ULL << BMS_LTC_TEMPERATUR);					// LTC Temperaturfehler setzen
 		}
 	}
 
@@ -732,12 +737,12 @@ bool bms_ok (void)
 		if ((PCB_Temperature[i] <= LTC6811_PCB_UTEMP) && (PCB_Temperature[i] > LTC6811_PCB_OTEMP))
 		{
 			// 1ULL fuer Konvertierung von 8bit in 64Bit
-			bms_error[i] &= ~(1ULL << BMS_SlavePCBError);					// LTC PCB Temperaturfehler zuruecksetzen
+			bms_error[i] &= ~(1ULL << BMS_SLAVE_PCB_ERROR);					// LTC PCB Temperaturfehler zuruecksetzen
 		}
 		else
 		{
 			// 1ULL fuer Konvertierung von 8bit in 64Bit
-			bms_error[i] |= (1ULL << BMS_SlavePCBError);					// LTC PCB Temperaturfehler setzen
+			bms_error[i] |= (1ULL << BMS_SLAVE_PCB_ERROR);					// LTC PCB Temperaturfehler setzen
 		}
 	}
 
@@ -747,12 +752,12 @@ bool bms_ok (void)
 		if ((LTC6811_undervolt[i] && LTC6811_overvolt[i]) > 0)
 		{
 			// 1ULL fuer Konvertierung von 8bit in 64Bit
-			bms_error[i] |= (1ULL << BMS_PlausibilityError);				// LTC Plausibilitaetsfehler setzen
+			bms_error[i] |= (1ULL << BMS_PLAUSIBILITY_ERROR);				// LTC Plausibilitaetsfehler setzen
 		}
 		else
 		{
 			// 1ULL fuer Konvertierung von 8bit in 64Bit
-			bms_error[i] &= ~(1ULL << BMS_PlausibilityError);				// LTC Plausibilitaetsfehler zuruecksetzen
+			bms_error[i] &= ~(1ULL << BMS_PLAUSIBILITY_ERROR);				// LTC Plausibilitaetsfehler zuruecksetzen
 		}
 	}
 
@@ -832,15 +837,15 @@ bool bms_ok (void)
 	// Auswertung ob in BMS ein Fehler oder Warnung vorhanden, Rueckgabe False / True
 	if (bms_error[LTC6811_DEVICES] != 0)
 	{
-		return BMSError;													// Wenn Fehler vorhanden
+		return BMS_ERROR;													// Wenn Fehler vorhanden
 	}
 	else if (bms_warning[LTC6811_DEVICES] != 0)
 	{
-		return BMSWarning;													// Wenn Warnung vorhanden
+		return BMS_WARNING;													// Wenn Warnung vorhanden
 	}
 	else
 	{
-		return BMSNoError;													// Wenn kein Fehler vorhanden
+		return BMS_NOERROR;													// Wenn kein Fehler vorhanden
 	}
 }
 //----------------------------------------------------------------------

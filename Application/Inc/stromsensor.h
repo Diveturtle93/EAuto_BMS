@@ -3,7 +3,6 @@
 //----------------------------------------------------------------------
 // Sprache	:	C
 // Datum	:	15.08.2025
-// Version	:	1.0
 // Autor	:	Diveturtle93
 // Projekt	:	Stromsensor IVT-Mod
 // Quelle	:	
@@ -30,17 +29,16 @@
 #include "main.h"
 //----------------------------------------------------------------------
 
-// Einfuegen der eigenen Include Dateien
+// Einfuegen der eigenen Include-Dateien
 //----------------------------------------------------------------------
 
 //----------------------------------------------------------------------
 
-// Version definieren
+// Definiere Debug-Symbole
 //----------------------------------------------------------------------
-#define STROMSENSOR_MAJOR						0
-#define STROMSENSOR_MINOR						0
-#define STROMSENSOR_PATCH						0
-#define STROMSENSOR_DEV							0
+#ifdef DEBUG
+//	#define DEBUG_STROMSENSOR
+#endif
 //----------------------------------------------------------------------
 
 // Konstanten definieren

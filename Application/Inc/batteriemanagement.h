@@ -2,10 +2,10 @@
 // Titel	:	batteriemanagement.h
 //----------------------------------------------------------------------
 // Sprache	:	C
-// Datum	:	Jun 23, 2022
-// Version	:	1.0
+// Datum	:	23.07.2022
 // Autor	:	Diveturtle93
 // Projekt	:	BatteriemanagementSystem
+// Quelle	:
 //----------------------------------------------------------------------
 
 // Sicherheitssymbol
@@ -29,27 +29,20 @@
 #include "main.h"
 //----------------------------------------------------------------------
 
-// Einfuegen der eigenen Include Dateien
+// Einfuegen der eigenen Include-Dateien
 //----------------------------------------------------------------------
 #include "ltc6811.h"
 #include "ltc1380.h"
 //----------------------------------------------------------------------
 
-// Definiere Debug Symbols
+// Definiere Debug-Symbole
 //----------------------------------------------------------------------
 #ifdef DEBUG
 //	#define DEBUG_BMS
 //	#define DEBUG_BMS_OK
 	#define DEBUG_BMS_WORK
+//	#define DEBUG_BATTERIEMANAGEMENT
 #endif
-//----------------------------------------------------------------------
-
-// Version definieren
-//----------------------------------------------------------------------
-#define BATTERIEMANAGEMENT_MAJOR				0
-#define BATTERIEMANAGEMENT_MINOR				0
-#define BATTERIEMANAGEMENT_PATCH				0
-#define BATTERIEMANAGEMENT_DEV					0
 //----------------------------------------------------------------------
 
 // Pruefen ob zuviele LTC6811_DEVICES gesetzt sind
@@ -61,83 +54,83 @@
 
 // BMS Errors definieren
 //----------------------------------------------------------------------
-#define BMSError								false
-#define BMSWarning								false
-#define BMSNoError								true
+#define BMS_ERROR								false
+#define BMS_WARNING								false
+#define BMS_NOERROR								true
 //----------------------------------------------------------------------
 // Zellen haben Unterspannung
 //----------------------------------------------------------------------
-#define Cell1Undervoltage						0
-#define Cell2Undervoltage						1
-#define Cell3Undervoltage						2
-#define Cell4Undervoltage						3
-#define Cell5Undervoltage						4
-#define Cell6Undervoltage						5
-#define Cell7Undervoltage						6
-#define Cell8Undervoltage						7
-#define Cell9Undervoltage						8
-#define Cell10Undervoltage						9
-#define Cell11Undervoltage						10
-#define Cell12Undervoltage						11
+#define CELL1UNDERVOLTAGE						0
+#define CELL2UNDERVOLTAGE						1
+#define CELL3UNDERVOLTAGE						2
+#define CELL4UNDERVOLTAGE						3
+#define CELL5UNDERVOLTAGE						4
+#define CELL6UNDERVOLTAGE						5
+#define CELL7UNDERVOLTAGE						6
+#define CELL8UNDERVOLTAGE						7
+#define CELL9UNDERVOLTAGE						8
+#define CELL10UNDERVOLTAGE						9
+#define CELL11UNDERVOLTAGE						10
+#define CELL12UNDERVOLTAGE						11
 //----------------------------------------------------------------------
 // Zellen haben Ueberspannung
 //----------------------------------------------------------------------
-#define Cell1Overvoltage						12
-#define Cell2Overvoltage						13
-#define Cell3Overvoltage						14
-#define Cell4Overvoltage						15
-#define Cell5Overvoltage						16
-#define Cell6Overvoltage						17
-#define Cell7Overvoltage						18
-#define Cell8Overvoltage						19
-#define Cell9Overvoltage						20
-#define Cell10Overvoltage						21
-#define Cell11Overvoltage						22
-#define Cell12Overvoltage						23
+#define CELL1OVERVOLTAGE						12
+#define CELL2OVERVOLTAGE						13
+#define CELL3OVERVOLTAGE						14
+#define CELL4OVERVOLTAGE						15
+#define CELL5OVERVOLTAGE						16
+#define CELL6OVERVOLTAGE						17
+#define CELL7OVERVOLTAGE						18
+#define CELL8OVERVOLTAGE						19
+#define CELL9OVERVOLTAGE						20
+#define CELL10OVERVOLTAGE						21
+#define CELL11OVERVOLTAGE						22
+#define CELL12OVERVOLTAGE						23
 //----------------------------------------------------------------------
 // Zellen haben Untertemperatur
 //----------------------------------------------------------------------
-#define Cell1Undertemperatur					24
-#define Cell2Undertemperatur					25
-#define Cell3Undertemperatur					26
-#define Cell4Undertemperatur					27
-#define Cell5Undertemperatur					28
-#define Cell6Undertemperatur					29
-#define Cell7Undertemperatur					30
-#define Cell8Undertemperatur					31
-#define Cell9Undertemperatur					32
-#define Cell10Undertemperatur					33
-#define Cell11Undertemperatur					34
-#define Cell12Undertemperatur					35
-#define Cell13Undertemperatur					36
-#define Cell14Undertemperatur					37
-#define Cell15Undertemperatur					38
-#define Cell16Undertemperatur					39
+#define CELL1UNDERTEMPERATUR					24
+#define CELL2UNDERTEMPERATUR					25
+#define CELL3UNDERTEMPERATUR					26
+#define CELL4UNDERTEMPERATUR					27
+#define CELL5UNDERTEMPERATUR					28
+#define CELL6UNDERTEMPERATUR					29
+#define CELL7UNDERTEMPERATUR					30
+#define CELL8UNDERTEMPERATUR					31
+#define CELL9UNDERTEMPERATUR					32
+#define CELL10UNDERTEMPERATUR					33
+#define CELL11UNDERTEMPERATUR					34
+#define CELL12UNDERTEMPERATUR					35
+#define CELL13UNDERTEMPERATUR					36
+#define CELL14UNDERTEMPERATUR					37
+#define CELL15UNDERTEMPERATUR					38
+#define CELL16UNDERTEMPERATUR					39
 //----------------------------------------------------------------------
 // Zellen haben Uebertemperatur
 //----------------------------------------------------------------------
-#define Cell1Overtemperatur						40
-#define Cell2Overtemperatur						41
-#define Cell3Overtemperatur						42
-#define Cell4Overtemperatur						43
-#define Cell5Overtemperatur						44
-#define Cell6Overtemperatur						45
-#define Cell7Overtemperatur						46
-#define Cell8Overtemperatur						47
-#define Cell9Overtemperatur						48
-#define Cell10Overtemperatur					49
-#define Cell11Overtemperatur					50
-#define Cell12Overtemperatur					51
-#define Cell13Overtemperatur					52
-#define Cell14Overtemperatur					53
-#define Cell15Overtemperatur					54
-#define Cell16Overtemperatur					55
+#define CELL1OVERTEMPERATUR						40
+#define CELL2OVERTEMPERATUR						41
+#define CELL3OVERTEMPERATUR						42
+#define CELL4OVERTEMPERATUR						43
+#define CELL5OVERTEMPERATUR						44
+#define CELL6OVERTEMPERATUR						45
+#define CELL7OVERTEMPERATUR						46
+#define CELL8OVERTEMPERATUR						47
+#define CELL9OVERTEMPERATUR						48
+#define CELL10OVERTEMPERATUR					49
+#define CELL11OVERTEMPERATUR					50
+#define CELL12OVERTEMPERATUR					51
+#define CELL13OVERTEMPERATUR					52
+#define CELL14OVERTEMPERATUR					53
+#define CELL15OVERTEMPERATUR					54
+#define CELL16OVERTEMPERATUR					55
 //----------------------------------------------------------------------
-#define BMS_LTC_Temperatur						56
-#define BMS_SlavePCBError						57
-#define BMS_PlausibilityError					58
-#define BMS_MeasurementOutRange					59
-#define BMS_ReadTimeOut							60
+#define BMS_LTC_TEMPERATUR						56
+#define BMS_SLAVE_PCB_ERROR						57
+#define BMS_PLAUSIBILITY_ERROR					58
+#define BMS_MEASUREMENT_OUTOF_RANGE				59
+#define BMS_READ_TIMEOUT						60
 //----------------------------------------------------------------------
 
 //----------------------------------------------------------------------
@@ -147,14 +140,14 @@
 // Funktionen definieren
 //----------------------------------------------------------------------
 bool bms_init (void);														// Initialisier BMS
-void bms_cellspannung (uint8_t cell);										// Lese einen Zellblock ein
+void bms_cellspannung (uint8_t CELL);										// Lese einen Zellblock ein
 void bms_cellspannungen (void);												// Lese alle Zellspannungen ein
 void bms_celltemperatur (uint8_t tempsensor);								// Lese Zelltemperatur ein
 void bms_celltemperaturen (void);											// Lese alle Zelltemperaturen ein
 void bms_readgpio (uint8_t gpio);											// Lese GPIO des LTC ein
 void bms_ltc_status (void);													// Lese IC Status ein
 void bms_volt_temp (uint8_t tempsensor);									// Messe Zellspannungen und zwei Temperaturen
-void bms_volt_SOC (void);													// Messe Zellspannungen und Sum of Cells
+void bms_volt_SOC (void);													// Messe Zellspannungen und Sum of CELLs
 void bms_work (void);														// Fuehre BMS Operation durch
 bool bms_ok (void);															// Pruefe ob BMS OK ist
 void bms_Vminmax (void);													// Minimal- und Maximalspannung ermitteln
@@ -162,11 +155,11 @@ void bms_Tminmax (void);													// Minimal- und Maximaltemperatur ermitteln
 void bms_MSvoltage (void);													// Module- / Stackspannung berechnen
 //----------------------------------------------------------------------
 
-//// Definiere globale Arrays fuer Zellspannung und -temperatur
-////----------------------------------------------------------------------
-//extern uint16_t cellvoltage[LTC6811_DEVICES][LTC6811_CELLS];				// Array fuer gemessene Zellspannungen
-//extern uint16_t celltemperature[LTC6811_DEVICES][LTC1380_DEVICES * LTC1380_SENSORES];// Array fuer gemessene Zelltemperaturen
-////----------------------------------------------------------------------
+// Definiere globale Arrays fuer Zellspannung und -temperatur
+//----------------------------------------------------------------------
+// extern uint16_t CELLvoltage[LTC6811_DEVICES][LTC6811_CELLS];				// Array fuer gemessene Zellspannungen
+// extern uint16_t CELLtemperature[LTC6811_DEVICES][LTC1380_DEVICES * LTC1380_SENSORES];// Array fuer gemessene Zelltemperaturen
+//----------------------------------------------------------------------
 
 #endif /* INC_BATTERIEMANAGEMENT_H_ */
 //----------------------------------------------------------------------

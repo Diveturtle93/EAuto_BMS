@@ -3,9 +3,9 @@
 //----------------------------------------------------------------------
 // Sprache	:	C
 // Datum	:	16.07.2023
-// Version	:	1.0
 // Autor	:	Diveturtle93
 // Projekt	:	App Info
+// Quelle	:
 //----------------------------------------------------------------------
 
 // Einfuegen der standard Include-Dateien
@@ -18,10 +18,15 @@
 
 //----------------------------------------------------------------------
 
-// Einfuegen der eigenen Include Dateien
+// Einfuegen der eigenen Include-Dateien
 //----------------------------------------------------------------------
 #include "app_info.h"
 #include "BatteriemanagementSystem.h"
+//----------------------------------------------------------------------
+
+// Variablen definieren
+//----------------------------------------------------------------------
+
 //----------------------------------------------------------------------
 
 // Application Informationen sammeln
@@ -29,11 +34,11 @@
 void app_info (void)
 {
 	// Teste serielle Schnittstelle
-	#define START_STRING_UART		"!--- Batteriemanagement-System ---!\n"
+	#define START_STRING_UART					"!--- Batteriemanagement-System ---!\n"
 	uartTransmit(START_STRING_UART, sizeof(START_STRING_UART));
 
 	// Version der Software auf Uart ausgeben
-	#define VERSION_STRING_UART		"Application Version: "
+	#define VERSION_STRING_UART					"Application Version: "
 	uartTransmit(VERSION_STRING_UART, sizeof(VERSION_STRING_UART));
 	uartTransmitNumber(BATTERIEMANAGEMENTSYSTEM_MAJOR, 10);
 	uartTransmit(".", 1);
@@ -44,8 +49,8 @@ void app_info (void)
 	uartTransmitNumber(BATTERIEMANAGEMENTSYSTEM_DEV, 10);
 	uartTransmit("\n", 1);
 
-  	// Sammelt Systeminformationen
-  	collectSystemInfo();
+	// Sammelt Systeminformationen
+	collectSystemInfo();
 	printResetSource(readResetSource());
 }
 //----------------------------------------------------------------------

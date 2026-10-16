@@ -80,7 +80,7 @@ void MX_GPIO_Init(void)
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOG, HV_N_Pin|HV_P_Pin|HV_M_Pin|HV_Charger_Pin
-                          |AKKU_LED_Pin|POTI_RS_Pin|POTI_SHDN_Pin|RECUPERATION_Pin
+                          |AKKU_LED_Pin|AD8403_RS_Pin|AD8403_SHDN_Pin|RECUPERATION_Pin
                           |AMS_LIMIT_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pins : INLET_RED_Pin AMS_OK_Pin ISOSPI_CS_Pin ISOSPI_EN_Pin
@@ -177,9 +177,9 @@ void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PG0 PG1 PG6 PG8
-                           POTI_MISO_Pin */
+                           AD8403_MISO_Pin */
   GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_6|GPIO_PIN_8
-                          |POTI_MISO_Pin;
+                          |AD8403_MISO_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
@@ -204,10 +204,10 @@ void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
   /*Configure GPIO pins : HV_N_Pin HV_P_Pin HV_M_Pin HV_Charger_Pin
-                           AKKU_LED_Pin POTI_RS_Pin POTI_SHDN_Pin RECUPERATION_Pin
+                           AKKU_LED_Pin AD8403_RS_Pin AD8403_SHDN_Pin RECUPERATION_Pin
                            AMS_LIMIT_Pin */
   GPIO_InitStruct.Pin = HV_N_Pin|HV_P_Pin|HV_M_Pin|HV_Charger_Pin
-                          |AKKU_LED_Pin|POTI_RS_Pin|POTI_SHDN_Pin|RECUPERATION_Pin
+                          |AKKU_LED_Pin|AD8403_RS_Pin|AD8403_SHDN_Pin|RECUPERATION_Pin
                           |AMS_LIMIT_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;

@@ -2,10 +2,10 @@
 // Titel	:	app_info.h
 //----------------------------------------------------------------------
 // Sprache	:	C
-// Datum	:	Jul 16, 2023
-// Version	:	1.0
+// Datum	:	16.07.2023
 // Autor	:	Diveturtle93
 // Projekt	:	App Info
+// Quelle	:
 //----------------------------------------------------------------------
 
 // Sicherheitssymbol
@@ -29,17 +29,16 @@
 
 //----------------------------------------------------------------------
 
-// Einfuegen der eigenen Include Dateien
+// Einfuegen der eigenen Include-Dateien
 //----------------------------------------------------------------------
 
 //----------------------------------------------------------------------
 
-// Version definieren
+// Definiere Debug-Symbole
 //----------------------------------------------------------------------
-#define APP_INFO_MAJOR					0
-#define APP_INFO_MINOR					0
-#define APP_INFO_PATCH					0
-#define APP_INFO_DEV					0
+#ifdef DEBUG
+//  #define DEBUG_APP_INFO
+#endif
 //----------------------------------------------------------------------
 
 // Funktionen definieren

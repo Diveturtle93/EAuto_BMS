@@ -3,9 +3,9 @@
 //----------------------------------------------------------------------
 // Sprache	:	C
 // Datum	:	14.08.2021
-// Version	:	1.0
 // Autor	:	Diveturtle93
 // Projekt	:	ADC Inputs
+// Quelle	:
 //----------------------------------------------------------------------
 
 // Einfuegen der standard Include-Dateien
@@ -18,10 +18,15 @@
 #include "adc.h"
 //----------------------------------------------------------------------
 
-// Einfuegen der eigenen Include Dateien
+// Einfuegen der eigenen Include-Dateien
 //----------------------------------------------------------------------
 #include "adc_inputs.h"
 #include "BatteriemanagementSystem.h"
+//----------------------------------------------------------------------
+
+// Variablen definieren
+//----------------------------------------------------------------------
+
 //----------------------------------------------------------------------
 
 // ADC einlesen
@@ -55,7 +60,7 @@ uint16_t readADC (uint8_t channel)
 	}
 	HAL_ADC_Stop(&hadc1);													// ADC stoppen
 
-	//ADC Wert zurueck geben
+	// ADC Wert zurueck geben
 	return ADC_Data;
 }
 //----------------------------------------------------------------------
@@ -91,7 +96,7 @@ uint16_t ADC_STMTemperatur (void)
 	}
 	HAL_ADC_Stop(&hadc1);													// ADC stoppen
 
-	//ADC Wert zurueck geben
+	// ADC Wert zurueck geben
 	return ADC_Data;
 }
 //----------------------------------------------------------------------
@@ -100,7 +105,7 @@ uint16_t ADC_STMTemperatur (void)
 //----------------------------------------------------------------------
 uint16_t ADC_PCBTemperatur (void)
 {
-	//ADC Wert zurueck geben
+	// ADC Wert zurueck geben
 	return readADC(ADC_CHANNEL_7);
 }
 //----------------------------------------------------------------------
@@ -109,7 +114,7 @@ uint16_t ADC_PCBTemperatur (void)
 //----------------------------------------------------------------------
 uint16_t ADC_KL15 (void)
 {
-	//ADC Wert zurueck geben
+	// ADC Wert zurueck geben
 	return readADC(ADC_CHANNEL_7);
 }
 //----------------------------------------------------------------------
@@ -118,7 +123,7 @@ uint16_t ADC_KL15 (void)
 //----------------------------------------------------------------------
 uint16_t ADC_KL30_Relais (void)
 {
-	//ADC Wert zurueck geben
+	// ADC Wert zurueck geben
 	return readADC(ADC_CHANNEL_7);
 }
 //----------------------------------------------------------------------
@@ -127,7 +132,7 @@ uint16_t ADC_KL30_Relais (void)
 //----------------------------------------------------------------------
 uint16_t ADC_Temp1 (void)
 {
-	//ADC Wert zurueck geben
+	// ADC Wert zurueck geben
 	return readADC(ADC_CHANNEL_3);
 }
 //----------------------------------------------------------------------
@@ -136,7 +141,7 @@ uint16_t ADC_Temp1 (void)
 //----------------------------------------------------------------------
 uint16_t ADC_Temp2 (void)
 {
-	//ADC Wert zurueck geben
+	// ADC Wert zurueck geben
 	return readADC(ADC_CHANNEL_4);
 }
 //----------------------------------------------------------------------
@@ -145,7 +150,7 @@ uint16_t ADC_Temp2 (void)
 //----------------------------------------------------------------------
 uint16_t ADC_Temp3 (void)
 {
-	//ADC Wert zurueck geben
+	// ADC Wert zurueck geben
 	return readADC(ADC_CHANNEL_5);
 }
 //----------------------------------------------------------------------
@@ -154,7 +159,7 @@ uint16_t ADC_Temp3 (void)
 //----------------------------------------------------------------------
 uint16_t ADC_Temp4 (void)
 {
-	//ADC Wert zurueck geben
+	// ADC Wert zurueck geben
 	return readADC(ADC_CHANNEL_6);
 }
 //----------------------------------------------------------------------

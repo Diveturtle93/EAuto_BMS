@@ -3,9 +3,9 @@
 //----------------------------------------------------------------------
 // Sprache	:	C
 // Datum	:	25.08.2022
-// Version	:	1.0
 // Autor	:	Diveturtle93
 // Projekt	:	CAN-Bus
+// Quelle	:
 //----------------------------------------------------------------------
 
 // Einfuegen der standard Include-Dateien
@@ -18,10 +18,15 @@
 
 //----------------------------------------------------------------------
 
-// Einfuegen der eigenen Include Dateien
+// Einfuegen der eigenen Include-Dateien
 //----------------------------------------------------------------------
 #include "canbus.h"
 #include "BatteriemanagementSystem.h"
+//----------------------------------------------------------------------
+
+// Variablen definieren
+//----------------------------------------------------------------------
+
 //----------------------------------------------------------------------
 
 // Konfiguriere CAN Nachrichten
@@ -35,9 +40,9 @@ void CAN_config (void)
 	CAN_Output_PaketListe[4] = CAN_Nachricht(BMS_CAN_TEMPERATUR, 8, 500, 84, 255);	// main.c
 	CAN_Output_PaketListe[5] = CAN_Nachricht(BMS_CAN_STATUS, 4, 200, 95, 255);		// main.c
 	CAN_Output_PaketListe[6] = CAN_Nachricht(BMS_CAN_IMD, 5, 200, 62, 255);			// main.c oder imd.c?
-	CAN_Output_PaketListe[7] = CAN_Nachricht(BMS_CAN_ZELLEN11, 8, 200, 1, 0);		// batteriemanagement.c
-	CAN_Output_PaketListe[8] = CAN_Nachricht(BMS_CAN_ZELLEN12, 8, 200, 2, 0);		// batteriemanagement.c
-	CAN_Output_PaketListe[9] = CAN_Nachricht(BMS_CAN_ZELLEN13, 8, 200, 3, 0);		// batteriemanagement.c
+	CAN_Output_PaketListe[7] = CAN_Nachricht(BMS_CAN_ZELLEN11, 8, 200, 1, 255);		// batteriemanagement.c
+	CAN_Output_PaketListe[8] = CAN_Nachricht(BMS_CAN_ZELLEN12, 8, 200, 2, 255);		// batteriemanagement.c
+	CAN_Output_PaketListe[9] = CAN_Nachricht(BMS_CAN_ZELLEN13, 8, 200, 3, 255);		// batteriemanagement.c
 	CAN_Output_PaketListe[10] = CAN_Nachricht(BMS_CAN_ZELLEN21, 8, 200, 4, 0);		// batteriemanagement.c
 	CAN_Output_PaketListe[11] = CAN_Nachricht(BMS_CAN_ZELLEN22, 8, 200, 5, 0);		// batteriemanagement.c
 	CAN_Output_PaketListe[12] = CAN_Nachricht(BMS_CAN_ZELLEN23, 8, 200, 6, 0);		// batteriemanagement.c

@@ -1,11 +1,11 @@
 //----------------------------------------------------------------------
-// Titel	:	Error.h
+// Titel	:	error.h
 //----------------------------------------------------------------------
 // Sprache	:	C
 // Datum	:	16.01.2021
-// Version	:	1.0
 // Autor	:	Diveturtle93
 // Projekt	:	Error
+// Quelle	:
 //----------------------------------------------------------------------
 
 // Sicherheitssymbol
@@ -29,25 +29,18 @@
 
 //----------------------------------------------------------------------
 
-// Einfuegen der eigenen Include Dateien
+// Einfuegen der eigenen Include-Dateien
 //----------------------------------------------------------------------
 
 //----------------------------------------------------------------------
 
-// Definiere Debug Symbol
+// Definiere Debug-Symbole
 //----------------------------------------------------------------------
 #ifdef DEBUG
-//#define DEBUG_HAL
-//#define DEBUG_SWO
+//	#define DEBUG_HAL
+//	#define DEBUG_SWO
+//	#define DEBUG_ERROR
 #endif
-//----------------------------------------------------------------------
-
-// Version definieren
-//----------------------------------------------------------------------
-#define ERROR_MAJOR								0
-#define ERROR_MINOR								0
-#define ERROR_PATCH								0
-#define ERROR_DEV								0
 //----------------------------------------------------------------------
 
 // Festlegen der Fehlercodes

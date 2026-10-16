@@ -3,9 +3,9 @@
 //----------------------------------------------------------------------
 // Sprache	:	C
 // Datum	:	01.06.2021
-// Version	:	1.0
 // Autor	:	Diveturtle93
 // Projekt	:	Millis
+// Quelle	:
 //----------------------------------------------------------------------
 
 // Sicherheitssymbol
@@ -29,17 +29,16 @@
 
 //----------------------------------------------------------------------
 
-// Einfuegen der eigenen Include Dateien
+// Einfuegen der eigenen Include-Dateien
 //----------------------------------------------------------------------
 
 //----------------------------------------------------------------------
 
-// Version definieren
+// Definiere Debug-Symbole
 //----------------------------------------------------------------------
-#define MILLIS_MAJOR					0
-#define MILLIS_MINOR					0
-#define MILLIS_PATCH					0
-#define MILLIS_DEV						0
+#ifdef DEBUG
+//	#define DEBUG_MILLIS
+#endif
 //----------------------------------------------------------------------
 
 // Funktionen definieren

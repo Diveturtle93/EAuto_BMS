@@ -1,0 +1,5 @@
+[stylecheck]
+exclude = Application/Inc/git.h/
+
+[doc]
+require = architecture

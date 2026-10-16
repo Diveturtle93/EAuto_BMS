@@ -3,9 +3,9 @@
 //----------------------------------------------------------------------
 // Sprache	:	C
 // Datum	:	09.08.2021
-// Version	:	1.0
 // Autor	:	Diveturtle93
 // Projekt	:	Math
+// Quelle	:
 //----------------------------------------------------------------------
 
 // Einfuegen der standard Include-Dateien
@@ -18,10 +18,15 @@
 
 //----------------------------------------------------------------------
 
-// Einfuegen der eigenen Include Dateien
+// Einfuegen der eigenen Include-Dateien
 //----------------------------------------------------------------------
 #include "my_math.h"
 #include "BatteriemanagementSystem.h"
+//----------------------------------------------------------------------
+
+// Variablen definieren
+//----------------------------------------------------------------------
+
 //----------------------------------------------------------------------
 
 // Gleitenden Mittelwert berechnen, sehr Speicher arm
