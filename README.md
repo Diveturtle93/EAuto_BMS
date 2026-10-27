@@ -1,4 +1,4 @@
-# EAuto BMS
+# EAuto BMS – Batteriemanagement-System
 
 Firmware für das Batteriemanagement-System (BMS) eines zum Elektroauto umgebauten
 Fahrzeugs. Das BMS sitzt im Akkukasten, überwacht alle Zellen über LTC6811-1-Bausteine
